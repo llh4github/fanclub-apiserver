@@ -12,7 +12,7 @@ object CommandProcessor {
     fun parseCommand(json: String): Command? {
         return try {
             val tree = mapper.readTree(json)
-            val cmd = tree.get("cmd")?.asText() ?: return null
+            val cmd = tree.get("cmd")?.asString() ?: return null
 
             return when {
                 cmd == "SEND_GIFT" -> mapper.readValue(json, SendGiftCommand::class.java)
