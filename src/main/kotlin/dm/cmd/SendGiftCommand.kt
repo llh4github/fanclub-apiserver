@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
 package llh.fanclubvup.dm.cmd
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
