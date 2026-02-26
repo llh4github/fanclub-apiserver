@@ -11,6 +11,11 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
 
+/**
+ * B 站直播开放 API 客户端
+ *
+ *  [接口文档](https://open-live.bilibili.com/document/74eec767-e594-7ddd-6aba-257e8317c05d#h1-u5FEBu901Fu5F00u59CB)
+ */
 @Component
 class BiliLiveOpenApiClient(
     @Qualifier("biliLiveOpenApiRestClient")
