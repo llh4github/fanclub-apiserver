@@ -3,7 +3,7 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
-package llh.fanclubvup.components
+package llh.fanclubvup.apiserver.components
 
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component

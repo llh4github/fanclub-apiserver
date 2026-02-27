@@ -3,7 +3,7 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
-package llh.fanclubvup.dm.cmd
+package llh.fanclubvup.apiserver.dm.cmd
 
 // 6. 扩展函数增强功能
 val Command.isSendGift: Boolean get() = this is SendGiftCommand

@@ -3,7 +3,7 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
-package llh.fanclubvup.dm.cmd
+package llh.fanclubvup.apiserver.dm.cmd
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
@@ -20,7 +20,7 @@ data class UnknownCommand(
     inline fun <reified T> getField(key: String): T? {
         return rawData[key]?.let { node ->
             when (T::class) {
-                String::class -> node.asText() as? T
+                String::class -> node.asString() as? T
                 Long::class -> node.asLong() as? T
                 Int::class -> node.asInt() as? T
                 Boolean::class -> node.asBoolean() as? T

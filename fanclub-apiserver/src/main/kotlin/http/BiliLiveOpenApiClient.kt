@@ -3,10 +3,10 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
-package llh.fanclubvup.http
+package llh.fanclubvup.apiserver.http
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import llh.fanclubvup.utils.Md5Utils
+import llh.fanclubvup.apiserver.utils.Md5Utils
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient

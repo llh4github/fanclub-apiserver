@@ -3,9 +3,9 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
-package llh.fanclubvup.http
+package llh.fanclubvup.apiserver.http
 
-import llh.fanclubvup.utils.HmacSHAUtils
+import llh.fanclubvup.apiserver.utils.HmacSHAUtils
 import org.springframework.web.client.RestClient
 import java.util.*
 import kotlin.time.Clock
@@ -48,7 +48,6 @@ data class BiliLiveOpenApiHeaderBuilder(
                     true
                 },
                 onFailure = {
-
                     false
                 })
 

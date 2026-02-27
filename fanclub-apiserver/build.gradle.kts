@@ -1,3 +1,5 @@
+import java.time.Instant
+
 plugins {
     kotlin("jvm")
     kotlin("plugin.spring")
@@ -21,4 +23,11 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+gitProperties {
+    dateFormat = "yyyy-MM-dd'T'HH:mmZ"
+    keys = listOf("git.branch", "git.commit.id.abbrev", "git.commit.time")
+    customProperty("build.time", Instant.now().toString())
+    failOnNoGitDirectory = false
 }
