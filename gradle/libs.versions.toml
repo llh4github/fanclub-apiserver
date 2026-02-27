@@ -21,7 +21,7 @@ aws-sdk-kotlin = "1.5.70"
 druid = "1.2.27"
 classgraph = "4.8.184"
 redisson = "4.2.0"
-okhttp = "5.1.0"
+okhttp = "5.3.0"
 jjwt = "0.13.0"
 guava = "33.5.0-jre"
 

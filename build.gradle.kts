@@ -1,5 +1,4 @@
 import org.gradle.api.plugins.JavaPluginExtension
-import java.time.Instant
 
 plugins {
     kotlin("jvm") version "2.3.10" apply true
@@ -14,6 +13,10 @@ plugins {
 group = "llh"
 version = project.file("VERSION").readText().trim()
 description = "fanclub-vup"
+
+repositories {
+    mavenCentral()
+}
 
 subprojects {
 
@@ -59,14 +62,4 @@ subprojects {
         }
     }
 
-    // 配置 Git Properties 插件 - 使用属性配置方式
-    plugins.withId("com.gorylenko.gradle-git-properties") {
-        // 通过项目属性配置
-        project.ext.set("gitProperties", mapOf(
-            "dateFormat" to "yyyy-MM-dd'T'HH:mmZ",
-            "keys" to listOf("git.branch", "git.commit.id.abbrev", "git.commit.time"),
-            "customProperty" to mapOf("build.time" to Instant.now().toString()),
-            "failOnNoGitDirectory" to false
-        ))
-    }
 }

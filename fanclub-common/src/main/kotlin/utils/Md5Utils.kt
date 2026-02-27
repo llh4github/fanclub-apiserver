@@ -3,7 +3,7 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
-package llh.fanclubvup.apiserver.utils
+package llh.fanclubvup.common.utils
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.charset.Charset

@@ -3,14 +3,13 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
-package llh.fanclubvup.apiserver.dm
+package llh.fanclubvup.bilisdk.dm
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import llh.fanclubvup.apiserver.dm.cmd.Command
-import llh.fanclubvup.apiserver.dm.cmd.DanmakuCommand
-import llh.fanclubvup.apiserver.dm.cmd.SendGiftCommand
-import llh.fanclubvup.apiserver.dm.cmd.UnknownCommand
-
+import llh.fanclubvup.bilisdk.dm.cmd.Command
+import llh.fanclubvup.bilisdk.dm.cmd.DanmakuCommand
+import llh.fanclubvup.bilisdk.dm.cmd.SendGiftCommand
+import llh.fanclubvup.bilisdk.dm.cmd.UnknownCommand
 import tools.jackson.module.kotlin.jacksonObjectMapper
 
 object CommandProcessor {
