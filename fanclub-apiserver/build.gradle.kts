@@ -15,6 +15,8 @@ description = "fanclub-apiserver"
 dependencies {
     implementation(libs.oshai)
     implementation(libs.yitter.idgenerator)
+    implementation(project(":fanclub-bilisdk"))
+    implementation(project(":fanclub-common"))
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("tools.jackson.module:jackson-module-kotlin")
