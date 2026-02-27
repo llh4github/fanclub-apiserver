@@ -3,7 +3,7 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
-package llh.fanclubvup.bilisdk.utils
+package llh.fanclubvup.common.utils
 
 import org.junit.jupiter.api.Assertions.assertFalse
 import kotlin.test.Test
