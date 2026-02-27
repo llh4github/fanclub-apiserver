@@ -29,20 +29,29 @@ data class BiliLiveOpenApiHeaderBuilder(
             x-bili-timestamp:$timestamp""".trimIndent()
 
 
+    /**
+     * 填充请求头
+     * @return 是否填充成功
+     */
     fun fillHeader(builder: RestClient.RequestBodySpec): Boolean {
-        HmacSHAUtils.generateHmacSha256Signature(signatureRaw(), signatureKey)
-            .onSuccess {
-                builder.header("Authorization", it)
-            }.onFailure {
-                return false
-            }
-        builder
-            .header("x-bili-accesskeyid", accessKeyId)
-            .header("x-bili-content-md5", contentMd5)
-            .header("x-bili-signature-method", signatureMethod)
-            .header("x-bili-signature-nonce", signatureNonce)
-            .header("x-bili-signature-version", signatureVersion)
-            .header("x-bili-timestamp", timestamp.toString())
-        return true
+        return HmacSHAUtils.generateHmacSha256Signature(signatureRaw(), signatureKey)
+            .fold(
+                onSuccess = {
+                    builder
+                        .header("x-bili-accesskeyid", accessKeyId)
+                        .header("x-bili-content-md5", contentMd5)
+                        .header("x-bili-signature-method", signatureMethod)
+                        .header("x-bili-signature-nonce", signatureNonce)
+                        .header("x-bili-signature-version", signatureVersion)
+                        .header("x-bili-timestamp", timestamp.toString())
+                        .header("Authorization", it)
+                    true
+                },
+                onFailure = {
+
+                    false
+                })
+
     }
+
 }

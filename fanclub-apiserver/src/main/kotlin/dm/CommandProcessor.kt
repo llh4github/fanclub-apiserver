@@ -5,6 +5,7 @@
 
 package llh.fanclubvup.dm
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.dm.cmd.Command
 import llh.fanclubvup.dm.cmd.DanmakuCommand
 import llh.fanclubvup.dm.cmd.SendGiftCommand
@@ -13,6 +14,7 @@ import tools.jackson.module.kotlin.jacksonObjectMapper
 
 object CommandProcessor {
     private val mapper = jacksonObjectMapper()
+    private val logger = KotlinLogging.logger {}
 
     fun parseCommand(json: String): Command? {
         return try {
@@ -24,10 +26,11 @@ object CommandProcessor {
                 cmd.startsWith("DANMU_MSG") -> mapper.readValue(json, DanmakuCommand::class.java)
                 else -> UnknownCommand(
                     cmd = cmd,
-//                    rawData = tree.fields().asSequence().associate { it.key to it.value }
+                    rawData = tree.properties().associate { it.key to it.value }
                 )
             }
         } catch (e: Exception) {
+            logger.error(e) { "解析命令失败: $json" }
             null
         }
     }
