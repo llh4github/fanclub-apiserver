@@ -1,19 +1,20 @@
 import java.time.Instant
 
 plugins {
-    kotlin("jvm") version "2.3.10"
-    kotlin("plugin.spring") version "2.3.10"
-    id("org.springframework.boot") version "4.0.3"
-    id("io.spring.dependency-management") version "1.1.7"
-    id("org.graalvm.buildtools.native") version "0.11.4"
-    alias(libs.plugins.gradle.git.properties)
-    alias(libs.plugins.ksp)
+    kotlin("jvm") version "2.3.10" apply false
+    kotlin("plugin.spring") version "2.3.10" apply false
+    id("org.springframework.boot") version "4.0.3" apply false
+    id("io.spring.dependency-management") version "1.1.7" apply false
+    id("org.graalvm.buildtools.native") version "0.11.4" apply false
+    alias(libs.plugins.gradle.git.properties) apply false
+    alias(libs.plugins.ksp) apply false
 }
 
 group = "llh"
 version = project.file("VERSION").readText().trim()
 description = "fanclub-vup"
 
+<<<<<<< kqkovqns fe86d801 "project init" (rebase destination)
 dependencies {
     implementation(libs.oshai)
     implementation(libs.yitter.idgenerator)
@@ -64,4 +65,109 @@ repositories {
     maven { url = uri("https://mirrors.ustc.edu.cn/maven/repository/maven-public/") }
     // 原始Maven中央仓库（备用）
     mavenCentral()
+||||||| pxyqqzyt a26bc142 "refactor(http): 重构BiliLiveOpenApiHeaderBuilder中的fillHeader方法" (parents of rebased revision)
+dependencies {
+    implementation(libs.oshai)
+    implementation(libs.yitter.idgenerator)
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("tools.jackson.module:jackson-module-kotlin")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+gitProperties {
+    dateFormat = "yyyy-MM-dd'T'HH:mmZ"
+    keys = listOf("git.branch", "git.commit.id.abbrev", "git.commit.time")
+    customProperty("build.time", Instant.now().toString())
+    failOnNoGitDirectory = false
+}
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict", "-Xannotation-default-target=param-property")
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
+// 配置资源处理，启用过滤器替换 @project.version@
+tasks.withType<ProcessResources> {
+    filter(org.apache.tools.ant.filters.ReplaceTokens::class, "tokens" to mapOf("project.version" to project.version))
+}
+
+repositories {
+    // 阿里云Maven镜像（推荐）
+    maven { url = uri("https://maven.aliyun.com/repository/public") }
+    // 腾讯云Maven镜像
+    maven { url = uri("https://mirrors.cloud.tencent.com/nexus/repository/maven-public/") }
+    // 华为云Maven镜像
+    maven { url = uri("https://repo.huaweicloud.com/repository/maven/") }
+    // 中科大Maven镜像
+    maven { url = uri("https://mirrors.ustc.edu.cn/maven/repository/maven-public/") }
+    // 原始Maven中央仓库（备用）
+    mavenCentral()
+=======
+subprojects {
+    group = "llh"
+    version = project.parent?.version ?: "0.0.1-SNAPSHOT"
+    
+    repositories {
+        // 阿里云Maven镜像（推荐）
+        maven { url = uri("https://maven.aliyun.com/repository/public") }
+        // 腾讯云Maven镜像
+        maven { url = uri("https://mirrors.cloud.tencent.com/nexus/repository/maven-public/") }
+        // 华为云Maven镜像
+        maven { url = uri("https://repo.huaweicloud.com/repository/maven/") }
+        // 中科大Maven镜像
+        maven { url = uri("https://mirrors.ustc.edu.cn/maven/repository/maven-public/") }
+        // 原始Maven中央仓库（备用）
+        mavenCentral()
+    }
+    
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
+    
+    // 配置资源处理，启用过滤器替换 @project.version@
+    tasks.withType<ProcessResources> {
+        filter(org.apache.tools.ant.filters.ReplaceTokens::class, "tokens" to mapOf("project.version" to project.version))
+    }
+    
+    // 为子项目应用插件
+    plugins.withId("org.jetbrains.kotlin.jvm") {
+        configure<org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension> {
+            compilerOptions {
+                freeCompilerArgs.addAll("-Xjsr305=strict", "-Xannotation-default-target=param-property")
+            }
+        }
+    }
+    
+    plugins.withId("java") {
+        configure<JavaPluginExtension> {
+            toolchain {
+                languageVersion = JavaLanguageVersion.of(25)
+            }
+        }
+    }
+    
+    plugins.withId("com.gorylenko.gradle-git-properties") {
+        configure<com.gorylenko.GitPropertiesPluginExtension> {
+            dateFormat = "yyyy-MM-dd'T'HH:mmZ"
+            keys = listOf("git.branch", "git.commit.id.abbrev", "git.commit.time")
+            customProperty("build.time", Instant.now().toString())
+            failOnNoGitDirectory = false
+        }
+    }
+>>>>>>> vvxqmmot 1af335bb (rebased revision)
 }
