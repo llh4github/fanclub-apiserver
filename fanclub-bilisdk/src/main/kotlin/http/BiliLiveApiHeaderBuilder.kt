@@ -17,8 +17,8 @@ import kotlin.time.Clock
  */
 data class BiliLiveApiHeaderBuilder(
     val accessKeyId: String,
-    val contentMd5: String,
     val signatureKey: String,
+    val contentMd5: String,
     val signatureNonce: String = UUID.randomUUID().toString(),
     val signatureVersion: String = "1.0",
     val signatureMethod: String = "HMAC-SHA256",
@@ -42,6 +42,8 @@ data class BiliLiveApiHeaderBuilder(
             .fold(
                 onSuccess = {
                     request
+                        .addHeader("Accept", "application/json")
+                        .addHeader("Content-Type", "application/json")
                         .addHeader("x-bili-accesskeyid", accessKeyId)
                         .addHeader("x-bili-content-md5", contentMd5)
                         .addHeader("x-bili-signature-method", signatureMethod)

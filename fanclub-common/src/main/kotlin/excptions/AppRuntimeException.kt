@@ -3,7 +3,7 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
-package llh.fanclubvup.excptions
+package llh.fanclubvup.common.excptions
 
 import kotlin.Throwable
 
@@ -13,5 +13,4 @@ import kotlin.Throwable
  */
 class AppRuntimeException(override val message: String? = null, override val cause: Throwable? = null) :
     Throwable(message, cause) {
-
 }
