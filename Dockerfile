@@ -11,7 +11,7 @@ ARG GIT_COMMIT_ID
 ARG GIT_COMMIT_TIME
 
 # 设置资源目录变量以避免重复
-ENV RESOURCES_DIR=src/main/resources
+ENV RESOURCES_DIR=fanclub-apiserver/src/main/resources
 
 # 生成 git.properties 文件
 RUN mkdir -p ${RESOURCES_DIR} && \
@@ -23,12 +23,20 @@ RUN mkdir -p ${RESOURCES_DIR} && \
 
 # 分阶段构建依赖缓存
 RUN --mount=type=cache,target=/home/gradle/.gradle/caches \
-    gradle :nativeCompile -x test --no-daemon --parallel
+    gradle :fanclub-apiserver:nativeCompile -x test --no-daemon --parallel
 
 # 运行阶段
 FROM debian:bookworm-slim
 WORKDIR /app
 
+ARG APP_VERSION
+
+LABEL maintainer="lilinhong_coding@foxmail.com" \
+      license="Apache-2.0" \
+      version=${APP_VERSION} \
+      description="A api server."
+
+ENV SPRING_APPLICATION_VERSION=${APP_VERSION}
 # 创建运行用户
 RUN groupadd -r app && useradd -r -g app -s /bin/bash app
 # 创建日志目录
@@ -40,7 +48,7 @@ RUN mkdir -p /app/logs && \
 USER app:app
 
 # 从构建阶段复制所有模块的构建产物
-COPY --from=builder /app/build/native/nativeCompile/fanclub-vup  api-server
+COPY --from=builder /app/fanclub-apiserver/build/native/nativeCompile/fanclub-apiserver  api-server
 
 # 暴露应用端口
 EXPOSE 8080

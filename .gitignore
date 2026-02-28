@@ -1,5 +1,7 @@
 logs/
 *.log
+*-dev.*
+logs/*.log
 HELP.md
 .gradle
 build/

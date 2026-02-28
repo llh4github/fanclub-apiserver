@@ -3,7 +3,7 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
-package llh.fanclubvup.components
+package llh.fanclubvup.apiserver.components
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.actuate.info.Info
