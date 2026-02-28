@@ -36,7 +36,7 @@ subprojects {
     tasks.withType<Test> {
         useJUnitPlatform()
     }
-    
+
     plugins.withId("org.jetbrains.kotlin.jvm") {
         extensions.configure<org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension> {
             compilerOptions {
@@ -44,7 +44,7 @@ subprojects {
             }
         }
     }
-    
+
     // 配置资源处理，启用过滤器替换 @project.version@
     tasks.withType<ProcessResources> {
         filter(
