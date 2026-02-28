@@ -10,6 +10,16 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+graalvmNative {
+    binaries {
+        named("main") {
+            buildArgs.add("--initialize-at-build-time=org.apache.logging.log4j")
+            buildArgs.add("--initialize-at-build-time=org.slf4j")
+            buildArgs.add("--report-unsupported-elements-at-runtime")
+        }
+    }
+}
+
 // 配置资源处理，启用过滤器替换 @project.version@
 tasks.withType<ProcessResources> {
     filter(
@@ -25,11 +35,18 @@ dependencies {
     implementation(libs.yitter.idgenerator)
     implementation(project(":fanclub-bilisdk"))
     implementation(project(":fanclub-common"))
-    implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc") {
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+    }
+    implementation("org.springframework.boot:spring-boot-starter-log4j2")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("tools.jackson.module:jackson-module-kotlin")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-starter-websocket")
+    implementation("org.springframework.boot:spring-boot-starter-actuator") {
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+    }
+    implementation("org.springframework.boot:spring-boot-starter-websocket") {
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+    }
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

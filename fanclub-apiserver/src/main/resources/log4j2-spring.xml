@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <!-- 定义日志文件的存储地址 -->
+    <Properties>
+        <Property name="LOG_HOME">./logs</Property>
+        <Property name="APP_NAME">fanclub-vup</Property>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36}:%line - %msg%n</Property>
+        <Property name="COLOR_LOG_PATTERN">%clr{%d{yyyy-MM-dd HH:mm:ss.SSS}}{faint} %clr{[%t]}{magenta} %clr{%-5level}{highlight} %clr{%logger{36}:%line}{cyan} - %msg%n</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- 控制台输出配置 - 彩色日志带行号 -->
+        <Console name="CONSOLE" target="SYSTEM_OUT">
+            <PatternLayout pattern="${COLOR_LOG_PATTERN}" />
+        </Console>
+
+        <!-- 文件输出配置 - 按天滚动 -->
+        <RollingFile name="FILE" fileName="${LOG_HOME}/${APP_NAME}.log"
+                     filePattern="${LOG_HOME}/${APP_NAME}.%d{yyyy-MM-dd}.%i.log">
+            <PatternLayout pattern="${LOG_PATTERN}" />
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="100MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="30">
+                <Delete basePath="${LOG_HOME}" maxDepth="1">
+                    <IfFileName glob="${APP_NAME}.*.log" />
+                    <IfLastModified age="30d" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+        <!-- 错误日志单独输出 -->
+        <RollingFile name="ERROR_FILE" fileName="${LOG_HOME}/${APP_NAME}-error.log"
+                     filePattern="${LOG_HOME}/${APP_NAME}-error.%d{yyyy-MM-dd}.%i.log">
+            <PatternLayout pattern="${LOG_PATTERN}" />
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="100MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="30">
+                <Delete basePath="${LOG_HOME}" maxDepth="1">
+                    <IfFileName glob="${APP_NAME}-error.*.log" />
+                    <IfLastModified age="30d" />
+                </Delete>
+            </DefaultRolloverStrategy>
+            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY" />
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <!-- 开发环境配置 -->
+        <Logger name="llh" level="DEBUG" additivity="false">
+            <AppenderRef ref="CONSOLE" />
+        </Logger>
+        
+        <Logger name="org.springframework.web" level="DEBUG" additivity="false">
+            <AppenderRef ref="CONSOLE" />
+        </Logger>
+        
+        <Logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+            <AppenderRef ref="CONSOLE" />
+        </Logger>
+
+        <!-- 测试环境配置 -->
+        <Logger name="llh.test" level="INFO" additivity="false">
+            <AppenderRef ref="CONSOLE" />
+            <AppenderRef ref="FILE" />
+            <AppenderRef ref="ERROR_FILE" />
+        </Logger>
+
+        <!-- 生产环境配置 -->
+        <Logger name="llh.prod" level="INFO" additivity="false">
+            <AppenderRef ref="CONSOLE" />
+            <AppenderRef ref="FILE" />
+            <AppenderRef ref="ERROR_FILE" />
+        </Logger>
+
+        <!-- 默认配置 -->
+        <Root level="INFO">
+            <AppenderRef ref="CONSOLE" />
+        </Root>
+    </Loggers>
+</Configuration>

@@ -1,5 +1,4 @@
 spring:
   application:
     name: fanclub-vup
-#   TODO 版本号不能显示 ？
     version: @project.version@
