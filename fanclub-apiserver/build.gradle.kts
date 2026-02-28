@@ -10,6 +10,14 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// 配置资源处理，启用过滤器替换 @project.version@
+tasks.withType<ProcessResources> {
+    filter(
+        org.apache.tools.ant.filters.ReplaceTokens::class,
+        "tokens" to mapOf("project.version" to project.version)
+    )
+}
+
 description = "fanclub-apiserver"
 
 dependencies {
