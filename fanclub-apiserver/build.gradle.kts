@@ -13,8 +13,36 @@ plugins {
 graalvmNative {
     binaries {
         named("main") {
+
+            buildArgs.add("--initialize-at-build-time=org.springframework.boot.logging.log4j2.SpringBootPropertySource")
+            buildArgs.add("--initialize-at-build-time=org.springframework.boot.logging.log4j2.SpringEnvironmentLookup")
+
+            // Log4j2核心组件初始化
             buildArgs.add("--initialize-at-build-time=org.apache.logging.log4j")
+            buildArgs.add("--initialize-at-build-time=org.apache.logging.log4j.core")
+            buildArgs.add("--initialize-at-build-time=org.apache.logging.log4j.spi")
+            
+            // SLF4J相关组件初始化
             buildArgs.add("--initialize-at-build-time=org.slf4j")
+            buildArgs.add("--initialize-at-build-time=org.slf4j.helpers")
+            buildArgs.add("--initialize-at-build-time=org.slf4j.impl")
+            
+            // Log4j-SLF4J桥接组件
+            buildArgs.add("--initialize-at-build-time=org.apache.logging.slf4j.Log4jMarkerFactory")
+            buildArgs.add("--initialize-at-build-time=org.apache.logging.slf4j.Log4jLoggerFactory")
+            buildArgs.add("--initialize-at-build-time=org.apache.logging.slf4j.SLF4JServiceProvider")
+            buildArgs.add("--initialize-at-build-time=org.apache.logging.slf4j.EventDataConverter")
+            
+            // 具体的工厂和管理器类
+            buildArgs.add("--initialize-at-build-time=org.slf4j.MarkerFactory")
+            buildArgs.add("--initialize-at-build-time=org.slf4j.LoggerFactory")
+
+            // 性能和兼容性优化
+            buildArgs.add("--enable-url-protocols=http,https")
+            buildArgs.add("--enable-all-security-services")
+            buildArgs.add("--no-fallback")
+            
+            // 运行时报告不支持元素
             buildArgs.add("--report-unsupported-elements-at-runtime")
         }
     }
