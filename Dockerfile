@@ -29,6 +29,14 @@ RUN --mount=type=cache,target=/home/gradle/.gradle/caches \
 FROM debian:bookworm-slim
 WORKDIR /app
 
+ARG APP_VERSION
+
+LABEL maintainer="lilinhong_coding@foxmail.com" \
+      license="Apache-2.0" \
+      version=${APP_VERSION} \
+      description="A api server."
+
+ENV SPRING_APPLICATION_VERSION=${APP_VERSION}
 # 创建运行用户
 RUN groupadd -r app && useradd -r -g app -s /bin/bash app
 # 创建日志目录
