@@ -5,3 +5,5 @@ spring:
   threads:
     virtual:
       enabled: true
+jimmer:
+  language: kotlin
