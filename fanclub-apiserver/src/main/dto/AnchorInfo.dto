@@ -1,0 +1,10 @@
+export llh.fanclubvup.apiserver.entity.anchor.AnchorInfo
+ -> package llh.fanclubvup.apiserver.entity.anchor.dto
+
+AnchorInfo {
+    id
+    createdTime
+    updatedTime
+    biliId
+}
+
