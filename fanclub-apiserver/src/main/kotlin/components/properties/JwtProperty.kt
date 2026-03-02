@@ -2,7 +2,8 @@ package llh.fanclubvup.apiserver.components.properties
 
 import llh.fanclubvup.common.consts.PropsKeys
 import org.springframework.boot.context.properties.ConfigurationProperties
-import java.time.Duration
+import kotlin.time.Duration
+import kotlin.time.toJavaDuration
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Date
@@ -47,7 +48,7 @@ data class TokenExpireTime(
     val accessExpireTime: Date
         get() {
             val instant = LocalDateTime.now()
-                .plus(access)
+                .plus(access.toJavaDuration())
                 .atZone(ZoneId.systemDefault()).toInstant()
             return Date.from(instant)
         }
@@ -55,7 +56,7 @@ data class TokenExpireTime(
     val refreshExpireTime: Date
         get() {
             val instant = LocalDateTime.now()
-                .plus(refresh)
+                .plus(refresh.toJavaDuration())
                 .atZone(ZoneId.systemDefault()).toInstant()
             return Date.from(instant)
         }
