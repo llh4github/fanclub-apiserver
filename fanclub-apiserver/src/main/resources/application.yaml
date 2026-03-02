@@ -1,4 +1,30 @@
 spring:
   application:
-    name: fanclub-vup
+    name: ${FANCLUB_APP_NAME:fanclub-vup}
     version: @project.version@
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: ${FANCLUB_DATASOURCE_URL:jdbc:mariadb://localhost:3306/fanclub_dev}
+    username: ${FANCLUB_DATASOURCE_USERNAME:root}
+    password: ${FANCLUB_DATASOURCE_PASSWORD:123456}
+  data:
+    redis:
+      host: ${FANCLUB_REDIS_HOST:localhost}
+      port: ${FANCLUB_REDIS_PORT:6379}
+      password: ${FANCLUB_REDIS_PASSWORD:}
+jimmer:
+  language: kotlin
+  show-sql: true
+
+logging:
+  level:
+    llh: ${FANCLUB_LOG_LEVEL:INFO}
+    org.springframework.web: WARN
+
+springdoc:
+  api-docs:
+    enabled: ${FANCLUB_SWAGGER_ENABLED:false}
+  swagger-ui:
+    enabled: ${FANCLUB_SWAGGER_ENABLED:false}
