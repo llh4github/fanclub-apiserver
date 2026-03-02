@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class AnchorInfoServiceImpl(
-    val sqlClient: KSqlClient,
+    sqlClient: KSqlClient,
 ) : AnchorInfoService,
     BaseDatabaseServiceImpl<AnchorInfo>(AnchorInfo::class, sqlClient) {
 

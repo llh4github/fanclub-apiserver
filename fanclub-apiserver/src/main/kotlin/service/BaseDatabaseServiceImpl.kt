@@ -34,7 +34,7 @@ import kotlin.reflect.KClass
 
 abstract class BaseDatabaseServiceImpl<E : BaseEntity>(
     private val entityType: KClass<E>,
-    private val sqlClient: KSqlClient,
+    protected val sqlClient: KSqlClient,
 ) : BaseDatabaseService<E> {
 
     /**

@@ -5,9 +5,5 @@ UserAccount {
     id
     username
     password
-//    roles {
-//        roleCode
-//    }
-
+    role
 }
-

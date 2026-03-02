@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 )
 @JsonSubTypes(
     JsonSubTypes.Type(value = SendGiftCommand::class, name = "SEND_GIFT"),
-    JsonSubTypes.Type(value = DanmakuCommand::class, name = "DANMU_MSG")
+    JsonSubTypes.Type(value = DanmakuCommand::class, name = "DANMU_MSG"),
 )
 abstract class Command {
 
