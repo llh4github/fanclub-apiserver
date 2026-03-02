@@ -3,12 +3,11 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
-package llh.fanclubvup.enums
+package llh.fanclubvup.bilisdk.enums
 
 /**
  * B站API接口URL枚举类
  */
-@Deprecated("移动到sdk模块里")
 enum class BiliURLs(val url: String) {
     /** 用户ID初始化URL - 获取用户导航信息 */
     UID_INIT_URL("https://api.bilibili.com/x/web-interface/nav"),

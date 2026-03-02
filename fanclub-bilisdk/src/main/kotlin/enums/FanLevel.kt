@@ -3,12 +3,11 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
-package llh.fanclubvup.apiserver.enums
+package llh.fanclubvup.bilisdk.enums
 
 /**
  * 舰长等级枚举类
  */
-@Deprecated("移动到sdk模块里")
 enum class FanLevel(val level: Int, val displayName: String) {
     /** 总督 */
     ADMIRAL(1, "总督"),
