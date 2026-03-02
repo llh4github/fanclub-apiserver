@@ -1,0 +1,13 @@
+export llh.fanclubvup.apiserver.entity.sys.User
+ -> package llh.fanclubvup.apiserver.entity.sys.dto
+
+UserAccount {
+    id
+    username
+    password
+//    roles {
+//        roleCode
+//    }
+
+}
+

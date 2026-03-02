@@ -16,7 +16,10 @@ spring:
       password: ${FANCLUB_REDIS_PASSWORD:}
 jimmer:
   language: kotlin
-  show-sql: true
+  show-sql: ${FANCLUB_SHOW_SQL:false}
+  pretty-sql: ${FANCLUB_SHOW_SQL:false}
+  inline-sql-variables: ${FANCLUB_SHOW_SQL:false}
+
 
 logging:
   level:
