@@ -1,6 +1,7 @@
 logs/
 *.log
 *-dev.*
+*-local.*
 logs/*.log
 HELP.md
 .gradle
@@ -42,3 +43,8 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### Environment Files ###
+.env
+.env.local
+.env.*.local
