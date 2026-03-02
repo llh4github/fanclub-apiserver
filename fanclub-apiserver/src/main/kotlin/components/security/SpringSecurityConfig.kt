@@ -1,4 +1,9 @@
-package llh.fanclubvup.apiserver.components
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
+package llh.fanclubvup.apiserver.components.security
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
