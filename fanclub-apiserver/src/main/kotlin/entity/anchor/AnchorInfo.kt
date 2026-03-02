@@ -9,6 +9,6 @@ import org.babyfish.jimmer.sql.Table
 @Table(name = "anchor_info")
 @Schema(title = "主播基础信息")
 interface AnchorInfo : BaseEntity {
-    @get:Schema(title = "B站ID", description = "B站ID", example = "114514")
+    @get:Schema(title = "B站ID", description = "通常称为UID", example = "114514")
     val biliId: Long
 }

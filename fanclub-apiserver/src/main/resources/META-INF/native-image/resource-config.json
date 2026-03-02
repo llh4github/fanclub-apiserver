@@ -1,0 +1,18 @@
+{
+  "resources": {
+    "includes": [
+      {
+        "pattern": ".*\\.xml"
+      },
+      {
+        "pattern": "\\QMETA-INF/jimmer/code_generation\\E"
+      },
+      {
+        "pattern": "\\QMETA-INF/jimmer/client\\E"
+      },
+      {
+        "pattern": "\\QMETA-INF/jimmer/entities\\E"
+      }
+    ]
+  }
+}

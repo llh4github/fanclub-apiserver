@@ -1,5 +1,5 @@
 export llh.fanclubvup.apiserver.entity.anchor.AnchorInfo
- -> package llh.fanclubvup.apiserver.entity.anchor.dto
+    -> package llh.fanclubvup.apiserver.entity.anchor.dto
 
 AnchorInfo {
     id
@@ -7,4 +7,15 @@ AnchorInfo {
     updatedTime
     biliId
 }
+@io.swagger.v3.oas.annotations.media.Schema(title = "数据分页查询请求体")
+specification AnchorInfoQuerySpec {
+    pageParam: llh.fanclubvup.apiserver.dto.PageQueryRequest
+}
 
+@io.swagger.v3.oas.annotations.media.Schema(title = "主播分页查询结果数据")
+AnchorInfoPageView {
+    #allScalars
+    id
+    createdTime
+    updatedTime
+}
