@@ -21,7 +21,6 @@ class AnchorInfoApi(
 ) {
 
     @GetMapping
-    @RequestMapping
     fun getById(@RequestParam("id") id: Long) =
         JsonWrapper.ok(service.getById(id))
 
