@@ -24,7 +24,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 class SpringSecurityConfig(
     val jsonMapper: JsonMapper,
     val jwtProperty: JwtProperty,
-    val jwtAuthenticationFilter: JwtAuthenticationFilter
+    val jwtAuthenticationFilter: JwtAuthenticationFilter,
 ) {
 
     private val logger = KotlinLogging.logger {}

@@ -14,5 +14,16 @@ import org.babyfish.jimmer.sql.EnumType
 enum class RoleEnums {
     ADMIN,
     ANCHOR,
-    GUEST
+    GUEST;
+
+    companion object {
+        fun parse(value: String): RoleEnums {
+            return when (value.uppercase()) {
+                "ADMIN" -> ADMIN
+                "ANCHOR" -> ANCHOR
+                "GUEST" -> GUEST
+                else -> GUEST
+            }
+        }
+    }
 }

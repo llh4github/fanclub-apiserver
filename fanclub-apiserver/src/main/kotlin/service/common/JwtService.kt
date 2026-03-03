@@ -13,6 +13,7 @@ import io.jsonwebtoken.security.Keys
 import llh.fanclubvup.apiserver.components.properties.JwtProperty
 import llh.fanclubvup.apiserver.dto.JwtInfo
 import llh.fanclubvup.apiserver.dto.security.JwtUserLoginAuthenticationToken
+import llh.fanclubvup.apiserver.entity.sys.dto.UserAccount
 import llh.fanclubvup.apiserver.enums.JwtType
 import llh.fanclubvup.apiserver.utils.IdGenerator
 import org.springframework.data.redis.core.StringRedisTemplate
@@ -29,7 +30,6 @@ class JwtService(
 ) {
     private val logger = KotlinLogging.logger {}
     private val userIDKey = "userID"
-    private val usernameKey = "uname"
     private val anchorIdKey = "anchor"
     private val roleKey = "role"
 
@@ -56,6 +56,15 @@ class JwtService(
             anchorId = claims.get(anchorIdKey, Long::class.java),
             details = details
         )
+    }
+
+    fun createToken(ua: UserAccount, type: JwtType = JwtType.ACCESS): Result<JwtInfo> {
+        return createExpireToken(ua.id, ua.username, type) {
+            mapOf(
+                roleKey to ua.role,
+                anchorIdKey to -1L // TODO 填充数据
+            )
+        }
     }
 
     fun validAndClaims(jwt: String): DefaultClaims? {
