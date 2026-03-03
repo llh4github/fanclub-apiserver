@@ -9,7 +9,7 @@ class JwtUserLoginAuthenticationToken(
     val userId: Long,
     val uname: String,
     val role: String,
-    val anchorId: Long? = null,
+    val anchorId: Long? = null, // TODO 根据开放接口测试情况传什么
     val details: WebAuthenticationDetails? = null,
 ) : AbstractAuthenticationToken(listOf(SimpleGrantedAuthority("ROLE_$role"))) {
 

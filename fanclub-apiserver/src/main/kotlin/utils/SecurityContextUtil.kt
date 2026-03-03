@@ -7,6 +7,7 @@ package llh.fanclubvup.apiserver.utils
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.apiserver.dto.security.JwtUserLoginAuthenticationToken
+import llh.fanclubvup.apiserver.enums.RoleEnums
 import llh.fanclubvup.common.excptions.AppRuntimeException
 import org.springframework.security.core.context.SecurityContextHolder
 
@@ -16,6 +17,11 @@ object SecurityContextUtil {
     fun currentUserId(): Long {
         return authenticationToken().userId
     }
+
+    fun currentRole(): RoleEnums {
+        return authenticationToken().roleType
+    }
+
 
     fun currentUsername(): String {
         return authenticationToken().uname
