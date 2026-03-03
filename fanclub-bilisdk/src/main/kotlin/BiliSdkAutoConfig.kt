@@ -21,7 +21,7 @@ class BiliSdkAutoConfig {
     private val logger = KotlinLogging.logger {}
 
     @Bean
-    @ConditionalOnProperty(prefix = PropsKeys.BILI_SDK_PROP_KEY, name = ["accessKeyId", "signatureKey", "appId"])
+//    @ConditionalOnProperty(prefix = PropsKeys.BILI_SDK_PROP_KEY, name = ["accessKeyId"])
     @ConditionalOnMissingBean(BiliLiveApiClient::class)
     fun biliLiveApiClient(prop: BiliLiveApiProp): BiliLiveApiClient {
         logger.info { "BiliLiveApiClient init" }
