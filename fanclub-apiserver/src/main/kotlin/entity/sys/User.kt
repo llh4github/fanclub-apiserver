@@ -9,10 +9,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotEmpty
 import llh.fanclubvup.apiserver.entity.BaseEntity
+import llh.fanclubvup.apiserver.entity.anchor.AnchorInfo
 import llh.fanclubvup.apiserver.enums.RoleEnums
 import llh.fanclubvup.apiserver.utils.CreateGroup
 import llh.fanclubvup.apiserver.utils.CreateUpdateGroup
 import org.babyfish.jimmer.sql.Entity
+import org.babyfish.jimmer.sql.OneToOne
 import org.babyfish.jimmer.sql.Table
 import org.hibernate.validator.constraints.Length
 
@@ -44,4 +46,7 @@ interface User : BaseEntity {
 
     @get:Schema(title = "角色", description = "用户所属角色", example = "ADMIN")
     val role: RoleEnums
+
+    @OneToOne
+    val anchor: AnchorInfo?
 }

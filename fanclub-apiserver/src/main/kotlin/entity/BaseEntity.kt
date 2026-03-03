@@ -6,9 +6,14 @@
 package llh.fanclubvup.apiserver.entity
 
 import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonIgnore
 import io.swagger.v3.oas.annotations.media.Schema
 import llh.fanclubvup.common.consts.DatetimeConstant
+import org.babyfish.jimmer.sql.DissociateAction
+import org.babyfish.jimmer.sql.IdView
+import org.babyfish.jimmer.sql.ManyToOne
 import org.babyfish.jimmer.sql.MappedSuperclass
+import org.babyfish.jimmer.sql.OnDissociate
 import java.time.LocalDateTime
 
 @MappedSuperclass

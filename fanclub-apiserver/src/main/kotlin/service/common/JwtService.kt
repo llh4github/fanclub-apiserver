@@ -62,7 +62,7 @@ class JwtService(
         return createExpireToken(ua.id, ua.username, type) {
             mapOf(
                 roleKey to ua.role,
-                anchorIdKey to -1L // TODO 填充数据
+                anchorIdKey to (ua.anchor?.biliId ?: -1L)
             )
         }
     }
