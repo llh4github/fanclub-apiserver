@@ -5,7 +5,6 @@
 
 package llh.fanclubvup.apiserver.components.security
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.apiserver.components.properties.JwtProperty
 import llh.fanclubvup.apiserver.dto.JsonWrapper
@@ -18,14 +17,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 @EnableWebSecurity
 @Configuration(proxyBeanMethods = false)
 class SpringSecurityConfig(
-    val jsonMapper: JsonMapper,
     val jwtProperty: JwtProperty,
     val jwtAuthenticationFilter: JwtAuthenticationFilter,
 ) {
+    private val jsonMapper = jacksonObjectMapper()
 
     private val logger = KotlinLogging.logger {}
 

@@ -3,7 +3,7 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
-package llh.fanclubvup
+package llh.fanclubvup.apiserver
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
