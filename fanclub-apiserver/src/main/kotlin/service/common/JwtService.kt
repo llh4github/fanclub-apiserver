@@ -12,11 +12,13 @@ import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
 import llh.fanclubvup.apiserver.components.properties.JwtProperty
 import llh.fanclubvup.apiserver.dto.JwtInfo
+import llh.fanclubvup.apiserver.dto.security.JwtUserLoginAuthenticationToken
 import llh.fanclubvup.apiserver.enums.JwtType
 import llh.fanclubvup.apiserver.utils.IdGenerator
 import org.springframework.data.redis.core.StringRedisTemplate
+import org.springframework.security.web.authentication.WebAuthenticationDetails
 import org.springframework.stereotype.Service
-import java.util.Date
+import java.util.*
 import javax.crypto.SecretKey
 import kotlin.time.toJavaDuration
 
@@ -27,6 +29,9 @@ class JwtService(
 ) {
     private val logger = KotlinLogging.logger {}
     private val userIDKey = "userID"
+    private val usernameKey = "uname"
+    private val anchorIdKey = "anchor"
+    private val roleKey = "role"
 
     /**
      * 生成密钥
@@ -37,6 +42,20 @@ class JwtService(
     }
     private val parser by lazy {
         Jwts.parser().verifyWith(secretKey).build()
+    }
+
+    fun validAndConvertAuthToken(
+        jwt: String,
+        details: WebAuthenticationDetails
+    ): JwtUserLoginAuthenticationToken? {
+        val claims = validAndClaims(jwt) ?: return null
+        return JwtUserLoginAuthenticationToken(
+            userId = claims.get(userIDKey, Long::class.java),
+            uname = claims.subject,
+            role = claims[roleKey].toString(),
+            anchorId = claims.get(anchorIdKey, Long::class.java),
+            details = details
+        )
     }
 
     fun validAndClaims(jwt: String): DefaultClaims? {
