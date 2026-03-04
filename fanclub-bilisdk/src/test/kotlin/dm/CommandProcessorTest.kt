@@ -6,13 +6,7 @@
 package llh.fanclubvup.bilisdk.dm
 
 import llh.fanclubvup.bilisdk.dm.CommandProcessor.parseCommand
-import llh.fanclubvup.bilisdk.dm.cmd.DanmakuCommand
-import llh.fanclubvup.bilisdk.dm.cmd.SendGiftCommand
-import llh.fanclubvup.bilisdk.dm.cmd.UnknownCommand
-import llh.fanclubvup.bilisdk.dm.cmd.content
-import llh.fanclubvup.bilisdk.dm.cmd.formattedSender
-import llh.fanclubvup.bilisdk.dm.cmd.sender
-import llh.fanclubvup.bilisdk.dm.cmd.totalValue
+import llh.fanclubvup.bilisdk.dm.cmd.*
 import org.junit.jupiter.api.Test
 
 class CommandProcessorTest {
