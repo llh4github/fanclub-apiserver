@@ -17,6 +17,5 @@ class BiliScraperUtilTest {
             )
         )
         assertEquals("ea1db124af3c7062474693fa704f4ff8", a)
-
     }
 }

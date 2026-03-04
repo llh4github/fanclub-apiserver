@@ -34,4 +34,9 @@ class BiliSignCacheManager(private val redisTemplate: StringRedisTemplate) {
         redisTemplate.opsForValue().set(key, value, expire)
         localCache.put(key, value)
     }
+
+    fun remove(key: String) {
+        redisTemplate.delete(key)
+        localCache.invalidate(key)
+    }
 }

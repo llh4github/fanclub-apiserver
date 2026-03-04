@@ -47,7 +47,7 @@ class BiliScraperClient(
         val request = Request.Builder()
             .url(BiliApiUrls.WBI_INIT_URL)
             .addHeader("User-Agent", ScraperConst.USER_AGENT)
-            .addHeader("Cookie", cookie)
+            .addHeader("SESSDATA", cookie)
             .build()
         return execute(request, UserInfoResponse::class.java)
     }
