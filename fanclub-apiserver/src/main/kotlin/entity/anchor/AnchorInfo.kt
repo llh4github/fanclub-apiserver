@@ -1,8 +1,16 @@
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
 package llh.fanclubvup.apiserver.entity.anchor
 
 import io.swagger.v3.oas.annotations.media.Schema
 import llh.fanclubvup.apiserver.entity.BaseEntity
+import llh.fanclubvup.apiserver.entity.sys.User
 import org.babyfish.jimmer.sql.Entity
+import org.babyfish.jimmer.sql.JoinColumn
+import org.babyfish.jimmer.sql.OneToOne
 import org.babyfish.jimmer.sql.Table
 
 @Entity
@@ -11,4 +19,8 @@ import org.babyfish.jimmer.sql.Table
 interface AnchorInfo : BaseEntity {
     @get:Schema(title = "B站ID", description = "通常称为UID", example = "114514")
     val biliId: Long
+
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    val user: User
 }

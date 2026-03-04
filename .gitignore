@@ -2,6 +2,7 @@ logs/
 *.log
 *-dev.*
 *-local.*
+*-test.*
 logs/*.log
 HELP.md
 .gradle

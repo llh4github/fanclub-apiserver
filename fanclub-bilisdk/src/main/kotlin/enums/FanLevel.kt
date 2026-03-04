@@ -3,7 +3,7 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
-package llh.fanclubvup.apiserver.enums
+package llh.fanclubvup.bilisdk.enums
 
 /**
  * 舰长等级枚举类

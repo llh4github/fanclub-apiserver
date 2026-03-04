@@ -10,24 +10,31 @@ import llh.fanclubvup.bilisdk.dm.cmd.Command
 import llh.fanclubvup.bilisdk.dm.cmd.DanmakuCommand
 import llh.fanclubvup.bilisdk.dm.cmd.SendGiftCommand
 import llh.fanclubvup.bilisdk.dm.cmd.UnknownCommand
+import tools.jackson.databind.node.ObjectNode
 import tools.jackson.module.kotlin.jacksonObjectMapper
 
 object CommandProcessor {
     private val mapper = jacksonObjectMapper()
+
     private val logger = KotlinLogging.logger {}
 
     fun parseCommand(json: String): Command? {
         return try {
             val tree = mapper.readTree(json)
-            val cmd = tree.get("cmd")?.asString() ?: return null
+            val cmd = tree.get("cmd")?.asString()?.split(":")[0] ?: return null
 
             return when {
-                cmd == "SEND_GIFT" -> mapper.readValue(json, SendGiftCommand::class.java)
-                cmd.startsWith("DANMU_MSG") -> mapper.readValue(json, DanmakuCommand::class.java)
-                else -> UnknownCommand(
-                    cmd = cmd,
-                    rawData = tree.properties().associate { it.key to it.value }
-                )
+                cmd == "SEND_GIFT" -> {
+                    mapper.readValue(json, SendGiftCommand::class.java)
+                }
+
+                cmd.startsWith("DANMU_MSG") -> mapper.treeToValue(tree, DanmakuCommand::class.java)
+                else -> {
+                    UnknownCommand(
+                        cmd = cmd,
+                        rawData = tree.properties().associate { it.key to it.value }
+                    )
+                }
             }
         } catch (e: Exception) {
             logger.error(e) { "解析命令失败: $json" }

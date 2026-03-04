@@ -9,9 +9,11 @@ description = "fanclub-bilisdk"
 
 dependencies {
     compileOnly(libs.oshai)
+    testImplementation(libs.oshai)
     compileOnly(project(":fanclub-common"))
 //    compileOnly("org.springframework.boot:spring-boot-starter")
     compileOnly("org.springframework.boot:spring-boot-starter-jackson")
+    testImplementation("org.springframework.boot:spring-boot-starter-log4j2")
     implementation(platform(libs.okhttp.bom))
     implementation("com.squareup.okhttp3:okhttp")
     compileOnly("tools.jackson.module:jackson-module-kotlin")

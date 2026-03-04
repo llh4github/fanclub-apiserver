@@ -11,7 +11,7 @@ import java.util.UUID
 import kotlin.time.Clock
 
 /**
- * B 站直播开放 API 客户端
+ * B 站直播开放 API 客户端 参数构建器。
  *
  *  [接口文档](https://open-live.bilibili.com/document/74eec767-e594-7ddd-6aba-257e8317c05d#h1-u5FEBu901Fu5F00u59CB)
  */

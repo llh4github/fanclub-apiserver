@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
 package llh.fanclubvup.apiserver.service
 
 import jakarta.annotation.Resource
@@ -29,7 +34,7 @@ import kotlin.reflect.KClass
 
 abstract class BaseDatabaseServiceImpl<E : BaseEntity>(
     private val entityType: KClass<E>,
-    private val sqlClient: KSqlClient,
+    protected val sqlClient: KSqlClient,
 ) : BaseDatabaseService<E> {
 
     /**

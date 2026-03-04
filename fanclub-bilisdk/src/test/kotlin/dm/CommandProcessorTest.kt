@@ -3,40 +3,20 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
-package llh.fanclubvup.dm
+package llh.fanclubvup.bilisdk.dm
 
-import llh.fanclubvup.dm.cmd.DanmakuCommand
-import llh.fanclubvup.dm.cmd.SendGiftCommand
-import llh.fanclubvup.dm.cmd.UnknownCommand
-import llh.fanclubvup.dm.cmd.content
-import llh.fanclubvup.dm.cmd.formattedSender
-import llh.fanclubvup.dm.cmd.sender
-import llh.fanclubvup.dm.cmd.totalValue
+import llh.fanclubvup.bilisdk.dm.CommandProcessor.parseCommand
+import llh.fanclubvup.bilisdk.dm.cmd.DanmakuCommand
+import llh.fanclubvup.bilisdk.dm.cmd.SendGiftCommand
+import llh.fanclubvup.bilisdk.dm.cmd.UnknownCommand
+import llh.fanclubvup.bilisdk.dm.cmd.content
+import llh.fanclubvup.bilisdk.dm.cmd.formattedSender
+import llh.fanclubvup.bilisdk.dm.cmd.sender
+import llh.fanclubvup.bilisdk.dm.cmd.totalValue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
 
 class CommandProcessorTest {
 
-    @ParameterizedTest
-    @ValueSource(
-        strings = [
-            """
-            {
-            "cmd": "SEND_GIFT",
-            "uid": 123456789,
-            "uname": "张三",
-            "gift_name": "小花花",
-            "num": 10,
-            "price": 1
-        }
-            """,
-        ]
-    )
-    fun test(jsonStr: String) {
-        val rs = CommandProcessor.parseCommand(jsonStr.trim())
-        println(rs)
-    }
 
     @Test
     fun a() {
@@ -69,10 +49,10 @@ class CommandProcessorTest {
         // 1. 基础解析
         val giftCommand = CommandProcessor.parseCommandAs<SendGiftCommand>(giftJson)
         val danmakuCommand = CommandProcessor.parseCommandAs<DanmakuCommand>(danmakuJson)
-        val unknownCommand = CommandProcessor.parseCommand(unknownJson)
+        val unknownCommand = parseCommand(unknownJson)
 
         // 2. 优雅的模式匹配
-        when (val command = CommandProcessor.parseCommand(giftJson)) {
+        when (val command = parseCommand(giftJson)) {
             is SendGiftCommand -> {
                 println("礼物: ${command.giftName}")
                 println("赠送者: ${command.formattedSender}")

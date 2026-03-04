@@ -18,7 +18,12 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import tools.jackson.module.kotlin.jacksonObjectMapper
 
-class BiliLiveApiClient(val prop: BiliLiveApiProp) {
+/**
+ * Bili直播官方开放API客户端。[接口文档](https://open-live.bilibili.com/document/74eec767-e594-7ddd-6aba-257e8317c05d#h1-u5FEBu901Fu5F00u59CB)
+ *
+ * 使用条件较苛刻，暂不使用。
+ */
+class BiliLiveApiClient(private val prop: BiliLiveApiProp) {
     private val client = OkHttpClient()
     private val mapper = jacksonObjectMapper()
     private val logger = KotlinLogging.logger {}
@@ -58,6 +63,7 @@ class BiliLiveApiClient(val prop: BiliLiveApiProp) {
                         .url(url)
                         .build()
                 ).execute().use { response ->
+                    logger.debug { response }
                     if (!response.isSuccessful) {
                         logger.error { "请求失败 $response" }
                         throw AppRuntimeException("请求失败")

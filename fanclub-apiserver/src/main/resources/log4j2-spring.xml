@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2026 llh
+  ~ Contact: lilinhong_coding@foxmail.com
+  -->
+
 <Configuration status="WARN">
     <!-- 定义日志文件的存储地址 -->
     <Properties>

@@ -3,7 +3,7 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
-package llh.fanclubvup.enums
+package llh.fanclubvup.bilisdk.enums
 
 /**
  * B站API接口URL枚举类
