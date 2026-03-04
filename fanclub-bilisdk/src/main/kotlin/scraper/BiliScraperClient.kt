@@ -4,11 +4,15 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilisdk.consts.BiliApiUrls
 import llh.fanclubvup.bilisdk.consts.ScraperConst
 import llh.fanclubvup.bilisdk.dto.ScraperBaseResp
+import llh.fanclubvup.bilisdk.dto.UserInfoResponse
+import llh.fanclubvup.bilisdk.utils.WbiUtil
 import llh.fanclubvup.common.excptions.AppRuntimeException
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.springframework.cache.CacheManager
+import org.springframework.cache.get
+import org.springframework.cache.set
 import tools.jackson.module.kotlin.jacksonObjectMapper
-import java.util.concurrent.TimeUnit
 
 class BiliScraperClient {
 
@@ -16,16 +20,33 @@ class BiliScraperClient {
     private val mapper = jacksonObjectMapper()
     private val logger = KotlinLogging.logger {}
 
-    fun wbi(): Result<ScraperBaseResp> {
+    /**
+     * 获取 WBI 签名
+     */
+    fun wbiSign(cookie: String): Result<String> = runCatching {
+        wbiInfo(cookie).fold(
+            onSuccess = { response ->
+                response.data?.wbiImg?.let { wbiImg ->
+                    WbiUtil.wbiSign(wbiImg)
+                } ?: throw AppRuntimeException("获取 WBI 签名失败")
+            },
+            onFailure = { throw it }
+        )
+    }
+
+    /**
+     * 获取 WBI 信息
+     */
+    fun wbiInfo(cookie: String): Result<UserInfoResponse> {
         val request = Request.Builder()
             .url(BiliApiUrls.WBI_INIT_URL)
             .addHeader("User-Agent", ScraperConst.USER_AGENT)
-            .addHeader("Cookie", "SESSDATA=your_sessdata")
+            .addHeader("Cookie", cookie)
             .build()
-        return execute(request, ScraperBaseResp::class.java)
+        return execute(request, UserInfoResponse::class.java)
     }
 
-    fun <T : ScraperBaseResp> execute(request: Request, clazz: Class<T>): Result<T> =
+    private fun <T : ScraperBaseResp> execute(request: Request, clazz: Class<T>): Result<T> =
         runCatching {
             client.newCall(request).execute().use { response ->
                 logger.debug { "${request.url} 响应结果： $response" }

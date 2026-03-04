@@ -8,6 +8,7 @@ package llh.fanclubvup.bilisdk
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilisdk.http.BiliLiveApiClient
 import llh.fanclubvup.bilisdk.props.BiliLiveApiProp
+import llh.fanclubvup.bilisdk.scraper.BiliScraperClient
 import llh.fanclubvup.common.consts.PropsKeys
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
@@ -33,4 +34,10 @@ class BiliSdkAutoConfig {
         return BiliLiveApiClient(prop)
     }
 
+
+    @Bean
+    fun biliScraperClient(): BiliScraperClient {
+        logger.info { "BiliScraperClient init" }
+        return BiliScraperClient()
+    }
 }
