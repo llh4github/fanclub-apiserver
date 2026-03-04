@@ -6,6 +6,7 @@
 package llh.fanclubvup.bilisdk
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import llh.fanclubvup.bilisdk.cache.BiliSignCacheManager
 import llh.fanclubvup.bilisdk.http.BiliLiveApiClient
 import llh.fanclubvup.bilisdk.props.BiliLiveApiProp
 import llh.fanclubvup.bilisdk.scraper.BiliScraperClient
@@ -17,6 +18,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
+import org.springframework.data.redis.core.StringRedisTemplate
 
 @EnableConfigurationProperties(BiliLiveApiProp::class)
 class BiliSdkAutoConfig {
@@ -36,8 +38,8 @@ class BiliSdkAutoConfig {
 
 
     @Bean
-    fun biliScraperClient(): BiliScraperClient {
+    fun biliScraperClient(redisTemplate: StringRedisTemplate): BiliScraperClient {
         logger.info { "BiliScraperClient init" }
-        return BiliScraperClient()
+        return BiliScraperClient(BiliSignCacheManager(redisTemplate))
     }
 }

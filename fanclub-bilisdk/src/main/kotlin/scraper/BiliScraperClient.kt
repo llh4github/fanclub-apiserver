@@ -1,7 +1,9 @@
 package llh.fanclubvup.bilisdk.scraper
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import llh.fanclubvup.bilisdk.cache.BiliSignCacheManager
 import llh.fanclubvup.bilisdk.consts.BiliApiUrls
+import llh.fanclubvup.bilisdk.consts.BiliSdkCacheKey
 import llh.fanclubvup.bilisdk.consts.ScraperConst
 import llh.fanclubvup.bilisdk.dto.ScraperBaseResp
 import llh.fanclubvup.bilisdk.dto.UserInfoResponse
@@ -14,7 +16,9 @@ import org.springframework.cache.get
 import org.springframework.cache.set
 import tools.jackson.module.kotlin.jacksonObjectMapper
 
-class BiliScraperClient {
+class BiliScraperClient(
+    private val cacheManager: BiliSignCacheManager
+) {
 
     private val client = OkHttpClient()
     private val mapper = jacksonObjectMapper()
@@ -23,15 +27,17 @@ class BiliScraperClient {
     /**
      * 获取 WBI 签名
      */
-    fun wbiSign(cookie: String): Result<String> = runCatching {
-        wbiInfo(cookie).fold(
-            onSuccess = { response ->
-                response.data?.wbiImg?.let { wbiImg ->
-                    WbiUtil.wbiSign(wbiImg)
-                } ?: throw AppRuntimeException("获取 WBI 签名失败")
-            },
-            onFailure = { throw it }
-        )
+    fun wbiSign(cookie: String): String? {
+        return cacheManager.get(BiliSdkCacheKey.WBI_SIGN) {
+            wbiInfo(cookie).fold(
+                onSuccess = { response ->
+                    response.data?.wbiImg?.let { wbiImg ->
+                        WbiUtil.wbiSign(wbiImg)
+                    }
+                },
+                onFailure = { null }
+            )
+        }
     }
 
     /**

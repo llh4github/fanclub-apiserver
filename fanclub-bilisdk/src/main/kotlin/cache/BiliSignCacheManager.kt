@@ -1,14 +1,10 @@
-package llh.fanclubvup.apiserver.components.cache
+package llh.fanclubvup.bilisdk.cache
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import org.springframework.data.redis.core.StringRedisTemplate
-import org.springframework.stereotype.Component
 import java.time.Duration
 
-@Component
-class BiliSignCacheManager(
-    private val redisTemplate: StringRedisTemplate,
-) {
+class BiliSignCacheManager(private val redisTemplate: StringRedisTemplate) {
     private val localCache by lazy {
         Caffeine.newBuilder()
             .maximumSize(1000)
@@ -16,8 +12,9 @@ class BiliSignCacheManager(
             .expireAfterAccess(Duration.ofMinutes(1))
             .build<String, String>()
     }
+    private val defaultExpire = Duration.ofHours(10)
 
-    fun get(key: String): String? {
+    fun get(key: String, expire: Duration = defaultExpire, compute: () -> String?): String? {
         val tmp = localCache.getIfPresent(key)
         if (tmp != null) {
             return tmp
@@ -27,10 +24,13 @@ class BiliSignCacheManager(
             localCache.put(key, it)
             return it
         }
-        return null
+        return compute()?.apply {
+            set(key, this, expire)
+        }
+
     }
 
-    fun set(key: String, value: String, expire: Duration) {
+    fun set(key: String, value: String, expire: Duration = defaultExpire) {
         redisTemplate.opsForValue().set(key, value, expire)
         localCache.put(key, value)
     }
