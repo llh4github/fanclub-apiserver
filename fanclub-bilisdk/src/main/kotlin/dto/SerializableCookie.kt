@@ -12,29 +12,29 @@ import okhttp3.Cookie
 data class SerializableCookie(
     @JsonProperty("name")
     val name: String,
-    
+
     @JsonProperty("value")
     val value: String,
-    
+
     @JsonProperty("domain")
     val domain: String,
-    
+
     @JsonProperty("path")
     val path: String = "/",
-    
+
     @JsonProperty("expiresAt")
     val expiresAt: Long? = null,
-    
+
     @JsonProperty("secure")
     val secure: Boolean = false,
-    
+
     @JsonProperty("httpOnly")
-    val httpOnly: Boolean = false,
-    
+    val httpOnly: Boolean = true,
+
     @JsonProperty("hostOnly")
-    val hostOnly: Boolean = false
+    val hostOnly: Boolean = true
 ) {
-    
+
     /**
      * 转换为 OkHttp Cookie 对象
      */
@@ -57,7 +57,7 @@ data class SerializableCookie(
             }
             .build()
     }
-    
+
     companion object {
         /**
          * 从 OkHttp Cookie 对象创建 SerializableCookie
