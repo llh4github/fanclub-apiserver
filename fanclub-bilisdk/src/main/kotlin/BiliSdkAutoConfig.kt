@@ -39,14 +39,14 @@ class BiliSdkAutoConfig {
 
 
     @Bean
-    fun biliScraperClient(redisTemplate: StringRedisTemplate): BiliScraperClient {
-        logger.info { "BiliScraperClient init" }
-        return BiliScraperClient(BiliSignCacheManager(redisTemplate))
-    }
-
-    @Bean
     fun persistentCookieJarManager(redisTemplate: StringRedisTemplate): PersistentCookieJarManager {
         logger.info { "PersistentCookieJarManager init" }
         return PersistentCookieJarManager(redisTemplate)
+    }
+
+    @Bean
+    fun biliScraperClient(redisTemplate: StringRedisTemplate, manager: PersistentCookieJarManager): BiliScraperClient {
+        logger.info { "BiliScraperClient init" }
+        return BiliScraperClient(BiliSignCacheManager(redisTemplate), manager)
     }
 }

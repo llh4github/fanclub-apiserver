@@ -8,6 +8,7 @@ import llh.fanclubvup.bilisdk.consts.BiliSdkCacheKey
 import llh.fanclubvup.bilisdk.consts.ScraperConst
 import llh.fanclubvup.bilisdk.dto.ScraperBaseResp
 import llh.fanclubvup.bilisdk.dto.UserInfoResponse
+import llh.fanclubvup.bilisdk.dto.DanmuInfoResponse
 import llh.fanclubvup.bilisdk.utils.WbiUtil
 import llh.fanclubvup.common.excptions.AppRuntimeException
 import llh.fanclubvup.common.utils.Md5Utils
@@ -19,12 +20,13 @@ import java.time.Instant
 import java.util.*
 
 class BiliScraperClient(
-    private val cacheManager: BiliSignCacheManager
+    private val cacheManager: BiliSignCacheManager,
+    private val persistentCookieJarManager: PersistentCookieJarManager
 ) {
 
     private val client by lazy {
         OkHttpClient.Builder()
-//            .cookieJar(PersistentCookieJarManager)
+            .cookieJar(persistentCookieJarManager)
             .build()
     }
     private val mapper = jacksonObjectMapper()
@@ -33,13 +35,13 @@ class BiliScraperClient(
     /**
      * 获取 WBI 签名
      */
-    fun wbiSign(cookie: String): String? {
+    fun wbiSign(): String? {
 
         val request = Request.Builder()
         request.url(BiliApiUrls.WBI_INIT_URL)
 
         return cacheManager.get(BiliSdkCacheKey.WBI_SIGN) {
-            wbiInfo(cookie).fold(
+            wbiInfo().fold(
                 onSuccess = { response ->
                     response.data?.wbiImg?.let { wbiImg ->
                         WbiUtil.wbiSign(wbiImg)
@@ -50,28 +52,29 @@ class BiliScraperClient(
         }
     }
 
-    fun fetchDanmuInfo() {
-        val cookie = ""
+    /**
+     * 获取弹幕服务器信息
+     */
+    fun fetchDanmuServerInfo(roomId: Long): DanmuInfoResponse? {
         val params = TreeMap<String, String>().apply {
-            put("id", "6")
+            put("id", roomId.toString())
             put("type", "0")
         }
-        val queryString = buildQueryString(cookie, params) ?: return
-        val request = Request.Builder()
-            .url(BiliApiUrls.DANMAKU_SERVER_CONF_URL + "?" + queryString)
-            .addHeader("User-Agent", ScraperConst.USER_AGENT)
-            .addHeader("SESSDATA", cookie)
+        val queryString = buildQueryString(params) ?: return null
+        val request = requestBuilder(BiliApiUrls.DANMAKU_SERVER_CONF_URL + "?" + queryString)
             .build()
 
-        client
-            .newCall(request)
-            .execute().use { response ->
-                logger.debug { "${request.url} 响应结果： $response" }
-            }
+        return execute(request, DanmuInfoResponse::class.java).getOrNull()
     }
 
-    private fun buildQueryString(cookie: String, map: TreeMap<String, String>): String? {
-        val sign = wbiSign(cookie) ?: return null
+    private fun requestBuilder(url: String) = Request.Builder()
+        .url(url)
+        .addHeader("User-Agent", ScraperConst.USER_AGENT)
+        .addHeader("Accept", "application/json")
+
+
+    private fun buildQueryString(map: TreeMap<String, String>): String? {
+        val sign = wbiSign() ?: return null
         map["wts"] = Instant.now().epochSecond.toString()
         val uri = map.entries
             .joinToString("&") { (k, v) ->
@@ -84,26 +87,24 @@ class BiliScraperClient(
     /**
      * 获取 WBI 信息
      */
-    fun wbiInfo(cookie: String): Result<UserInfoResponse> {
+    fun wbiInfo(): Result<UserInfoResponse> {
         val request = Request.Builder()
             .url(BiliApiUrls.WBI_INIT_URL)
-            .addHeader("User-Agent", ScraperConst.USER_AGENT)
-            .addHeader("SESSDATA", cookie)
             .build()
         return execute(request, UserInfoResponse::class.java)
     }
 
     private fun <T : ScraperBaseResp> execute(request: Request, clazz: Class<T>): Result<T> =
         runCatching {
-            client.newCall(request).execute().use { response ->
-                logger.debug { "${request.url} 响应结果： $response" }
-                if (!response.isSuccessful) {
-                    logger.error { "${request.url} 响应结果： $response" }
-                    throw AppRuntimeException("${request.url}请求失败")
-                }
+            client.newCall(request)
+                .execute().use { response ->
+                    if (!response.isSuccessful) {
+                        logger.error { "${request.url} 响应结果： $response" }
+                        throw AppRuntimeException("${request.url}请求失败")
+                    }
 
-                val rs = mapper.readValue(response.body.string(), clazz)
-                return@runCatching rs
-            }
+                    val rs = mapper.readValue(response.body.string(), clazz)
+                    return@runCatching rs
+                }
         }
 }
