@@ -100,6 +100,26 @@ abstract class BaseDatabaseServiceImpl<E : BaseEntity>(
         }.fetchCustomPage(pageQueryRequest)
     }
 
+    override fun listQuery(
+        querySpec: KSpecification<E>?,
+        sortField: String,
+        limit: Int?
+    ): List<E> {
+        val condition = createQuery {
+            orderBy(table.makeOrders(sortField))
+            querySpec?.let {
+                where(querySpec)
+            }
+            select(table)
+        }
+
+        return if (limit == null) {
+            condition.execute()
+        } else {
+            condition.limit(limit).execute()
+        }
+    }
+
     override fun <S : View<E>> listQuery(
         staticType: KClass<S>,
         querySpec: KSpecification<E>?,

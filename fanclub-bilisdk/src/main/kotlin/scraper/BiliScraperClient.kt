@@ -2,7 +2,7 @@ package llh.fanclubvup.bilisdk.scraper
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilisdk.cache.BiliSignCacheManager
-import llh.fanclubvup.bilisdk.cache.PersistentCookieJar
+import llh.fanclubvup.bilisdk.cache.PersistentCookieJarManager
 import llh.fanclubvup.bilisdk.consts.BiliApiUrls
 import llh.fanclubvup.bilisdk.consts.BiliSdkCacheKey
 import llh.fanclubvup.bilisdk.consts.ScraperConst
@@ -24,7 +24,7 @@ class BiliScraperClient(
 
     private val client by lazy {
         OkHttpClient.Builder()
-            .cookieJar(PersistentCookieJar)
+//            .cookieJar(PersistentCookieJarManager)
             .build()
     }
     private val mapper = jacksonObjectMapper()

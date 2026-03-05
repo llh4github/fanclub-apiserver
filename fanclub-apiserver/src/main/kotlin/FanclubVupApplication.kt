@@ -12,7 +12,9 @@ import org.springframework.aot.hint.RuntimeHintsRegistrar
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.ImportRuntimeHints
+import org.springframework.scheduling.annotation.EnableScheduling
 
+@EnableScheduling
 @SpringBootApplication
 @ImportRuntimeHints(ReflectionHintsRegistrar::class)
 class FanclubVupApplication

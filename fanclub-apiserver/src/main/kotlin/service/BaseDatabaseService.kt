@@ -4,6 +4,7 @@
  */
 
 package llh.fanclubvup.apiserver.service
+
 import llh.fanclubvup.apiserver.dto.PageQueryRequest
 import llh.fanclubvup.apiserver.dto.PageResponse
 import llh.fanclubvup.apiserver.entity.BaseEntity
@@ -12,7 +13,7 @@ import org.babyfish.jimmer.View
 import org.babyfish.jimmer.sql.kt.ast.query.specification.KSpecification
 import kotlin.reflect.KClass
 
-interface BaseDatabaseService<E : BaseEntity>  {
+interface BaseDatabaseService<E : BaseEntity> {
     fun getById(id: Long): E?
 
     fun getByIds(ids: List<Long>): List<E>
@@ -47,6 +48,12 @@ interface BaseDatabaseService<E : BaseEntity>  {
         pageQueryRequest: PageQueryRequest,
         sortField: String = "updatedTime desc",
     ): PageResponse<S>
+
+    fun listQuery(
+        querySpec: KSpecification<E>? = null,
+        sortField: String = "updatedTime desc",
+        limit: Int? = null,
+    ): List<E>
 
     /**
      * 通用列表查询

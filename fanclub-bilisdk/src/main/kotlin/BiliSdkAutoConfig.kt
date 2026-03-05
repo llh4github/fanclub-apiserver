@@ -7,6 +7,7 @@ package llh.fanclubvup.bilisdk
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilisdk.cache.BiliSignCacheManager
+import llh.fanclubvup.bilisdk.cache.PersistentCookieJarManager
 import llh.fanclubvup.bilisdk.http.BiliLiveApiClient
 import llh.fanclubvup.bilisdk.props.BiliLiveApiProp
 import llh.fanclubvup.bilisdk.scraper.BiliScraperClient
@@ -41,5 +42,11 @@ class BiliSdkAutoConfig {
     fun biliScraperClient(redisTemplate: StringRedisTemplate): BiliScraperClient {
         logger.info { "BiliScraperClient init" }
         return BiliScraperClient(BiliSignCacheManager(redisTemplate))
+    }
+
+    @Bean
+    fun persistentCookieJarManager(redisTemplate: StringRedisTemplate): PersistentCookieJarManager {
+        logger.info { "PersistentCookieJarManager init" }
+        return PersistentCookieJarManager(redisTemplate)
     }
 }
