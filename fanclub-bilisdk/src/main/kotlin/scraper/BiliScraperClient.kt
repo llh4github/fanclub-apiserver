@@ -61,6 +61,28 @@ class BiliScraperClient(
     }
 
     /**
+     * 获取舰长列表
+     */
+    fun fetchGuardList() {
+        val url = BiliApiUrls.GUARD_LIST_API
+        val queryString = buildQueryString(TreeMap<String, String>().apply {
+            this["ruid"] = "29080"
+            this["roomid"] = "12576972"
+            this["page"] = "1"
+            this["page_size"] = "30"
+            this["typ"] = "5"
+        })
+        val request = requestBuilder("$url?$queryString").build()
+        client.newCall(request)
+            .execute().use { response ->
+                logger.error { "${request.url} 响应结果： ${response.body.string()}" }
+                if (!response.isSuccessful) {
+                    throw AppRuntimeException("${request.url}请求失败")
+                }
+            }
+    }
+
+    /**
      * 获取直播间信息
      */
     fun fetchRoomInfo(roomId: Long): LiveRoomInfoResponse? {
@@ -116,7 +138,7 @@ class BiliScraperClient(
             client.newCall(request)
                 .execute().use { response ->
                     if (!response.isSuccessful) {
-                        logger.error { "${request.url} 响应结果： $response" }
+                        logger.error { "${request.url} 响应结果： ${response.body.string()}" }
                         throw AppRuntimeException("${request.url}请求失败")
                     }
 
