@@ -53,6 +53,6 @@ data class DanmuInfoData(
      * 弹幕服务器列表
      */
     @JsonProperty("host_list")
-    val hostList: List<HostServer>? = emptyList()
+    val hostList: List<HostServer> = emptyList()
 )
 
