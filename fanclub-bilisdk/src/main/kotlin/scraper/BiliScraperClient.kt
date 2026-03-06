@@ -14,6 +14,7 @@ import llh.fanclubvup.bilisdk.consts.ScraperConst
 import llh.fanclubvup.bilisdk.dto.ScraperBaseResp
 import llh.fanclubvup.bilisdk.dto.UserInfoResponse
 import llh.fanclubvup.bilisdk.dto.DanmuInfoResponse
+import llh.fanclubvup.bilisdk.dto.LiveRoomInfoResponse
 import llh.fanclubvup.bilisdk.utils.WbiUtil
 import llh.fanclubvup.common.excptions.AppRuntimeException
 import llh.fanclubvup.common.utils.Md5Utils
@@ -21,6 +22,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.net.URLEncoder
+import java.time.Duration
 import java.time.Instant
 import java.util.*
 
@@ -32,6 +34,7 @@ class BiliScraperClient(
     private val client by lazy {
         OkHttpClient.Builder()
             .cookieJar(persistentCookieJarManager)
+            .callTimeout(Duration.ofSeconds(3))
             .build()
     }
     private val mapper = jacksonObjectMapper()
@@ -55,6 +58,15 @@ class BiliScraperClient(
                 onFailure = { null }
             )
         }
+    }
+
+    /**
+     * 获取直播间信息
+     */
+    fun fetchRoomInfo(roomId: Long): LiveRoomInfoResponse? {
+        val url = BiliApiUrls.ROOM_INIT_URL + "?room_id=$roomId"
+        val request = requestBuilder(url).build()
+        return execute(request, LiveRoomInfoResponse::class.java).getOrNull()
     }
 
     /**
