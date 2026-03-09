@@ -23,6 +23,8 @@ import llh.fanclubvup.common.excptions.AppRuntimeException
 import llh.fanclubvup.common.utils.Md5Utils
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.net.URLEncoder
 import java.time.Duration
@@ -135,6 +137,27 @@ class BiliScraperClient(
             .build()
 
         return execute(request, DanmuInfoResponse::class.java).getOrNull()
+    }
+
+    /**
+     * 创建弹幕 WebSocket
+     *
+     * WIP
+     */
+    fun creatDanumuWebsocket(roomId: Long, handler: WebSocketListener): WebSocket? {
+        val info = fetchDanmuServerInfo(roomId)?.data ?: return null
+        val token = info.token ?: return null
+        val servers = info.hostList
+        val host = servers.firstOrNull()?.host ?: return null
+        val port = servers.firstOrNull()?.wssPort ?: return null
+        val url = "wss://$host:$port/sub"
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("User-Agent", ScraperConst.USER_AGENT)
+            .build()
+        return client.newWebSocket(request, handler)
+
     }
 
     private fun requestBuilder(url: String) = Request.Builder()

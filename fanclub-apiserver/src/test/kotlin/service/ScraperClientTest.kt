@@ -29,4 +29,9 @@ class ScraperClientTest {
     fun test_fetch_user_relation() {
         println(scraperClient.fetchUserRelation(uId))
     }
+
+    @Test
+    fun test(){
+        println(scraperClient.fetchDanmuServerInfo(roomId))
+    }
 }

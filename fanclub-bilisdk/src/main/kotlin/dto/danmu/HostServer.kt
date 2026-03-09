@@ -17,7 +17,7 @@ data class HostServer(
      * 服务器主机地址
      */
     @JsonProperty("host")
-    val host: String? = null,
+    val host: String = "",
 
     /**
      * TCP 端口
