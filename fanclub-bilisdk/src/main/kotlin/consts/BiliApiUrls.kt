@@ -34,8 +34,19 @@ object BiliApiUrls {
      * 弹幕服务器配置接口
      */
     const val DANMAKU_SERVER_CONF_URL = "https://api.live.bilibili.com/xlive/web-room/v1/index/getDanmuInfo"
+
     /**
      * 获取舰长列表接口
      */
     const val GUARD_LIST_API = "https://api.live.bilibili.com/xlive/app-room/v2/guardTab/topListNew"
+
+    /**
+     * 获取用户信息接口
+     */
+    const val USER_INFO_API = "https://api.bilibili.com/x/space/wbi/acc/info"
+
+    /**
+     * 获取用户关系信息（关注数，粉丝数，悄悄关注，黑名单数）
+     */
+    const val USER_RELATION_STAT_API = "https://api.bilibili.com/x/relation/stat"
 }

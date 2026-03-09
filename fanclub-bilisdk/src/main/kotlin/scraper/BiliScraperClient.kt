@@ -12,9 +12,12 @@ import llh.fanclubvup.bilisdk.consts.BiliApiUrls
 import llh.fanclubvup.bilisdk.consts.BiliSdkCacheKey
 import llh.fanclubvup.bilisdk.consts.ScraperConst
 import llh.fanclubvup.bilisdk.dto.ScraperBaseResp
-import llh.fanclubvup.bilisdk.dto.UserInfoResponse
+import llh.fanclubvup.bilisdk.dto.WbiUserInfoResponse
 import llh.fanclubvup.bilisdk.dto.DanmuInfoResponse
+import llh.fanclubvup.bilisdk.dto.GuardPageResponse
 import llh.fanclubvup.bilisdk.dto.LiveRoomInfoResponse
+import llh.fanclubvup.bilisdk.dto.UserInfoResponse
+import llh.fanclubvup.bilisdk.dto.UserRelationResponse
 import llh.fanclubvup.bilisdk.utils.WbiUtil
 import llh.fanclubvup.common.excptions.AppRuntimeException
 import llh.fanclubvup.common.utils.Md5Utils
@@ -60,26 +63,54 @@ class BiliScraperClient(
         }
     }
 
+    fun fetchUserRelation(uId: Long): UserRelationResponse? {
+        val url = BiliApiUrls.USER_RELATION_STAT_API
+        val queryString = buildQueryString(TreeMap<String, String>().apply {
+            this["vmid"] = uId.toString()
+        })
+
+        val request = requestBuilder("$url?$queryString").build()
+        return execute(request, UserRelationResponse::class.java).getOrNull()
+    }
+
+    /**
+     * 获取用户信息
+     *
+     * @param uId B站用户UID
+     */
+    fun fetchUserInfo(uId: Long): UserInfoResponse? {
+        val url = BiliApiUrls.USER_INFO_API
+        val queryString = buildQueryString(TreeMap<String, String>().apply {
+            this["mid"] = uId.toString()
+        })
+
+        val request = requestBuilder("$url?$queryString").build()
+        return execute(request, UserInfoResponse::class.java).getOrNull()
+    }
+
     /**
      * 获取舰长列表
+     *
+     * @param uId B站用户UID
+     * @param roomId B站直播间ID
+     * @param page 页码
      */
-    fun fetchGuardList() {
+    fun fetchGuardList(
+        uId: Long,
+        roomId: Long,
+        page: Int = 1,
+        pageSize: Int = 30
+    ): GuardPageResponse? {
         val url = BiliApiUrls.GUARD_LIST_API
         val queryString = buildQueryString(TreeMap<String, String>().apply {
-            this["ruid"] = "29080"
-            this["roomid"] = "12576972"
-            this["page"] = "1"
-            this["page_size"] = "30"
+            this["ruid"] = uId.toString()
+            this["roomid"] = roomId.toString()
+            this["page"] = page.toString()
+            this["page_size"] = pageSize.toString()
             this["typ"] = "5"
         })
         val request = requestBuilder("$url?$queryString").build()
-        client.newCall(request)
-            .execute().use { response ->
-                logger.error { "${request.url} 响应结果： ${response.body.string()}" }
-                if (!response.isSuccessful) {
-                    throw AppRuntimeException("${request.url}请求失败")
-                }
-            }
+        return execute(request, GuardPageResponse::class.java).getOrNull()
     }
 
     /**
@@ -126,11 +157,11 @@ class BiliScraperClient(
     /**
      * 获取 WBI 信息
      */
-    fun wbiInfo(): Result<UserInfoResponse> {
+    fun wbiInfo(): Result<WbiUserInfoResponse> {
         val request = Request.Builder()
             .url(BiliApiUrls.WBI_INIT_URL)
             .build()
-        return execute(request, UserInfoResponse::class.java)
+        return execute(request, WbiUserInfoResponse::class.java)
     }
 
     private fun <T : ScraperBaseResp> execute(request: Request, clazz: Class<T>): Result<T> =
@@ -138,7 +169,7 @@ class BiliScraperClient(
             client.newCall(request)
                 .execute().use { response ->
                     if (!response.isSuccessful) {
-                        logger.error { "${request.url} 响应结果： ${response.body.string()}" }
+                        logger.error { "${request.url} 响应结果：\n${response.body.string()}" }
                         throw AppRuntimeException("${request.url}请求失败")
                     }
 
