@@ -6,6 +6,7 @@ import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.OS
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
+import java.util.concurrent.TimeUnit
 import kotlin.test.Test
 
 /**
@@ -31,7 +32,13 @@ class ScraperClientTest {
     }
 
     @Test
-    fun test(){
+    fun test() {
         println(scraperClient.fetchDanmuServerInfo(roomId))
+    }
+
+    @Test
+    fun test_danmu() {
+        scraperClient.creatDanmuWebsocket(uId, roomId)
+        TimeUnit.SECONDS.sleep(3)
     }
 }

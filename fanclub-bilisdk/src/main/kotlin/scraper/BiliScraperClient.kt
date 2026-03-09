@@ -18,13 +18,16 @@ import llh.fanclubvup.bilisdk.dto.GuardPageResponse
 import llh.fanclubvup.bilisdk.dto.LiveRoomInfoResponse
 import llh.fanclubvup.bilisdk.dto.UserInfoResponse
 import llh.fanclubvup.bilisdk.dto.UserRelationResponse
+import llh.fanclubvup.bilisdk.enums.WsOperation
 import llh.fanclubvup.bilisdk.utils.WbiUtil
+import llh.fanclubvup.bilisdk.utils.WsMsgUtil
 import llh.fanclubvup.common.excptions.AppRuntimeException
 import llh.fanclubvup.common.utils.Md5Utils
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import okio.ByteString.Companion.toByteString
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.net.URLEncoder
 import java.time.Duration
@@ -139,25 +142,54 @@ class BiliScraperClient(
         return execute(request, DanmuInfoResponse::class.java).getOrNull()
     }
 
+
+    private fun buildAuthWs(token: String, uid: Long, roomId: Long): ByteArray {
+
+        val params = """
+           {
+           "uid": $uid,
+           "roomid": $roomId,
+            "protover": 3,
+            "platform": "web",
+            "type": 2,
+            "buvid":"",
+            "key":"$token"
+           } 
+        """.trimIndent()
+        return WsMsgUtil.makePacket(params, WsOperation.AUTH)
+    }
+
     /**
      * 创建弹幕 WebSocket
-     *
-     * WIP
      */
-    fun creatDanumuWebsocket(roomId: Long, handler: WebSocketListener): WebSocket? {
+    fun creatDanmuWebsocket(bid: Long, roomId: Long, handler: WebSocketListener = NoOpWebSocketListener()): WebSocket? {
         val info = fetchDanmuServerInfo(roomId)?.data ?: return null
         val token = info.token ?: return null
+        var retry = 0
         val servers = info.hostList
-        val host = servers.firstOrNull()?.host ?: return null
-        val port = servers.firstOrNull()?.wssPort ?: return null
-        val url = "wss://$host:$port/sub"
+        val packet = buildAuthWs(token, bid, roomId)
+        while (retry < 10) {
+            val info = servers[retry % servers.size]
+            val host = info.host.removePrefix("https://")
+            val url = "wss://$host:${info.wssPort}/sub"
+            logger.info { "url: $url" }
 
-        val request = Request.Builder()
-            .url(url)
-            .addHeader("User-Agent", ScraperConst.USER_AGENT)
-            .build()
-        return client.newWebSocket(request, handler)
-
+            val request = Request.Builder()
+                .url(url)
+                .addHeader("User-Agent", ScraperConst.USER_AGENT)
+                .build()
+            try {
+                val ws = client.newWebSocket(request, handler)
+                ws.send(packet.toByteString())
+                retry = 0
+                return ws
+            } catch (e: Exception) {
+                logger.warn(e) { "连接弹幕服务器失败，重试${retry}次" }
+            }
+            retry += 1
+        }
+        logger.error { "重试次数过多，放弃连接弹幕服务器" }
+        return null
     }
 
     private fun requestBuilder(url: String) = Request.Builder()
