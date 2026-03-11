@@ -25,7 +25,8 @@ object WsMsgUtil {
         val body: ByteArray = when (data) {
             is Map<*, *> -> {
                 // 将 Map 转换为 JSON 字符串并编码为 UTF-8 字节
-                objectMapper.writeValueAsString(data).toByteArray(Charsets.UTF_8)
+                val json = objectMapper.writeValueAsString(data)
+                json.toByteArray(Charsets.UTF_8)
             }
 
             is String -> {
@@ -64,36 +65,6 @@ object WsMsgUtil {
         return header + body
     }
 
-    /**
-     * 将 makePacket 方法的结果写入当前项目下的 txt 文件中
-     *
-     * @param data 包体数据
-     * @param operation 操作码
-     * @param fileName 文件名，默认为 "packet_result.txt"
-     * @return 是否写入成功
-     */
-    fun writePacketToFile(data: Any, operation: WsOperation, fileName: String = "packet_result.txt"): Boolean {
-        try {
-            // 生成数据包
-            val packet = makePacket(data, operation)
-            
-            // 构建文件路径：当前项目根目录
-            val projectRoot = "C:\\person-data\\jvm\\fanclub-vup\\logs"
-            val filePath = "$projectRoot\\$fileName"
-            
-            // 将字节数组转换为十六进制字符串写入文件
-            val hexString = packet.joinToString(" ") { String.format("%02X", it) }
-            
-            // 写入文件
-            java.io.File(filePath).writeText(hexString)
-            
-            println("数据包已成功写入文件: $filePath")
-            return true
-        } catch (e: Exception) {
-            println("写入文件失败: ${e.message}")
-            return false
-        }
-    }
 
 //    fun makePacket(body: ByteArray, op: WsOperation): ByteArray {
 //        val headerSize = 16 // HEADER_STRUCT.size
