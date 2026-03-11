@@ -11,9 +11,14 @@ description: 根据Jimmer实体类创建对应的service类，controller类，dt
 
 # dto文件创建规则
 
-1. dto类放在src/main/dto包内。
-2. 不要在dto包下直接创建文件，参考`entity.anchor.AnchorInfo`类，对应的dto文件为`dto/anchor/AnchorInfo.dto`
-3. 实体类对应的dto文件内只创建两个类(只需变更类名、注释即可)，例如：
+1. dto类放在src/main/dto目录内。
+2. dto文件名格式为：`dto/entity_package_name/entity_name.dto`,参考`entity.anchor.AnchorInfo`类，对应的dto文件为`dto/anchor/AnchorInfo.dto`
+3. dto文件使用文档： https://babyfish-ct.github.io/jimmer-doc/zh/docs/object/view/dto-language?_highlight=dto 。必须包含文件头格式为：
+   ```
+   export llh.fanclubvup.apiserver.entity.anchor.AnchorInfo
+    -> package llh.fanclubvup.apiserver.entity.anchor.dto
+   ```
+4. 实体类对应的dto文件内只创建两个类(只需变更类名、注释即可)，例如：
     ```
     @io.swagger.v3.oas.annotations.media.Schema(title = "数据分页查询请求体")
     specification AnchorInfoQuerySpec {
@@ -24,7 +29,7 @@ description: 根据Jimmer实体类创建对应的service类，controller类，dt
        #allScalars
    }
    ```
-4. dto文件中定义的类使用KSP编译生成。
+5. dto文件中定义的类使用KSP编译生成。
 
 # controller层类的创建规则
 
