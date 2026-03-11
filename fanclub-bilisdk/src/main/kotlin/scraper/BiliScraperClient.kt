@@ -147,22 +147,25 @@ class BiliScraperClient(
 
     private fun buildAuthWs(token: String, uid: Long, roomId: Long): ByteArray {
 
-        val params = mapOf(
+        //FIXME 传入的TOKEN不对
+        val text = mapOf(
             "uid" to uid,
             "roomid" to roomId,
             "protover" to 3,
+            "buvid" to "E424426C-C93F-1335-B8B3-E54CCBC2CDC791306infoc",
+            "support_ack" to true,
+            "scene" to "room",
             "platform" to "web",
             "type" to 2,
-            "buvid" to "07861673-BA62-3137-43CF-E1D94465FB4D08735infoc",
-            "support_ack" to true,
             "key" to token
         )
-        //FIXME 数据组装成二进制有问题？
-        return WsMsgUtil.makePacket(params, WsOperation.AUTH)
+        return WsMsgUtil.makePacket(text, WsOperation.AUTH)
     }
 
     /**
      * 创建弹幕 WebSocket
+     *
+     * @param bid: 当前登录的用户ID
      */
     fun creatDanmuWebsocket(bid: Long, roomId: Long, handler: WebSocketListener = NoOpWebSocketListener()): WebSocket? {
         val info = fetchDanmuServerInfo(roomId)?.data ?: return null
@@ -172,7 +175,7 @@ class BiliScraperClient(
         val packet = buildAuthWs(token, bid, roomId)
         while (retry < 10) {
             val info = servers[retry % servers.size]
-            val host = info.host.removePrefix("https://")
+            val host = info.host
             val url = "wss://$host:${info.wssPort}/sub"
             logger.info { "url: $url" }
 
@@ -183,8 +186,8 @@ class BiliScraperClient(
             try {
                 val a = packet.toByteString()
                 logger.info { "packet info \n${Base64.encode(a.toByteArray())}" }
-//                val ws = client.newWebSocket(request, handler)
-//                ws.send(packet.toByteString())
+                val ws = client.newWebSocket(request, handler)
+                ws.send(packet.toByteString())
                 retry = 0
                 return null
             } catch (e: Exception) {
