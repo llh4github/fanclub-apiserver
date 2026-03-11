@@ -29,6 +29,6 @@ class NoOpWebSocketListener : WebSocketListener() {
     }
 
     override fun onFailure(webSocket: okhttp3.WebSocket, t: Throwable, response: okhttp3.Response?) {
-        logger.error(t) { "WebSocket 发生错误 - ${response?.request?.url ?: "未知 URL"}" }
+        logger.error(t) { "WebSocket 发生错误 - ${response?.body?.string() ?: "未知"},msg: ${t.message} " }
     }
 }

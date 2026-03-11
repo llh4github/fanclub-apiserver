@@ -30,9 +30,11 @@ import okhttp3.WebSocketListener
 import okio.ByteString.Companion.toByteString
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.net.URLEncoder
+import java.nio.charset.Charset
 import java.time.Duration
 import java.time.Instant
 import java.util.*
+import kotlin.io.encoding.Base64
 
 class BiliScraperClient(
     private val cacheManager: BiliSignCacheManager,
@@ -145,17 +147,17 @@ class BiliScraperClient(
 
     private fun buildAuthWs(token: String, uid: Long, roomId: Long): ByteArray {
 
-        val params = """
-           {
-           "uid": $uid,
-           "roomid": $roomId,
-            "protover": 3,
-            "platform": "web",
-            "type": 2,
-            "buvid":"",
-            "key":"$token"
-           } 
-        """.trimIndent()
+        val params = mapOf(
+            "uid" to uid,
+            "roomid" to roomId,
+            "protover" to 3,
+            "platform" to "web",
+            "type" to 2,
+            "buvid" to "07861673-BA62-3137-43CF-E1D94465FB4D08735infoc",
+            "support_ack" to true,
+            "key" to token
+        )
+        //FIXME 数据组装成二进制有问题？
         return WsMsgUtil.makePacket(params, WsOperation.AUTH)
     }
 
@@ -179,10 +181,12 @@ class BiliScraperClient(
                 .addHeader("User-Agent", ScraperConst.USER_AGENT)
                 .build()
             try {
-                val ws = client.newWebSocket(request, handler)
-                ws.send(packet.toByteString())
+                val a = packet.toByteString()
+                logger.info { "packet info \n${Base64.encode(a.toByteArray())}" }
+//                val ws = client.newWebSocket(request, handler)
+//                ws.send(packet.toByteString())
                 retry = 0
-                return ws
+                return null
             } catch (e: Exception) {
                 logger.warn(e) { "连接弹幕服务器失败，重试${retry}次" }
             }
