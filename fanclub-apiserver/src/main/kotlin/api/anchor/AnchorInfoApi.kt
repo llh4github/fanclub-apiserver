@@ -1,9 +1,4 @@
-/*
- * Copyright (c) 2026 llh
- * Contact: lilinhong_coding@foxmail.com
- */
-
-package llh.fanclubvup.apiserver.api
+package llh.fanclubvup.apiserver.api.anchor
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -32,6 +27,8 @@ class AnchorInfoApi(
     @PostMapping("/page")
     @Operation(summary = "分页查询")
     fun pageQuery(@RequestBody queryParam: AnchorInfoQuerySpec) =
-        service.pageQuery(AnchorInfoPageView::class, queryParam, queryParam.pageParam)
+        JsonWrapper.ok(
+            service.pageQuery(AnchorInfoPageView::class, queryParam, queryParam.pageParam)
+        )
 
 }

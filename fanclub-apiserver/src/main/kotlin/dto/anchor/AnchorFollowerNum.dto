@@ -1,0 +1,13 @@
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
+package llh.fanclubvup.apiserver.dto.anchor
+
+import llh.fanclubvup.apiserver.dto.PageQueryRequest
+
+@io.swagger.v3.oas.annotations.media.Schema(title = "数据分页查询请求体")
+specification AnchorFollowerNumQuerySpec {
+    pageParam: PageQueryRequest
+}
