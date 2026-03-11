@@ -8,6 +8,7 @@ description: 根据Jimmer实体类创建对应的service类，controller类，dt
 1. 不要在service包下直接创建类。 参考`entity.anchor.AnchorInfo`类，对应的service类为`service.anchor.AnchorInfoService`
 2. 实现类放在其impl包内。
 3. service层的接口类继承BaseDatabaseService接口，实现类额外继承BaseDatabaseServiceImpl类。
+4. service实现注入 sqlClient: KSqlClient 对象。 
 
 # dto文件创建规则
 
