@@ -142,6 +142,7 @@ abstract class BaseDatabaseServiceImpl<E : BaseEntity>(
 
     override fun save(
         entity: E,
+        saveMode: SaveMode,
         existBySpec: KSpecification<E>?,
         duplicateTip: String,
     ): E? {
@@ -157,7 +158,7 @@ abstract class BaseDatabaseServiceImpl<E : BaseEntity>(
             }
 
             val rs = sqlClient.save(entity) {
-                setMode(SaveMode.INSERT_ONLY)
+                setMode(saveMode)
                 setAssociatedModeAll(AssociatedSaveMode.APPEND_IF_ABSENT)
             }
             checkAddDbResult(rs)

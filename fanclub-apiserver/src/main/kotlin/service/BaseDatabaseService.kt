@@ -10,6 +10,7 @@ import llh.fanclubvup.apiserver.dto.PageResponse
 import llh.fanclubvup.apiserver.entity.BaseEntity
 import org.babyfish.jimmer.Input
 import org.babyfish.jimmer.View
+import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.babyfish.jimmer.sql.kt.ast.query.specification.KSpecification
 import kotlin.reflect.KClass
 
@@ -75,12 +76,14 @@ interface BaseDatabaseService<E : BaseEntity> {
     /**
      * 保存数据
      * @param entity 要保存的数据
+     * @param saveMode 保存模式。默认为 INSERT_ONLY
      * @param existBySpec 存在性检查条件。如果存在则抛出异常。jimmer 的 QBE类
      * @param duplicateTip 存在性检查提示信息
      * @return 保存后的数据
      */
     fun save(
         entity: E,
+        saveMode: SaveMode = SaveMode.INSERT_ONLY,
         existBySpec: KSpecification<E>? = null,
         duplicateTip: String = "数据已存在",
     ): E?
@@ -88,14 +91,16 @@ interface BaseDatabaseService<E : BaseEntity> {
     /**
      * 保存数据
      * @param entity 要保存的数据
+     * @param saveMode 保存模式。默认为 INSERT_ONLY
      * @param existBySpec 存在性检查条件。如果存在则抛出异常。jimmer 的 QBE类
      * @return 保存后的数据
      */
     fun save(
         entity: Input<E>,
+        saveMode: SaveMode = SaveMode.INSERT_ONLY,
         existBySpec: KSpecification<E>? = null,
         duplicateTip: String = "数据已存在",
-    ): E? = save(entity.toEntity(), existBySpec, duplicateTip)
+    ): E? = save(entity.toEntity(), saveMode, existBySpec, duplicateTip)
 
     /**
      * 移除数据。真实删除或逻辑删除由具体配置决定。
