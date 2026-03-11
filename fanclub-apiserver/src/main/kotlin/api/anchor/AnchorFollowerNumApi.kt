@@ -2,6 +2,7 @@ package llh.fanclubvup.apiserver.api.anchor
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.annotation.security.PermitAll
 import llh.fanclubvup.apiserver.dto.JsonWrapper
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorFollowerDateNumQuerySpec
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorFollowerNumPageView
@@ -26,6 +27,7 @@ class AnchorFollowerNumApi(
             service.pageQuery(AnchorFollowerNumPageView::class, queryParam, queryParam.pageParam)
         )
 
+    @PermitAll
     @PostMapping("/query-num")
     @Operation(summary = "查询数量")
     fun queryNum(@RequestBody spec: AnchorFollowerDateNumQuerySpec) = JsonWrapper.ok(service.queryNum(spec))
