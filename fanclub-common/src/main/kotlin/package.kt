@@ -6,5 +6,7 @@
 // fanclub-common 模块包声明文件
 package llh.fanclubvup.common
 
-internal class FanclubCommon {
-}
+/**
+ * B站用户ID。通常称为UID
+ */
+public typealias BID = Long
