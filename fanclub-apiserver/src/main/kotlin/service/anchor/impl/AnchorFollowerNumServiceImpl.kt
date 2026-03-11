@@ -1,0 +1,13 @@
+package llh.fanclubvup.apiserver.service.anchor.impl
+
+import llh.fanclubvup.apiserver.entity.anchor.AnchorFollowerNum
+import llh.fanclubvup.apiserver.service.BaseDatabaseServiceImpl
+import llh.fanclubvup.apiserver.service.anchor.AnchorFollowerNumService
+import org.babyfish.jimmer.sql.kt.KSqlClient
+import org.springframework.stereotype.Service
+
+@Service
+class AnchorFollowerNumServiceImpl(
+    sqlClient: KSqlClient,
+) : AnchorFollowerNumService,
+    BaseDatabaseServiceImpl<AnchorFollowerNum>(AnchorFollowerNum::class, sqlClient)
