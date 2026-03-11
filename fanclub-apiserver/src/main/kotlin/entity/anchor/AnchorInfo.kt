@@ -7,6 +7,7 @@ package llh.fanclubvup.apiserver.entity.anchor
 
 import io.swagger.v3.oas.annotations.media.Schema
 import llh.fanclubvup.apiserver.entity.BaseEntity
+import llh.fanclubvup.apiserver.entity.sys.ScraperFeature
 import llh.fanclubvup.apiserver.entity.sys.User
 import org.babyfish.jimmer.sql.Column
 import org.babyfish.jimmer.sql.Entity
@@ -33,4 +34,7 @@ interface AnchorInfo : BaseEntity {
     @OneToOne
     @JoinColumn(name = "user_id")
     val user: User
+
+    @OneToOne
+    val feature: ScraperFeature
 }
