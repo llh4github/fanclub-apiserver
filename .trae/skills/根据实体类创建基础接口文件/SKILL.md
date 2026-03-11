@@ -8,7 +8,15 @@ description: 根据Jimmer实体类创建对应的service类，controller类，dt
 1. 不要在service包下直接创建类。 参考`entity.anchor.AnchorInfo`类，对应的service类为`service.anchor.AnchorInfoService`
 2. 实现类放在其impl包内。
 3. service层的接口类继承BaseDatabaseService接口，实现类额外继承BaseDatabaseServiceImpl类。
-4. service实现注入 sqlClient: KSqlClient 对象。 
+4. service实现类需要注入 sqlClient: KSqlClient 对象。 基本形式为：
+   ```kotlin
+   @Service
+   class AnchorFollowerNumServiceImpl(
+    sqlClient: KSqlClient,
+   ) : AnchorFollowerNumService,
+   BaseDatabaseServiceImpl<AnchorFollowerNum>(AnchorFollowerNum::class, sqlClient){
+   }
+   ```
 
 # dto文件创建规则
 
@@ -25,7 +33,7 @@ description: 根据Jimmer实体类创建对应的service类，controller类，dt
     specification AnchorInfoQuerySpec {
         pageParam: llh.fanclubvup.apiserver.dto.PageQueryRequest
     }
-   @io.swagger.v3.oas.annotations.media.Schema(title = "查询结果数据")
+   @io.swagger.v3.oas.annotations.media.Schema(title = "分页查询结果数据")
    AnchorInfoPageView {
        #allScalars
    }
