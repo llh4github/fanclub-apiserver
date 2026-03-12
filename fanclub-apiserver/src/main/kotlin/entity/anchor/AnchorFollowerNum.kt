@@ -2,6 +2,7 @@ package llh.fanclubvup.apiserver.entity.anchor
 
 import io.swagger.v3.oas.annotations.media.Schema
 import llh.fanclubvup.apiserver.entity.BaseEntity
+import llh.fanclubvup.common.BID
 import org.babyfish.jimmer.sql.Entity
 import org.babyfish.jimmer.sql.Key
 import org.babyfish.jimmer.sql.Table
@@ -16,10 +17,11 @@ interface AnchorFollowerNum : BaseEntity {
     val followerNum: Int
 
     @Key(group = "uid_cnt_date_uniq")
+    @get:Schema(title = "B站UID", description = "B站UID", example = "114514")
+    val biliId: BID
+
+    @Key(group = "uid_cnt_date_uniq")
     @get:Schema(title = "统计日期", description = "统计日期", example = "2023-01-01")
     val cntDate: LocalDate
 
-    @Key(group = "uid_cnt_date_uniq")
-    @get:Schema(title = "B站UID", description = "B站UID", example = "114514")
-    val biliId: Long
 }

@@ -10,3 +10,14 @@ specification ScraperFeatureQuerySpec {
 ScraperFeaturePageView {
     #allScalars
 }
+
+/**
+* 启用粉丝监控的主播信息
+*/
+ScraperFeatureFollowerEnabledView {
+    follower
+    anchorInfo {
+        id
+        biliId
+    }
+}

@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import llh.fanclubvup.apiserver.entity.BaseEntity
 import llh.fanclubvup.apiserver.entity.sys.ScraperFeature
 import llh.fanclubvup.apiserver.entity.sys.User
+import llh.fanclubvup.common.BID
 import org.babyfish.jimmer.sql.Column
 import org.babyfish.jimmer.sql.Entity
 import org.babyfish.jimmer.sql.JoinColumn
@@ -20,8 +21,7 @@ import org.babyfish.jimmer.sql.Table
 @Schema(title = "主播基础信息")
 interface AnchorInfo : BaseEntity {
     @get:Schema(title = "B站ID", description = "通常称为UID", example = "114514")
-    val biliId: Long
-
+    val biliId: BID
 
     @Column(name = "bili_name")
     @get:Schema(title = "B站昵称", description = "B站昵称", example = "Tom")
