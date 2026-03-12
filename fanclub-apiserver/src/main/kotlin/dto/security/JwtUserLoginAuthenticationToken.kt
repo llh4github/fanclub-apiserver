@@ -5,7 +5,7 @@
 
 package llh.fanclubvup.apiserver.dto.security
 
-import llh.fanclubvup.apiserver.enums.RoleEnums
+import llh.fanclubvup.apiserver.consts.enums.RoleEnums
 import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.web.authentication.WebAuthenticationDetails

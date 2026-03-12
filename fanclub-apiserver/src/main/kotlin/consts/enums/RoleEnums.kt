@@ -3,7 +3,7 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
-package llh.fanclubvup.apiserver.enums
+package llh.fanclubvup.apiserver.consts.enums
 
 import org.babyfish.jimmer.sql.EnumType
 

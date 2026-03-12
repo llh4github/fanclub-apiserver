@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotEmpty
 import llh.fanclubvup.apiserver.entity.BaseEntity
 import llh.fanclubvup.apiserver.entity.anchor.AnchorInfo
-import llh.fanclubvup.apiserver.enums.RoleEnums
+import llh.fanclubvup.apiserver.consts.enums.RoleEnums
 import llh.fanclubvup.apiserver.utils.CreateGroup
 import llh.fanclubvup.apiserver.utils.CreateUpdateGroup
 import org.babyfish.jimmer.sql.Entity
