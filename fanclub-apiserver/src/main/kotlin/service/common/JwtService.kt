@@ -14,7 +14,7 @@ import llh.fanclubvup.apiserver.components.properties.JwtProperty
 import llh.fanclubvup.apiserver.dto.JwtInfo
 import llh.fanclubvup.apiserver.dto.security.JwtUserLoginAuthenticationToken
 import llh.fanclubvup.apiserver.entity.sys.dto.UserAccount
-import llh.fanclubvup.apiserver.enums.JwtType
+import llh.fanclubvup.apiserver.consts.enums.JwtType
 import llh.fanclubvup.apiserver.utils.IdGenerator
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.security.web.authentication.WebAuthenticationDetails

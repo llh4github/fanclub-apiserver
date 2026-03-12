@@ -8,6 +8,7 @@ import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorFollowerDateNumQuerySpec
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorFollowerNumPageView
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorFollowerNumQuerySpec
 import llh.fanclubvup.apiserver.service.anchor.AnchorFollowerNumService
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -28,6 +29,7 @@ class AnchorFollowerNumApi(
             service.pageQuery(AnchorFollowerNumPageView::class, queryParam, queryParam.pageParam)
         )
 
+    @PermitAll
     @PostMapping("/query-num")
     @Operation(summary = "查询数量")
     fun queryNum(@RequestBody spec: AnchorFollowerDateNumQuerySpec) = JsonWrapper.ok(service.queryNum(spec))

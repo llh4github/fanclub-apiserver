@@ -1,6 +1,7 @@
 package llh.fanclubvup.apiserver.components.schedule
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import llh.fanclubvup.apiserver.consts.CacheKeyPrefix
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorFollowerNumInput
 import llh.fanclubvup.apiserver.service.anchor.AnchorFollowerNumService
 import llh.fanclubvup.apiserver.service.sys.ScraperFeatureService
@@ -8,6 +9,7 @@ import llh.fanclubvup.bilisdk.scraper.BiliScraperClient
 import llh.fanclubvup.common.BID
 import llh.fanclubvup.common.excptions.AppRuntimeException
 import org.babyfish.jimmer.sql.ast.mutation.SaveMode
+import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.time.LocalDate
@@ -18,6 +20,7 @@ class AnchorFollowerNumSchedule(
     private val scraperFeatureService: ScraperFeatureService,
     private val scraperClient: BiliScraperClient,
     private val service: AnchorFollowerNumService,
+    private val redisTemplate: StringRedisTemplate,
 ) {
 
     private val logger = KotlinLogging.logger {}
@@ -47,6 +50,12 @@ class AnchorFollowerNumSchedule(
         val data = result.data!!
         val input = AnchorFollowerNumInput(uId, data.follower, now)
         service.save(input, saveMode = SaveMode.UPSERT)
+
+        // 更新缓存
+        // see AnchorFollowerNumServiceImpl.queryNum
+        val key = CacheKeyPrefix.SERVICE_CACHE_KEY + ":AnchorFollowerNumService:queryNum:" +
+                input.biliId + ":" + now
+        redisTemplate.opsForValue().set(key, input.followerNum.toString())
         logger.info { "已更新主播 $uId 粉丝数：${data.follower}" }
     }
 }

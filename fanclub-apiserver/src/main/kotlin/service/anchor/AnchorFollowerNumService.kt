@@ -11,8 +11,4 @@ interface AnchorFollowerNumService : BaseDatabaseService<AnchorFollowerNum> {
      */
     fun queryNum(spec: AnchorFollowerDateNumQuerySpec): Int
 
-    /**
-     * 获取已启用的粉丝数查询的BID列表
-     */
-    fun fetchFollowerNumEnabled(): List<BID>
 }
