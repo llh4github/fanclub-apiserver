@@ -53,8 +53,16 @@ class BiliSdkAutoConfig {
         matchIfMissing = false
     )
     @ConditionalOnMissingBean(BiliScraperClient::class)
-    fun biliScraperClient(redisTemplate: StringRedisTemplate, manager: PersistentCookieJarManager): BiliScraperClient {
+    fun biliScraperClient(
+        redisTemplate: StringRedisTemplate,
+        manager: PersistentCookieJarManager,
+        prop: BiliScraperProp,
+    ): BiliScraperClient {
         logger.info { "BiliScraperClient init" }
-        return BiliScraperClient(BiliSignCacheManager(redisTemplate), manager)
+        return BiliScraperClient(
+            BiliSignCacheManager(redisTemplate),
+            manager,
+            prop
+        )
     }
 }

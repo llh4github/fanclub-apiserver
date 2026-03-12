@@ -19,6 +19,7 @@ import llh.fanclubvup.bilisdk.dto.LiveRoomInfoResponse
 import llh.fanclubvup.bilisdk.dto.UserInfoResponse
 import llh.fanclubvup.bilisdk.dto.UserRelationResponse
 import llh.fanclubvup.bilisdk.enums.WsOperation
+import llh.fanclubvup.bilisdk.props.BiliScraperProp
 import llh.fanclubvup.bilisdk.utils.WbiUtil
 import llh.fanclubvup.bilisdk.utils.WsMsgUtil
 import llh.fanclubvup.common.BID
@@ -39,7 +40,8 @@ import kotlin.io.encoding.Base64
 
 class BiliScraperClient(
     private val cacheManager: BiliSignCacheManager,
-    private val persistentCookieJarManager: PersistentCookieJarManager
+    private val persistentCookieJarManager: PersistentCookieJarManager,
+    private val prop: BiliScraperProp,
 ) {
 
     private val client by lazy {
