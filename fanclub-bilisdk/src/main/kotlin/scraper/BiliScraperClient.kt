@@ -21,6 +21,7 @@ import llh.fanclubvup.bilisdk.dto.UserRelationResponse
 import llh.fanclubvup.bilisdk.enums.WsOperation
 import llh.fanclubvup.bilisdk.utils.WbiUtil
 import llh.fanclubvup.bilisdk.utils.WsMsgUtil
+import llh.fanclubvup.common.BID
 import llh.fanclubvup.common.excptions.AppRuntimeException
 import llh.fanclubvup.common.utils.Md5Utils
 import okhttp3.OkHttpClient
@@ -70,7 +71,7 @@ class BiliScraperClient(
         }
     }
 
-    fun fetchUserRelation(uId: Long): UserRelationResponse? {
+    fun fetchUserRelation(uId: BID): UserRelationResponse? {
         val url = BiliApiUrls.USER_RELATION_STAT_API
         val queryString = buildQueryString(TreeMap<String, String>().apply {
             this["vmid"] = uId.toString()
@@ -85,7 +86,7 @@ class BiliScraperClient(
      *
      * @param uId B站用户UID
      */
-    fun fetchUserInfo(uId: Long): UserInfoResponse? {
+    fun fetchUserInfo(uId: BID): UserInfoResponse? {
         val url = BiliApiUrls.USER_INFO_API
         val queryString = buildQueryString(TreeMap<String, String>().apply {
             this["mid"] = uId.toString()
@@ -103,7 +104,7 @@ class BiliScraperClient(
      * @param page 页码
      */
     fun fetchGuardList(
-        uId: Long,
+        uId: BID,
         roomId: Long,
         page: Int = 1,
         pageSize: Int = 30
@@ -145,7 +146,7 @@ class BiliScraperClient(
     }
 
 
-    private fun buildAuthWs(token: String, uid: Long, roomId: Long): ByteArray {
+    private fun buildAuthWs(token: String, uid: BID, roomId: Long): ByteArray {
 
         //FIXME 传入的TOKEN不对
         val text = mapOf(
@@ -167,7 +168,7 @@ class BiliScraperClient(
      *
      * @param bid: 当前登录的用户ID
      */
-    fun creatDanmuWebsocket(bid: Long, roomId: Long, handler: WebSocketListener = NoOpWebSocketListener()): WebSocket? {
+    fun creatDanmuWebsocket(bid: BID, roomId: Long, handler: WebSocketListener = NoOpWebSocketListener()): WebSocket? {
         val info = fetchDanmuServerInfo(roomId)?.data ?: return null
         val token = info.token ?: return null
         var retry = 0
