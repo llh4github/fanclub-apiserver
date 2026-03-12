@@ -45,13 +45,14 @@ class PersistentCookieJarManager(private val redisTemplate: StringRedisTemplate)
         localCache.put(BiliSdkCacheKey.COOKIES, cookies)
     }
 
-    override fun loadForRequest(url: HttpUrl): List<Cookie> {
-        return localCache.get(BiliSdkCacheKey.COOKIES) { _ ->
-            val cookies = redisTemplate.opsForValue().get(BiliSdkCacheKey.COOKIES) ?: return@get emptyList()
-            val list = mapper.readValue(cookies, object : TypeReference<List<SerializableCookie>>() {})
-                .map { it.toCookie() }
-            localCache.put(BiliSdkCacheKey.COOKIES, list)
-            list
-        }
+    override fun loadForRequest(url: HttpUrl): List<Cookie> = fetchCookies()
+
+    fun fetchCookies() = localCache.get(BiliSdkCacheKey.COOKIES) { _ ->
+        val cookies = redisTemplate.opsForValue().get(BiliSdkCacheKey.COOKIES) ?: return@get emptyList()
+        val list = mapper.readValue(cookies, object : TypeReference<List<SerializableCookie>>() {})
+            .map { it.toCookie() }
+        localCache.put(BiliSdkCacheKey.COOKIES, list)
+        list
     }
+
 }

@@ -32,7 +32,6 @@ import okhttp3.WebSocketListener
 import okio.ByteString.Companion.toByteString
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.net.URLEncoder
-import java.nio.charset.Charset
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -61,7 +60,7 @@ class BiliScraperClient(
         val request = Request.Builder()
         request.url(BiliApiUrls.WBI_INIT_URL)
 
-        return cacheManager.get(BiliSdkCacheKey.WBI_SIGN) {
+        return cacheManager.getOrFetch(BiliSdkCacheKey.WBI_SIGN) {
             wbiInfo().fold(
                 onSuccess = { response ->
                     response.data?.wbiImg?.let { wbiImg ->
@@ -148,45 +147,35 @@ class BiliScraperClient(
     }
 
 
-    private fun buildAuthWs(token: String, uid: BID, roomId: Long): ByteArray {
-
-        //FIXME 传入的TOKEN不对
-        val text = mapOf(
-            "uid" to uid,
-            "roomid" to roomId,
-            "protover" to 3,
-            "buvid" to "E424426C-C93F-1335-B8B3-E54CCBC2CDC791306infoc",
-            "support_ack" to true,
-            "scene" to "room",
-            "platform" to "web",
-            "type" to 2,
-            "key" to token
-        )
-        return WsMsgUtil.makePacket(text, WsOperation.AUTH)
+    private fun buildAuthWs(token: String, roomId: Long): Result<ByteArray> = runCatching {
+        val buvid = persistentCookieJarManager.fetchCookies().firstOrNull { it.name == "buvid3" }
+            ?: throw AppRuntimeException("buvid3 cookie not found")
+        //FIXME 感觉不是稳定
+        val text = """
+             {"uid":${prop.currentBid},"roomid":$roomId,"protover":3,"buvid":"${buvid.value}","support_ack":true,"scene":"room","platform":"web","type":2,"key":"$token"}
+        """.trimIndent()
+        WsMsgUtil.makePacket(text, WsOperation.AUTH)
     }
 
     /**
      * 创建弹幕 WebSocket
-     *
-     * @param bid: 当前登录的用户ID
      */
-    fun creatDanmuWebsocket(bid: BID, roomId: Long, handler: WebSocketListener = NoOpWebSocketListener()): WebSocket? {
+    fun creatDanmuWebsocket(roomId: Long, handler: WebSocketListener = NoOpWebSocketListener()): WebSocket? {
         val info = fetchDanmuServerInfo(roomId)?.data ?: return null
         val token = info.token ?: return null
         var retry = 0
         val servers = info.hostList
-        val packet = buildAuthWs(token, bid, roomId)
+        val packet = buildAuthWs(token, roomId).getOrNull() ?: return null
         while (retry < 10) {
             val info = servers[retry % servers.size]
             val host = info.host
             val url = "wss://$host:${info.wssPort}/sub"
-            logger.info { "url: $url" }
-
             val request = Request.Builder()
                 .url(url)
                 .addHeader("User-Agent", ScraperConst.USER_AGENT)
                 .build()
             try {
+                // FIXME 重试逻辑
                 val a = packet.toByteString()
                 logger.info { "packet info \n${Base64.encode(a.toByteArray())}" }
                 val ws = client.newWebSocket(request, handler)

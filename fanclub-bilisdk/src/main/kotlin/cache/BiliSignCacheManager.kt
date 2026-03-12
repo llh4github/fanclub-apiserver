@@ -19,7 +19,7 @@ class BiliSignCacheManager(private val redisTemplate: StringRedisTemplate) {
     }
     private val defaultExpire = Duration.ofHours(10)
 
-    fun get(key: String, expire: Duration = defaultExpire, compute: () -> String?): String? {
+    fun getOrFetch(key: String, expire: Duration = defaultExpire, compute: () -> String?): String? {
         val tmp = localCache.getIfPresent(key)
         if (tmp != null) {
             return tmp
