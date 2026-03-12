@@ -31,9 +31,14 @@ class AnchorFollowerNumSchedule(
     @Scheduled(initialDelay = 5 * 60 * 1000, fixedRate = 4 * 60 * 60 * 1000)
     fun updateAnchorFollowerNum() {
         val now = LocalDate.now()
-        logger.info { "开始执行定时任务：更新主播粉丝数" }
+        val list = scraperFeatureService.queryFollowerEnabled()
+        if (list.isEmpty()) {
+            logger.warn { "需要更新主播粉丝数的主播列表为空" }
+            return
+        }
+        logger.info { "开始执行更新主播粉丝数定时任务: ${list.size} 位主播" }
         try {
-            scraperFeatureService.queryFollowerEnabled().forEach {
+            list.forEach {
                 findAndSaveFollowerNum(it.anchorInfo.biliId, now)
             }
         } catch (e: Throwable) {
