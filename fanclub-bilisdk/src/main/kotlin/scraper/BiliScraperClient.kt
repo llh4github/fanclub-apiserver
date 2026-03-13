@@ -28,14 +28,11 @@ import llh.fanclubvup.common.utils.Md5Utils
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
-import okhttp3.WebSocketListener
-import okio.ByteString.Companion.toByteString
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.net.URLEncoder
 import java.time.Duration
 import java.time.Instant
 import java.util.*
-import kotlin.io.encoding.Base64
 
 class BiliScraperClient(
     private val cacheManager: BiliSignCacheManager,
@@ -160,34 +157,12 @@ class BiliScraperClient(
     /**
      * 创建弹幕 WebSocket
      */
-    fun creatDanmuWebsocket(roomId: Long, handler: WebSocketListener = NoOpWebSocketListener()): WebSocket? {
+    fun creatDanmuWebsocket(roomId: Long, handler: BiliDanmuWebSocketHandler): WebSocket? {
         val info = fetchDanmuServerInfo(roomId)?.data ?: return null
         val token = info.token ?: return null
-        var retry = 0
         val servers = info.hostList
         val packet = buildAuthWs(token, roomId).getOrNull() ?: return null
-        while (retry < 10) {
-            val info = servers[retry % servers.size]
-            val host = info.host
-            val url = "wss://$host:${info.wssPort}/sub"
-            val request = Request.Builder()
-                .url(url)
-                .addHeader("User-Agent", ScraperConst.USER_AGENT)
-                .build()
-            try {
-                // FIXME 重试逻辑
-                val a = packet.toByteString()
-                logger.info { "packet info \n${Base64.encode(a.toByteArray())}" }
-                val ws = client.newWebSocket(request, handler)
-                ws.send(packet.toByteString())
-                retry = 0
-                return null
-            } catch (e: Exception) {
-                logger.warn(e) { "连接弹幕服务器失败，重试${retry}次" }
-            }
-            retry += 1
-        }
-        logger.error { "重试次数过多，放弃连接弹幕服务器" }
+        handler.connect()
         return null
     }
 
