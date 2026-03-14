@@ -1,0 +1,23 @@
+export llh.fanclubvup.apiserver.entity.sys.ScraperFeature
+    -> package llh.fanclubvup.apiserver.entity.sys.dto
+
+@io.swagger.v3.oas.annotations.media.Schema(title = "数据分页查询请求体")
+specification ScraperFeatureQuerySpec {
+    pageParam: llh.fanclubvup.apiserver.dto.PageQueryRequest
+}
+
+@io.swagger.v3.oas.annotations.media.Schema(title = "分页查询结果数据")
+ScraperFeaturePageView {
+    #allScalars
+}
+
+/**
+* 启用粉丝监控的主播信息
+*/
+ScraperFeatureFollowerEnabledView {
+    follower
+    anchorInfo {
+        id
+        biliId
+    }
+}

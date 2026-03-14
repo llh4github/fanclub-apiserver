@@ -10,6 +10,7 @@ import llh.fanclubvup.apiserver.components.properties.JwtProperty
 import llh.fanclubvup.apiserver.dto.JsonWrapper
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.invoke
@@ -21,6 +22,7 @@ import tools.jackson.module.kotlin.jacksonObjectMapper
 
 @EnableWebSecurity
 @Configuration(proxyBeanMethods = false)
+@EnableMethodSecurity(prePostEnabled = true)
 class SpringSecurityConfig(
     val jwtProperty: JwtProperty,
     val jwtAuthenticationFilter: JwtAuthenticationFilter,
@@ -44,6 +46,8 @@ class SpringSecurityConfig(
                 jwtProperty.annoUrls.forEach { uri ->
                     authorize(uri, permitAll)
                 }
+                // TODO 后面看看有没有其他方案
+                authorize("/anchor/follower/num/query-num", permitAll)
                 authorize(anyRequest, authenticated)
             }
             csrf { disable() }
@@ -51,13 +55,13 @@ class SpringSecurityConfig(
             httpBasic { disable() }
             addFilterBefore<UsernamePasswordAuthenticationFilter>(jwtAuthenticationFilter)
             exceptionHandling {
-                authenticationEntryPoint = { request, response, _ ->
-                    logger.debug { "用户未登录或认证凭证信息错误: ${request.requestURI}" }
+                authenticationEntryPoint = { request, response, e ->
+                    logger.debug(e) { "用户未登录或认证凭证信息错误: ${request.requestURI}" }
                     response.status = 200
                     response.writer.write(errResp("用户未登录或认证凭证信息错误", "401"))
                 }
-                accessDeniedHandler = { request, response, _ ->
-                    logger.debug { "用户无权访问: ${request.requestURI}" }
+                accessDeniedHandler = { request, response, e ->
+                    logger.debug(e) { "用户无权访问: ${request.requestURI}" }
                     response.status = 200
                     response.writer.write(errResp("用户无权访问", "403"))
                 }

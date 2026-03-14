@@ -1,0 +1,42 @@
+package llh.fanclubvup.apiserver.components
+
+import llh.fanclubvup.apiserver.consts.CacheKeyPrefix
+import org.springframework.cache.annotation.EnableCaching
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.data.redis.cache.RedisCacheConfiguration
+import org.springframework.data.redis.cache.RedisCacheManager
+import org.springframework.data.redis.connection.RedisConnectionFactory
+import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer
+import org.springframework.data.redis.serializer.RedisSerializationContext
+import org.springframework.data.redis.serializer.StringRedisSerializer
+import tools.jackson.module.kotlin.jacksonObjectMapper
+import java.time.Duration
+
+
+@EnableCaching
+@Configuration
+class RedisCacheConfig {
+
+    private val mapper = jacksonObjectMapper()
+
+    @Bean
+    fun cacheManager(factory: RedisConnectionFactory): RedisCacheManager {
+        // 默认配置
+        val config: RedisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
+            .entryTtl(Duration.ofHours(2)) // 默认缓存 2 小时
+            .serializeKeysWith(
+                RedisSerializationContext.SerializationPair
+                    .fromSerializer(StringRedisSerializer())
+            ) // key 序列化
+            .serializeValuesWith(
+                RedisSerializationContext.SerializationPair
+                    .fromSerializer(GenericJacksonJsonRedisSerializer(mapper))
+            ) // value 序列化
+            .disableCachingNullValues() // 不缓存 null 值
+            .computePrefixWith { cacheName -> CacheKeyPrefix.SERVICE_CACHE_KEY + cacheName + ":" }
+        return RedisCacheManager.builder(factory)
+            .cacheDefaults(config)
+            .build()
+    }
+}

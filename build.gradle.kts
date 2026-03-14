@@ -20,6 +20,14 @@ repositories {
 
 subprojects {
 
+    configurations {
+        all {
+            exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+            exclude(group = "ch.qos.logback", module = "logback-classic")
+            exclude(group = "org.apache.logging.log4j", module = "log4j-to-slf4j")
+        }
+    }
+
     repositories {
         // 阿里云Maven镜像（推荐）
         maven { url = uri("https://maven.aliyun.com/repository/public") }

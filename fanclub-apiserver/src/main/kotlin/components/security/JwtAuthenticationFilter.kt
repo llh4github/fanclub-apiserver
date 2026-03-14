@@ -11,6 +11,9 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import llh.fanclubvup.apiserver.components.properties.JwtProperty
 import llh.fanclubvup.apiserver.service.common.JwtService
+import org.springframework.http.HttpMethod
+import org.springframework.security.authentication.AnonymousAuthenticationToken
+import org.springframework.security.core.authority.AuthorityUtils
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
@@ -29,8 +32,14 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
+        // 允许 OPTIONS 请求（CORS 预检）
+        if (HttpMethod.OPTIONS.name() == request.method) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         val authHeader: String? = request.getHeader(jwtProperty.jwtHeaderKey)
-        if (authHeader == null || authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response)
             return
         }
@@ -48,6 +57,6 @@ class JwtAuthenticationFilter(
 
         SecurityContextHolder.getContext().authentication = token
         filterChain.doFilter(request, response)
-
     }
+
 }
