@@ -5,13 +5,24 @@
 
 package llh.fanclubvup.bilisdk.utils
 
+import io.github.oshai.kotlinlogging.KotlinLogging
+import llh.fanclubvup.bilisdk.enums.ProtoVer
 import llh.fanclubvup.bilisdk.enums.WsOperation
+import okhttp3.WebSocket
+import okio.Buffer
+import okio.ByteString
+import okio.ByteString.Companion.readByteString
+import okio.ByteString.Companion.toByteString
+import org.brotli.dec.BrotliInputStream
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.util.zip.Inflater
 
 object WsMsgUtil {
     private val objectMapper = jacksonObjectMapper()
+
+    private val logger = KotlinLogging.logger {}
 
     /**
      * 创建一个要发送给服务器的包
@@ -65,21 +76,96 @@ object WsMsgUtil {
         return header + body
     }
 
+    // 头部大小（固定为 16 字节）
+    private const val HEADER_SIZE = 16
 
-//    fun makePacket(body: ByteArray, op: WsOperation): ByteArray {
-//        val headerSize = 16 // HEADER_STRUCT.size
-//        val packLen = headerSize + body.size
-//        val ver = 1
-//        val seqId = 1
-//
-//        val buffer = ByteBuffer.allocate(packLen).order(ByteOrder.BIG_ENDIAN)
-//        buffer.putInt(packLen)
-//        buffer.putShort(headerSize.toShort())
-//        buffer.putShort(ver.toShort())
-//        buffer.putInt(op.value)
-//        buffer.putInt(seqId)
-//        buffer.put(body)
-//
-//        return buffer.array()
-//    }
+    /**
+     * 解析WebSocket数据包，返回泛型类型
+     *
+     * @param packet 完整的数据包字节数组
+     */
+    fun parsePacket(packet: ByteString, webSocket: WebSocket): Int {
+
+        // 检查数据包长度是否足够
+        if (packet.size < HEADER_SIZE) {
+            throw IllegalArgumentException("数据包长度不足，至少需要16字节的头部")
+        }
+
+        val packetBuffer = Buffer().write(packet)
+        val packLen = packetBuffer.readInt()      // pack_len: 整个包长度
+        val rawHeaderSize = packetBuffer.readShort().toInt()  // raw_header_size: 头部大小
+        val ver = packetBuffer.readShort().toInt()  // ver: 版本号
+        val operation = packetBuffer.readInt()     // operation: 操作码
+        val seqId = packetBuffer.readInt()         // seq_id: 序列号
+
+        // 检查数据包长度是否与头部中的长度一致
+//        if (packet.size != packLen) {
+//            logger.error { "数据包长度与头部中的长度不一致 ${packet.size} $packLen" }
+//            throw IllegalArgumentException("数据包长度与头部中的长度不一致")
+//        }
+
+        logger.debug {
+            "WebSocket 数据包解析结果：" +
+                    "packLen=$packLen, rawHeaderSize=$rawHeaderSize, ver=$ver, " +
+                    "operation=$operation (${operation}), " +
+                    "seqId=$seqId packetBuffer-size: ${packetBuffer.size}"
+        }
+        val body = Buffer()
+        var offset = 0
+        while (offset < packet.size) {
+            packetBuffer.copyTo(
+                body,
+                0,
+                (packLen - rawHeaderSize).toLong()
+            )
+            offset += packLen
+            if (WsOperation.HEARTBEAT_REPLY.value == operation) {
+                val popularity = body.readInt()
+                val jsonResult = """
+                   {"cmd":"_HEARTBEAT","data":{"popularity":$popularity}} 
+                """.trimIndent()
+                logger.debug { jsonResult }
+            } else if (WsOperation.SEND_MSG_REPLY.value == operation) {
+                when (ver) {
+                    ProtoVer.BROTLI.value -> {
+                        val a = BrotliInputStream(body.inputStream()).use { brotliStream ->
+                            brotliStream.readAllBytes()
+                        }.toByteString()
+                        logger.debug { "使用 BROTLI 算法解码请求" }
+                        parsePacket(a, webSocket)
+                    }
+
+                    ProtoVer.DEFLATE.value -> {
+                        val inflater = Inflater()
+                        val ba = ByteBuffer.allocate(1024)
+                        inflater.setInput(body.readByteArray())
+                        while (!inflater.finished()) {
+                            inflater.inflate(ba)
+                        }
+                        inflater.end()
+                        logger.debug { "使用 ZIP 算法解码请求" }
+                        parsePacket(ba.toByteString(), webSocket)
+                    }
+
+                    ProtoVer.NORMAL.value -> {
+                        logger.info { "数据包: \n${body.readByteString().base64()}" }
+                    }
+
+                    else -> {
+                        logger.error { "未识别的协议版本: $ver" }
+                    }
+                }
+
+            } else if (WsOperation.AUTH_REPLY.value == operation) {
+                val reply = makePacket(emptyMap<String, String>(), WsOperation.HEARTBEAT)
+                webSocket.send(reply.toByteString())
+                logger.debug { "回了条心跳" }
+            } else {
+                logger.warn { "未知指令: \n${packet.base64()}" }
+            }
+            body.clear()
+        }
+        return packLen
+    }
+
 }

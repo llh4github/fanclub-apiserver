@@ -28,6 +28,7 @@ import llh.fanclubvup.common.utils.Md5Utils
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
+import okio.ByteString.Companion.toByteString
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.net.URLEncoder
 import java.time.Duration
@@ -157,13 +158,15 @@ class BiliScraperClient(
     /**
      * 创建弹幕 WebSocket
      */
-    fun creatDanmuWebsocket(roomId: Long, handler: BiliDanmuWebSocketHandler): WebSocket? {
+    fun creatDanmuWebsocket(roomId: Long): BiliDanmuWebSocketHandler? {
         val info = fetchDanmuServerInfo(roomId)?.data ?: return null
         val token = info.token ?: return null
         val servers = info.hostList
         val packet = buildAuthWs(token, roomId).getOrNull() ?: return null
+        val handler = BiliDanmuWebSocketHandler(client, servers)
         handler.connect()
-        return null
+        handler.send(packet.toByteString())
+        return handler
     }
 
     private fun requestBuilder(url: String) = Request.Builder()

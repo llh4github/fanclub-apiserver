@@ -15,10 +15,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
     property = "cmd"
 )
-@JsonSubTypes(
-    JsonSubTypes.Type(value = SendGiftCommand::class, name = "SEND_GIFT"),
-    JsonSubTypes.Type(value = DanmakuCommand::class, name = "DANMU_MSG"),
-)
 abstract class Command {
 
     abstract val cmd: String
