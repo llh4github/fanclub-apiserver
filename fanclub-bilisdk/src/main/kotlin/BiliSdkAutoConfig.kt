@@ -8,10 +8,15 @@ package llh.fanclubvup.bilisdk
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilisdk.cache.BiliSignCacheManager
 import llh.fanclubvup.bilisdk.cache.PersistentCookieJarManager
+import llh.fanclubvup.bilisdk.dm.cmd.DanmuMsgCommand
+import llh.fanclubvup.bilisdk.dm.cmd.SendGiftCommand
+import llh.fanclubvup.bilisdk.dm.cmd.SuperChatCommand
+import llh.fanclubvup.bilisdk.dm.cmd.UserToastMsgV2Cmd
 import llh.fanclubvup.bilisdk.http.BiliLiveApiClient
 import llh.fanclubvup.bilisdk.props.BiliLiveApiProp
 import llh.fanclubvup.bilisdk.props.BiliScraperProp
 import llh.fanclubvup.bilisdk.scraper.BiliScraperClient
+import llh.fanclubvup.bilisdk.scraper.BiliWsMsgBizHandler
 import llh.fanclubvup.common.consts.PropsKeys
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -47,6 +52,11 @@ class BiliSdkAutoConfig {
     }
 
     @Bean
+    @ConditionalOnMissingBean(BiliWsMsgBizHandler::class)
+    fun biliWsMsgBizHandler() = object : BiliWsMsgBizHandler {
+    }
+
+    @Bean
     @ConditionalOnProperty(
         prefix = PropsKeys.BILI_SCRAPER_PROP_KEY,
         name = ["current-bid"],
@@ -57,12 +67,14 @@ class BiliSdkAutoConfig {
         redisTemplate: StringRedisTemplate,
         manager: PersistentCookieJarManager,
         prop: BiliScraperProp,
+        biliWsMsgBizHandler: BiliWsMsgBizHandler,
     ): BiliScraperClient {
         logger.info { "BiliScraperClient init" }
         return BiliScraperClient(
             BiliSignCacheManager(redisTemplate),
             manager,
-            prop
+            prop,
+            biliWsMsgBizHandler
         )
     }
 }

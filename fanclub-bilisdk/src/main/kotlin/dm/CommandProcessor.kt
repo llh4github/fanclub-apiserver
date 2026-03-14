@@ -7,6 +7,7 @@ package llh.fanclubvup.bilisdk.dm
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilisdk.dm.cmd.Command
+import llh.fanclubvup.bilisdk.scraper.BiliWsMsgBizHandler
 import tools.jackson.module.kotlin.jacksonObjectMapper
 
 object CommandProcessor {
@@ -50,8 +51,4 @@ object CommandProcessor {
         }
     }
 
-    // 使用安全的类型转换
-    inline fun <reified T : Command> parseCommandAs(json: String): T? {
-        return parseCommand(json) as? T
-    }
 }

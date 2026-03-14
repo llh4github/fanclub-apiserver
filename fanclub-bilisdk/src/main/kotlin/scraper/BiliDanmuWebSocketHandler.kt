@@ -19,6 +19,7 @@ import okio.ByteString
 class BiliDanmuWebSocketHandler(
     private val client: OkHttpClient,
     private val hostList: List<HostServer>,
+    private val biliWsMsgBizHandler: BiliWsMsgBizHandler,
 ) : WebSocketListener() {
 
     private val logger = KotlinLogging.logger {}
@@ -34,7 +35,7 @@ class BiliDanmuWebSocketHandler(
             .url(url)
             .addHeader("User-Agent", ScraperConst.USER_AGENT)
             .build()
-        webSocket = client.newWebSocket(request, InnerWebSocketListener(::reconnect))
+        webSocket = client.newWebSocket(request, InnerWebSocketListener(::reconnect, biliWsMsgBizHandler))
     }
 
     fun reconnect() {
@@ -51,7 +52,10 @@ class BiliDanmuWebSocketHandler(
         webSocket?.send(bytes)
     }
 
-    class InnerWebSocketListener(val reconnect: () -> Unit) : WebSocketListener() {
+    class InnerWebSocketListener(
+        private val reconnect: () -> Unit,
+        private val biliWsMsgBizHandler: BiliWsMsgBizHandler,
+    ) : WebSocketListener() {
         private val logger = KotlinLogging.logger {}
         override fun onOpen(webSocket: WebSocket, response: Response) {
             logger.info { "WebSocket 连接已打开 - ${response.request.url}" }
@@ -62,7 +66,7 @@ class BiliDanmuWebSocketHandler(
         }
 
         override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-            WsMsgUtil.parsePacket(bytes ,webSocket)
+            WsMsgUtil.parsePacket(bytes, webSocket, biliWsMsgBizHandler)
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {

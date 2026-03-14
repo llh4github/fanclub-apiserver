@@ -6,8 +6,10 @@
 package llh.fanclubvup.bilisdk.utils
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import llh.fanclubvup.bilisdk.dm.CommandProcessor
 import llh.fanclubvup.bilisdk.enums.ProtoVer
 import llh.fanclubvup.bilisdk.enums.WsOperation
+import llh.fanclubvup.bilisdk.scraper.BiliWsMsgBizHandler
 import okhttp3.WebSocket
 import okio.Buffer
 import okio.ByteString
@@ -84,7 +86,11 @@ object WsMsgUtil {
      *
      * @param packet 完整的数据包字节数组
      */
-    fun parsePacket(packet: ByteString, webSocket: WebSocket): Int {
+    fun parsePacket(
+        packet: ByteString,
+        webSocket: WebSocket,
+        biliWsMsgBizHandler: BiliWsMsgBizHandler,
+    ) {
 
         // 检查数据包长度是否足够
         if (packet.size < HEADER_SIZE) {
@@ -132,7 +138,7 @@ object WsMsgUtil {
                             brotliStream.readAllBytes()
                         }.toByteString()
                         logger.debug { "使用 BROTLI 算法解码请求" }
-                        parsePacket(a, webSocket)
+                        parsePacket(a, webSocket, biliWsMsgBizHandler)
                     }
 
                     ProtoVer.DEFLATE.value -> {
@@ -144,11 +150,15 @@ object WsMsgUtil {
                         }
                         inflater.end()
                         logger.debug { "使用 ZIP 算法解码请求" }
-                        parsePacket(ba.toByteString(), webSocket)
+                        parsePacket(ba.toByteString(), webSocket, biliWsMsgBizHandler)
                     }
 
                     ProtoVer.NORMAL.value -> {
-                        logger.info { "数据包: \n${body.readByteString().base64()}" }
+                        if (body.size > 0) {
+                            CommandProcessor.parseCommand(body.readString(Charsets.UTF_8))?.let {
+                                biliWsMsgBizHandler.handleMsg(it)
+                            }
+                        }
                     }
 
                     else -> {
@@ -165,7 +175,6 @@ object WsMsgUtil {
             }
             body.clear()
         }
-        return packLen
     }
 
 }

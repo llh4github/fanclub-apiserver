@@ -39,6 +39,7 @@ class BiliScraperClient(
     private val cacheManager: BiliSignCacheManager,
     private val persistentCookieJarManager: PersistentCookieJarManager,
     private val prop: BiliScraperProp,
+    private val biliWsMsgBizHandler: BiliWsMsgBizHandler,
 ) {
 
     private val client by lazy {
@@ -163,7 +164,7 @@ class BiliScraperClient(
         val token = info.token ?: return null
         val servers = info.hostList
         val packet = buildAuthWs(token, roomId).getOrNull() ?: return null
-        val handler = BiliDanmuWebSocketHandler(client, servers)
+        val handler = BiliDanmuWebSocketHandler(client, servers, biliWsMsgBizHandler)
         handler.connect()
         handler.send(packet.toByteString())
         return handler

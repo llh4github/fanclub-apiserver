@@ -38,8 +38,8 @@ class ScraperClientTest {
 
     @Test
     fun test_danmu() {
-//        scraperClient.creatDanmuWebsocket(23771189)
-        TimeUnit.SECONDS.sleep(3)
+        scraperClient.creatDanmuWebsocket(22637261)
+        TimeUnit.SECONDS.sleep(11)
     }
 
     @Test
