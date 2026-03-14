@@ -33,22 +33,22 @@ class ScraperClientTest {
 
     @Test
     fun test() {
-        println(scraperClient.fetchDanmuServerInfo(23771189))
+        println(scraperClient.fetchDanmuServerInfo(roomId))
     }
 
     @Test
     fun test_danmu() {
-        scraperClient.creatDanmuWebsocket(22637261)
-        TimeUnit.SECONDS.sleep(11)
+        scraperClient.creatDanmuWebsocket(roomId)
+        TimeUnit.SECONDS.sleep(2)
     }
 
     @Test
     fun test_ss() {
-        println(scraperClient.fetchRoomInfo(1713548468))
+        println(scraperClient.fetchRoomInfo(roomId))
     }
 
     @Test
     fun test_a() {
-        println(scraperClient.fetchGuardList(10071860, 1713548468))
+        println(scraperClient.fetchGuardList(uId, roomId))
     }
 }
