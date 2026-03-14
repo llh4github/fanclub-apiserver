@@ -7,10 +7,6 @@ package llh.fanclubvup.bilisdk.dm
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilisdk.dm.cmd.Command
-import llh.fanclubvup.bilisdk.dm.cmd.DanmakuCommand
-import llh.fanclubvup.bilisdk.dm.cmd.SendGiftCommand
-import llh.fanclubvup.bilisdk.dm.cmd.UnknownCommand
-import tools.jackson.databind.node.ObjectNode
 import tools.jackson.module.kotlin.jacksonObjectMapper
 
 object CommandProcessor {
@@ -18,24 +14,36 @@ object CommandProcessor {
 
     private val logger = KotlinLogging.logger {}
 
+    private val shouldIgnoreCommands = listOf(
+        "WIDGET_BANNER", // 忽略横幅
+        "WATCHED_CHANGE", // 忽略观看人数改变
+        "NOTICE_MSG", // 忽略礼物公告
+        "RANK_CHANGED_V2", // 忽略排行榜
+        "DM_INTERACTION", // 忽略互动(xx人点赞)
+        "INTERACT_WORD_V2",
+        "ONLINE_RANK_V3",
+        "COMMON_NOTICE_DANMAKU",
+        "STOP_LIVE_ROOM_LIST",
+    )
+
     fun parseCommand(json: String): Command? {
         return try {
             val tree = mapper.readTree(json)
             val cmd = tree.get("cmd")?.asString()?.split(":")[0] ?: return null
-
-            return when {
-                cmd == "SEND_GIFT" -> {
-                    mapper.readValue(json, SendGiftCommand::class.java)
-                }
-
-                cmd.startsWith("DANMU_MSG") -> mapper.treeToValue(tree, DanmakuCommand::class.java)
-                else -> {
-                    UnknownCommand(
-                        cmd = cmd,
-                        rawData = tree.properties().associate { it.key to it.value }
-                    )
-                }
+            if (shouldIgnoreCommands.contains(cmd)) {
+                logger.debug { "应当忽略的命令不进行数据解析" }
+                return null
             }
+
+            val cmdType = CmdTypeMapEnums.getValues().firstOrNull {
+                it.cmd == cmd
+            }
+            if (cmdType == null) {
+                logger.warn { "找不到对应的命令类型: \n$json" }
+                return null
+            }
+
+            return mapper.treeToValue(tree, cmdType.clazz.java)
         } catch (e: Exception) {
             logger.error(e) { "解析命令失败: $json" }
             null

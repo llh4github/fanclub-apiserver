@@ -12,7 +12,6 @@ import tools.jackson.databind.JsonNode
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class UnknownCommand(
-    @JsonProperty("cmd") override val cmd: String,
     @field:JsonIgnore val rawData: Map<String, JsonNode> = emptyMap()
 ) : Command() {
 
