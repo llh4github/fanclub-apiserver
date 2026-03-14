@@ -18,6 +18,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-log4j2")
     implementation(platform(libs.okhttp.bom))
     implementation("com.squareup.okhttp3:okhttp")
+    implementation("com.squareup.okhttp3:okhttp-brotli")
     compileOnly("tools.jackson.module:jackson-module-kotlin")
     testImplementation("tools.jackson.module:jackson-module-kotlin")
     implementation("com.squareup.okhttp3:logging-interceptor")
