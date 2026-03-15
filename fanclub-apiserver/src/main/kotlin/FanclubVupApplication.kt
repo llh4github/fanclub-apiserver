@@ -6,9 +6,11 @@
 package llh.fanclubvup.apiserver
 
 import io.github.classgraph.ClassGraph
+import llh.fanclubvup.bilisdk.dto.SerializableCookie
 import org.springframework.aot.hint.MemberCategory
 import org.springframework.aot.hint.RuntimeHints
 import org.springframework.aot.hint.RuntimeHintsRegistrar
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.ImportRuntimeHints
@@ -17,6 +19,9 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @EnableScheduling
 @SpringBootApplication
 @ImportRuntimeHints(ReflectionHintsRegistrar::class)
+@RegisterReflectionForBinding(
+    SerializableCookie::class
+)
 class FanclubVupApplication
 
 fun main(args: Array<String>) {
@@ -28,7 +33,7 @@ class ReflectionHintsRegistrar : RuntimeHintsRegistrar {
         ClassGraph()
             .enableClassInfo()
             .acceptPackages(
-                "llh.fanclubvup.apiserver",
+                "llh.fanclubvup",
                 "io.jsonwebtoken.impl",
                 "com.fasterxml.jackson.databind"
             ).scan().use { scanResult ->

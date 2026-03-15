@@ -24,6 +24,7 @@ import llh.fanclubvup.bilisdk.utils.WbiUtil
 import llh.fanclubvup.bilisdk.utils.WsMsgUtil
 import llh.fanclubvup.common.BID
 import llh.fanclubvup.common.excptions.AppRuntimeException
+import llh.fanclubvup.common.getOrNull
 import llh.fanclubvup.common.utils.Md5Utils
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -78,7 +79,7 @@ class BiliScraperClient(
         })
 
         val request = requestBuilder("$url?$queryString").build()
-        return execute(request, UserRelationResponse::class.java).getOrNull()
+        return execute(request, UserRelationResponse::class.java).getOrNull(logger)
     }
 
     /**
@@ -93,7 +94,7 @@ class BiliScraperClient(
         })
 
         val request = requestBuilder("$url?$queryString").build()
-        return execute(request, UserInfoResponse::class.java).getOrNull()
+        return execute(request, UserInfoResponse::class.java).getOrNull(logger)
     }
 
     /**
@@ -118,7 +119,7 @@ class BiliScraperClient(
             this["typ"] = "5"
         })
         val request = requestBuilder("$url?$queryString").build()
-        return execute(request, GuardPageResponse::class.java).getOrNull()
+        return execute(request, GuardPageResponse::class.java).getOrNull(logger)
     }
 
     /**
@@ -127,7 +128,7 @@ class BiliScraperClient(
     fun fetchRoomInfo(roomId: Long): LiveRoomInfoResponse? {
         val url = BiliApiUrls.ROOM_INIT_URL + "?room_id=$roomId"
         val request = requestBuilder(url).build()
-        return execute(request, LiveRoomInfoResponse::class.java).getOrNull()
+        return execute(request, LiveRoomInfoResponse::class.java).getOrNull(logger)
     }
 
     /**
@@ -142,7 +143,7 @@ class BiliScraperClient(
         val request = requestBuilder(BiliApiUrls.DANMAKU_SERVER_CONF_URL + "?" + queryString)
             .build()
 
-        return execute(request, DanmuInfoResponse::class.java).getOrNull()
+        return execute(request, DanmuInfoResponse::class.java).getOrNull(logger)
     }
 
 
@@ -163,7 +164,7 @@ class BiliScraperClient(
         val info = fetchDanmuServerInfo(roomId)?.data ?: return null
         val token = info.token ?: return null
         val servers = info.hostList
-        val packet = buildAuthWs(token, roomId).getOrNull() ?: return null
+        val packet = buildAuthWs(token, roomId).getOrNull(logger) ?: return null
         val handler = BiliDanmuWebSocketHandler(client, servers, biliWsMsgBizHandler)
         handler.connect()
         handler.send(packet.toByteString())
@@ -183,7 +184,7 @@ class BiliScraperClient(
             .joinToString("&") { (k, v) ->
                 "$k=${URLEncoder.encode(v, "utf-8")}"
             }
-        val md5 = Md5Utils.encode(uri + sign).getOrNull() ?: return null
+        val md5 = Md5Utils.encode(uri + sign).getOrNull(logger) ?: return null
         return "$uri&w_rid=${md5}"
     }
 

@@ -60,7 +60,7 @@ class BiliSdkAutoConfig {
     @ConditionalOnProperty(
         prefix = PropsKeys.BILI_SCRAPER_PROP_KEY,
         name = ["current-bid"],
-        matchIfMissing = false
+        matchIfMissing = true
     )
     @ConditionalOnMissingBean(BiliScraperClient::class)
     fun biliScraperClient(

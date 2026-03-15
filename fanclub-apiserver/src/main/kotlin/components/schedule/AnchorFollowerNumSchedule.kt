@@ -49,7 +49,7 @@ class AnchorFollowerNumSchedule(
     private fun findAndSaveFollowerNum(uId: BID, now: LocalDate) {
         val result = scraperClient.fetchUserRelation(uId)
         if (result == null || result.data == null) {
-            logger.warn { "获取主播 $uId 粉丝数失败或数据为空" }
+            logger.warn { "获取主播 $uId 粉丝数失败或数据为空: $result" }
             return
         }
         val data = result.data!!
