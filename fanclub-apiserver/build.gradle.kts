@@ -36,8 +36,6 @@ dependencies {
 
     implementation(platform(libs.okhttp.bom))
     implementation("com.squareup.okhttp3:okhttp")
-    // 本地缓存 - Caffeine
-    implementation("com.github.ben-manes.caffeine:caffeine")
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     ksp(libs.jimmer.ksp)
@@ -53,6 +51,10 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
+// 配置 KSP (如果有)
+ksp {
+    arg("springAot", "true")
+}
 
 graalvmNative {
     binaries {
@@ -62,9 +64,16 @@ graalvmNative {
             buildArgs.add("--enable-url-protocols=http,https")
             buildArgs.add("--enable-all-security-services")
             buildArgs.add("--no-fallback")
-            
-            // 运行时报告不支持元素
-            buildArgs.add("--report-unsupported-elements-at-runtime")
+            buildArgs.addAll(
+                "--report-unsupported-elements-at-runtime",  // 报告不支持的运行时元素
+                "--no-fallback",  // 禁用回退模式，强制暴露问题
+                "--verbose",  // 输出详细日志
+                "-H:TraceClassInitialization=true",// 跟踪类初始化
+                "-H:+ReportExceptionStackTraces",  // 报告异常堆栈
+                "-H:+ReportUnsupportedElementsAtRuntime",  // 报告不支持的运行时元素
+                "-H:+PrintClassInitialization",  // 打印类初始化信息
+                "-H:+AddAllCharsets"  // 包含所有字符集
+            )
         }
     }
 }

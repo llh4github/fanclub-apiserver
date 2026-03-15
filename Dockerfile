@@ -37,15 +37,8 @@ LABEL maintainer="lilinhong_coding@foxmail.com" \
       description="A api server."
 
 ENV SPRING_APPLICATION_VERSION=${APP_VERSION}
-# 创建运行用户
-RUN groupadd -r app && useradd -r -g app -s /bin/bash app
 # 创建日志目录
 RUN mkdir "logs"
-# 创建 logs 目录并赋予 app 用户权限
-RUN mkdir -p /app/logs && \
-    chown -R app:app /app/logs
-
-USER app:app
 
 # 从构建阶段复制所有模块的构建产物
 COPY --from=builder /app/fanclub-apiserver/build/native/nativeCompile/fanclub-apiserver  api-server

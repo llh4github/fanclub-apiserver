@@ -5,7 +5,7 @@
 
 package llh.fanclubvup.bilisdk.dto
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import okhttp3.Cookie
 
@@ -13,8 +13,7 @@ import okhttp3.Cookie
  * 可序列化的 Cookie 数据传输对象
  * 用于解决 okhttp3.Cookie 无法直接序列化的问题
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class SerializableCookie(
+data class SerializableCookie @JsonCreator constructor(
     @JsonProperty("name")
     val name: String,
 

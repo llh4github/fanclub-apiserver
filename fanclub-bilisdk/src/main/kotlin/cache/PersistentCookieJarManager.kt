@@ -5,7 +5,6 @@
 
 package llh.fanclubvup.bilisdk.cache
 
-import com.github.benmanes.caffeine.cache.Caffeine
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilisdk.consts.BiliSdkCacheKey
 import llh.fanclubvup.bilisdk.dto.SerializableCookie
@@ -14,21 +13,18 @@ import okhttp3.CookieJar
 import okhttp3.HttpUrl
 import org.springframework.data.redis.core.StringRedisTemplate
 import tools.jackson.core.type.TypeReference
+import tools.jackson.databind.ObjectMapper
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.time.Duration
 
 class PersistentCookieJarManager(private val redisTemplate: StringRedisTemplate) : CookieJar {
 
     private val logger = KotlinLogging.logger {}
-    private val mapper = jacksonObjectMapper()
+    private val mapper: ObjectMapper = jacksonObjectMapper()
     private val timeout = Duration.ofHours(10)
 
-    private val localCache by lazy {
-        Caffeine.newBuilder()
-            .maximumSize(1000)
-            .expireAfterWrite(Duration.ofMinutes(10))
-            .expireAfterAccess(Duration.ofMinutes(5))
-            .build<String, List<Cookie>>()
+    private var fetchCookieOperation: () -> List<Cookie> = {
+        emptyList()
     }
 
     override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
@@ -39,20 +35,29 @@ class PersistentCookieJarManager(private val redisTemplate: StringRedisTemplate)
     }
 
     fun resetCookies(block: () -> List<Cookie>) {
-        val cookies = block()
-        val value = mapper.writeValueAsString(cookies.map { SerializableCookie.fromCookie(it) }.toList())
+        fetchCookieOperation = block
+        cacheCookies()
+    }
+
+    private fun cacheCookies(): List<Cookie> {
+        val cookies = fetchCookieOperation()
+        if (cookies.isEmpty()) {
+            logger.error { "没有找cookie数据" }
+            return emptyList()
+        }
+        val list = cookies.map { SerializableCookie.fromCookie(it) }.toList()
+        val value = mapper.writeValueAsString(list)
+        logger.info { "resetCookies: \n$list \n$value" }
         redisTemplate.opsForValue().set(BiliSdkCacheKey.COOKIES, value, timeout)
-        localCache.put(BiliSdkCacheKey.COOKIES, cookies)
+        return cookies
     }
 
     override fun loadForRequest(url: HttpUrl): List<Cookie> = fetchCookies()
 
-    fun fetchCookies() = localCache.get(BiliSdkCacheKey.COOKIES) { _ ->
-        val cookies = redisTemplate.opsForValue().get(BiliSdkCacheKey.COOKIES) ?: return@get emptyList()
-        val list = mapper.readValue(cookies, object : TypeReference<List<SerializableCookie>>() {})
+    fun fetchCookies(): List<Cookie> {
+        val cookies = redisTemplate.opsForValue().get(BiliSdkCacheKey.COOKIES) ?: return cacheCookies()
+        return mapper.readValue(cookies, object : TypeReference<List<SerializableCookie>>() {})
             .map { it.toCookie() }
-        localCache.put(BiliSdkCacheKey.COOKIES, list)
-        list
     }
 
 }
