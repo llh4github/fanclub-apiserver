@@ -8,13 +8,19 @@ package llh.fanclubvup.bilisdk.scraper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilisdk.consts.ScraperConst
 import llh.fanclubvup.bilisdk.dto.danmu.HostServer
+import llh.fanclubvup.bilisdk.enums.WsOperation
 import llh.fanclubvup.bilisdk.utils.WsMsgUtil
+import llh.fanclubvup.bilisdk.utils.WsMsgUtil.makePacket
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import okio.ByteString
+import okio.ByteString.Companion.toByteString
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 
 /**
  * 弹幕 WebSocket 处理类
@@ -27,6 +33,7 @@ class BiliDanmuWebSocketHandler(
     private val biliWsMsgBizHandler: BiliWsMsgBizHandler,
     private val connectionFailed: () -> Unit = {},
 ) {
+    private val scheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
 
     private val logger = KotlinLogging.logger {}
     private val maxRetryCount = 5
@@ -45,6 +52,12 @@ class BiliDanmuWebSocketHandler(
             request,
             InnerWebSocketListener(::reconnect, biliWsMsgBizHandler)
         )
+        webSocket?.let {
+            scheduler.scheduleAtFixedRate({
+                val reply = makePacket("{}", WsOperation.HEARTBEAT)
+                send(reply.toByteString())
+            }, 0, 30, TimeUnit.SECONDS)
+        }
     }
 
     fun isValid(): Boolean {

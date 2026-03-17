@@ -38,9 +38,15 @@ data class DanmuMsgCommand(
      */
     fun getUserInfo(): UserInfo? {
         val raw = info?.getOrNull(2) as? List<Any?> ?: return null
-
+        val uid = when (val value = raw.getOrNull(0)) {
+            is Long -> value
+            is Int -> value.toLong()
+            is Number -> value.toLong()
+            is String -> value.toLongOrNull() ?: 0L
+            else -> 0L
+        }
         return UserInfo(
-            uid = raw.getOrNull(0) as? Long ?: 0L,
+            uid = uid,
             username = raw.getOrNull(1) as? String ?: "",
         )
     }
