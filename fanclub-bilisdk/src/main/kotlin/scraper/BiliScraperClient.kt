@@ -173,6 +173,7 @@ class BiliScraperClient(
         }
         handler.connect()
         handler.send(packet.toByteString())
+        logger.info { "$roomId 的弹幕 WebSocket 创建成功" }
         return handler
     }
 

@@ -33,6 +33,7 @@ class LiveDataMonitorSchedule(
                 map[info.anchorInfo.roomId] = it
             }
         }
+        logger.info { "主播弹幕数据监控计划启动成功" }
     }
 
     @EventListener
