@@ -20,7 +20,7 @@ class BiliDanmuWebSocketHandler(
     private val client: OkHttpClient,
     private val hostList: List<HostServer>,
     private val biliWsMsgBizHandler: BiliWsMsgBizHandler,
-) : WebSocketListener() {
+) {
 
     private val logger = KotlinLogging.logger {}
     private val maxRetryCount = 5
@@ -38,10 +38,15 @@ class BiliDanmuWebSocketHandler(
         webSocket = client.newWebSocket(request, InnerWebSocketListener(::reconnect, biliWsMsgBizHandler))
     }
 
+    fun isValid(): Boolean {
+        return webSocket != null
+    }
+
     fun reconnect() {
         retry++
         if (retry > maxRetryCount) {
             logger.error { "重连次数达到最大限制，停止重连" }
+            webSocket = null
             return
         }
         logger.info { "正在尝试第 $retry 次重连..." }

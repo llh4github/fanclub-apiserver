@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm")
     id("org.springframework.boot")
     id("io.spring.dependency-management")
-    id("org.graalvm.buildtools.native")
+//    id("org.graalvm.buildtools.native")
 }
 
 description = "fanclub-bilisdk"
