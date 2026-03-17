@@ -155,7 +155,9 @@ object WsMsgUtil {
 
                     ProtoVer.NORMAL.value -> {
                         if (body.size > 0) {
-                            CommandProcessor.parseCommand(body.readString(Charsets.UTF_8))?.let {
+                            val json = body.readString(Charsets.UTF_8)
+//                            logger.debug { "danmu: \n$json" }
+                            CommandProcessor.parseCommand(json)?.let {
                                 biliWsMsgBizHandler.handleMsg(it)
                             }
                         }
@@ -167,7 +169,7 @@ object WsMsgUtil {
                 }
 
             } else if (WsOperation.AUTH_REPLY.value == operation) {
-                val reply = makePacket(emptyMap<String, String>(), WsOperation.HEARTBEAT)
+                val reply = makePacket("{}", WsOperation.HEARTBEAT)
                 webSocket.send(reply.toByteString())
                 logger.debug { "回了条心跳" }
             } else {
