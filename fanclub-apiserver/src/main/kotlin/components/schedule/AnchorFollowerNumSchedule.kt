@@ -28,7 +28,7 @@ class AnchorFollowerNumSchedule(
     /**
      * 启动后等待 5 分钟开始执行，之后每 4 小时执行一次，更新主播粉丝数
      */
-    @Scheduled(initialDelay = 5 * 60 * 1000, fixedRate = 4 * 60 * 60 * 1000)
+    @Scheduled(fixedRate = 4 * 60 * 60 * 1000)
     fun updateAnchorFollowerNum() {
         val now = LocalDate.now()
         val list = scraperFeatureService.queryFollowerEnabled()
