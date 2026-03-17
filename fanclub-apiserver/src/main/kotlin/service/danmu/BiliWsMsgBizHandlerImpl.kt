@@ -22,6 +22,7 @@ class BiliWsMsgBizHandlerImpl : BiliWsMsgBizHandler {
                     "操作类型=${cmd.data?.guardInfo?.opType}, " +
                     "数量=${cmd.data?.payInfo?.num}, " +
                     "价格=${cmd.data?.payInfo?.price}, " +
+                    "舰长信息=${cmd.data?.guardInfo}, " +
                     "提示消息=${cmd.data?.toastMsg}"
         }
     }
