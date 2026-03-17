@@ -9,6 +9,7 @@ import llh.fanclubvup.bilisdk.scraper.BiliDanmuWebSocketHandler
 import llh.fanclubvup.bilisdk.scraper.BiliScraperClient
 import org.springframework.boot.context.event.ApplicationStartedEvent
 import org.springframework.context.event.EventListener
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 
@@ -22,6 +23,8 @@ class LiveDataMonitorSchedule(
 ) {
     private val logger = KotlinLogging.logger {}
     private val map = ConcurrentHashMap<Long, BiliDanmuWebSocketHandler>()
+    private val countMap = ConcurrentHashMap<Long, Int>()
+    private val maxRetry = 5
 
     @EventListener
     fun startup(event: ApplicationStartedEvent) {
@@ -34,16 +37,38 @@ class LiveDataMonitorSchedule(
 
     @EventListener
     fun danmuWsFailedEvent(event: DanmuWsFailedEvent) {
-        queryEnabled(event.roomId).forEach { info ->
-            scraperClient.creatDanmuWebsocket(info.anchorInfo.roomId)?.let {
-                map[info.anchorInfo.roomId] = it
+        retryWsConnection(listOf(event.roomId))
+    }
+
+    @Scheduled(cron = "0 0 4 * * ?")
+    fun retryWsConnectionEveryDay() {
+        countMap.clear()
+        logger.info { "清除计数表" }
+        val invalidRoomIds = map.filter { !it.value.isValid() }.keys
+        retryWsConnection(invalidRoomIds.toList())
+    }
+
+
+    private fun retryWsConnection(roomIds: List<Long> = emptyList()) {
+        queryEnabled(roomIds).forEach { info ->
+            val cnt = countMap.getOrPut(info.anchorInfo.roomId) { 0 }
+            if (cnt >= maxRetry) {
+                logger.error { "${info.anchorInfo.roomId} 达最大重试次数，取消重试" }
+            } else {
+                scraperClient.creatDanmuWebsocket(info.anchorInfo.roomId)?.let {
+                    map[info.anchorInfo.roomId] = it
+                    countMap[info.anchorInfo.roomId] = cnt + 1
+                }
             }
         }
     }
 
-    private fun queryEnabled(roomId: Long? = null): List<ScraperMonitorFeatureEnabledView> {
-        val querySpec = if (roomId != null)
-            ScraperMonitorFeatureSpec(true, ScraperMonitorFeatureSpec.TargetOf_anchorInfo(roomId))
+    private fun queryEnabled(roomIds: List<Long> = emptyList()): List<ScraperMonitorFeatureEnabledView> {
+        val querySpec = if (roomIds.isEmpty())
+            ScraperMonitorFeatureSpec(
+                true,
+                ScraperMonitorFeatureSpec.TargetOf_anchorInfo(roomIds)
+            )
         else ScraperMonitorFeatureSpec(true)
 
         val list = scraperFeatureService.listQuery(

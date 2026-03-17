@@ -25,7 +25,7 @@ ScraperFeatureFollowerEnabledView {
 specification ScraperMonitorFeatureSpec {
     monitor
     anchorInfo {
-        roomId
+        valueIn(roomId) as roomIds
     }
 }
 
