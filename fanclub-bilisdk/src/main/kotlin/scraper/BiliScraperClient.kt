@@ -19,6 +19,7 @@ import llh.fanclubvup.bilisdk.dto.LiveRoomInfoResponse
 import llh.fanclubvup.bilisdk.dto.UserInfoResponse
 import llh.fanclubvup.bilisdk.dto.UserRelationResponse
 import llh.fanclubvup.bilisdk.enums.WsOperation
+import llh.fanclubvup.bilisdk.event.DanmuWsFailedEvent
 import llh.fanclubvup.bilisdk.props.BiliScraperProp
 import llh.fanclubvup.bilisdk.utils.WbiUtil
 import llh.fanclubvup.bilisdk.utils.WsMsgUtil
@@ -30,6 +31,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
 import okio.ByteString.Companion.toByteString
+import org.springframework.context.ApplicationEventPublisher
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.net.URLEncoder
 import java.time.Duration
@@ -41,6 +43,7 @@ class BiliScraperClient(
     private val persistentCookieJarManager: PersistentCookieJarManager,
     private val prop: BiliScraperProp,
     private val biliWsMsgBizHandler: BiliWsMsgBizHandler,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
 
     private val client by lazy {
@@ -165,7 +168,9 @@ class BiliScraperClient(
         val token = info.token ?: return null
         val servers = info.hostList
         val packet = buildAuthWs(token, roomId).getOrNull(logger) ?: return null
-        val handler = BiliDanmuWebSocketHandler(client, servers, biliWsMsgBizHandler)
+        val handler = BiliDanmuWebSocketHandler(client, servers, biliWsMsgBizHandler) {
+            eventPublisher.publishEvent(DanmuWsFailedEvent(roomId))
+        }
         handler.connect()
         handler.send(packet.toByteString())
         return handler

@@ -16,10 +16,16 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import okio.ByteString
 
+/**
+ * 弹幕 WebSocket 处理类
+ * @param connectionFailed 连接失败回调
+ * @param biliWsMsgBizHandler 弹幕消息业务处理类
+ */
 class BiliDanmuWebSocketHandler(
     private val client: OkHttpClient,
     private val hostList: List<HostServer>,
     private val biliWsMsgBizHandler: BiliWsMsgBizHandler,
+    private val connectionFailed: () -> Unit = {},
 ) {
 
     private val logger = KotlinLogging.logger {}
@@ -35,7 +41,10 @@ class BiliDanmuWebSocketHandler(
             .url(url)
             .addHeader("User-Agent", ScraperConst.USER_AGENT)
             .build()
-        webSocket = client.newWebSocket(request, InnerWebSocketListener(::reconnect, biliWsMsgBizHandler))
+        webSocket = client.newWebSocket(
+            request,
+            InnerWebSocketListener(::reconnect, biliWsMsgBizHandler)
+        )
     }
 
     fun isValid(): Boolean {
@@ -47,6 +56,7 @@ class BiliDanmuWebSocketHandler(
         if (retry > maxRetryCount) {
             logger.error { "重连次数达到最大限制，停止重连" }
             webSocket = null
+            connectionFailed()
             return
         }
         logger.info { "正在尝试第 $retry 次重连..." }
