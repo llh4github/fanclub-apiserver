@@ -22,6 +22,10 @@ object CommandProcessor {
         "RANK_CHANGED_V2", // 忽略排行榜
         "DM_INTERACTION", // 忽略互动(xx人点赞)
         "INTERACT_WORD_V2",
+        "LIVE_PANEL_CHANGE_CONTENT",
+        "LIKE_INFO_V3_CLICK", // 点赞数据
+        "LIKE_INFO_V3_UPDATE",
+        "INTERACT_WORD",
         "ONLINE_RANK_V3",
         "COMMON_NOTICE_DANMAKU",
         "STOP_LIVE_ROOM_LIST",
