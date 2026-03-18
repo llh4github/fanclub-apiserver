@@ -1,4 +1,4 @@
-package llh.fanclubvup.apiserver.service.danmu
+package llh.fanclubvup.apiserver.statistics
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilisdk.dm.cmd.DanmuMsgCommand
@@ -6,13 +6,19 @@ import llh.fanclubvup.bilisdk.dm.cmd.SendGiftCommand
 import llh.fanclubvup.bilisdk.dm.cmd.SuperChatCommand
 import llh.fanclubvup.bilisdk.dm.cmd.UserToastMsgV2Cmd
 import llh.fanclubvup.bilisdk.scraper.BiliWsMsgBizHandler
+import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service
 
 @Service
-class BiliWsMsgBizHandlerImpl : BiliWsMsgBizHandler {
+class BiliDanmuStatistics (
+    private val redisTemplate: StringRedisTemplate
+): BiliWsMsgBizHandler {
 
     private val logger = KotlinLogging.logger {}
 
+    fun a(){
+
+    }
     override fun handle(cmd: UserToastMsgV2Cmd) {
         logger.info {
             "用户开通大航海 V2: " +

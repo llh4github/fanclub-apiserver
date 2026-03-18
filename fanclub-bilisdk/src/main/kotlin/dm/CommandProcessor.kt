@@ -7,6 +7,7 @@ package llh.fanclubvup.bilisdk.dm
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilisdk.dm.cmd.Command
+import llh.fanclubvup.bilisdk.dm.cmd.GuardBuyCommand
 import llh.fanclubvup.bilisdk.scraper.BiliWsMsgBizHandler
 import tools.jackson.module.kotlin.jacksonObjectMapper
 
@@ -48,6 +49,10 @@ object CommandProcessor {
             if (cmdType == null) {
                 logger.warn { "找不到对应的命令类型: \n$json" }
                 return null
+            }
+            if (cmdType.clazz == GuardBuyCommand::class) {
+                // FIXME 调试后删除
+                logger.info { "舰长购买消息的原始json: \n$json" }
             }
 
             return mapper.treeToValue(tree, cmdType.clazz.java)
