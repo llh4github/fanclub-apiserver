@@ -29,6 +29,8 @@ object CommandProcessor {
         "ONLINE_RANK_V3",
         "COMMON_NOTICE_DANMAKU",
         "STOP_LIVE_ROOM_LIST",
+        "RANK_CHANGED",
+        "POPULAR_RANK_CHANGED",
     )
 
     fun parseCommand(json: String): Command? {
