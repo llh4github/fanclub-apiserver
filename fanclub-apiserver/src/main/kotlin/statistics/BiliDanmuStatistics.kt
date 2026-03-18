@@ -72,9 +72,7 @@ class BiliDanmuStatistics(
 
     override fun handle(cmd: DanmuMsgCommand) {
         val now = LocalDate.now()
-        logger.info { "当前是否用虚拟线程：${Thread.currentThread().isVirtual}" }
         cmd.getUserInfo()?.let { userInfo ->
-
             logger.info {
                 "弹幕消息：" +
                         "用户名=${userInfo.username}, " +
@@ -85,10 +83,11 @@ class BiliDanmuStatistics(
 
             executors.execute {
                 val key = "fanclub-statistics:danmu:$now"
+                // FIXME 统计不准确
                 redisTemplate.execute(
                     statisticsDanmu,
                     listOf(key),
-                    userInfo.uid.toString(), userInfo.timestamp, userInfo.username
+                    userInfo.uid.toString(), userInfo.timestamp.toString(), userInfo.username
                 )
             }
         }

@@ -19,12 +19,15 @@ import org.brotli.dec.BrotliInputStream
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.util.concurrent.Executors
 import java.util.zip.Inflater
 
 object WsMsgUtil {
     private val objectMapper = jacksonObjectMapper()
 
     private val logger = KotlinLogging.logger {}
+
+    private val executors = Executors.newVirtualThreadPerTaskExecutor()
 
     /**
      * 创建一个要发送给服务器的包
@@ -158,7 +161,9 @@ object WsMsgUtil {
                             val json = body.readString(Charsets.UTF_8)
 //                            logger.debug { "danmu: \n$json" }
                             CommandProcessor.parseCommand(json)?.let {
-                                biliWsMsgBizHandler.handleMsg(it)
+                                executors.execute {
+                                    biliWsMsgBizHandler.handleMsg(it)
+                                }
                             }
                         }
                     }

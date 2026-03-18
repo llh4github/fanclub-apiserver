@@ -1,9 +1,11 @@
 package llh.fanclubvup.apiserver.components
 
 import llh.fanclubvup.apiserver.consts.CacheKeyPrefix
+import llh.fanclubvup.common.excptions.AppRuntimeException
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.ClassPathResource
 import org.springframework.data.redis.cache.RedisCacheConfiguration
 import org.springframework.data.redis.cache.RedisCacheManager
@@ -47,7 +49,12 @@ class RedisCacheConfig {
     fun statisticsDanmu(): DefaultRedisScript<Boolean> {
         val s = DefaultRedisScript<Boolean>()
         s.resultType = Boolean::class.java
-        s.setScriptSource(ResourceScriptSource(ClassPathResource("lua/statistics_danmu.lua")))
+        s.setScriptSource(
+            ResourceScriptSource(
+                // TODO 没招了
+                ByteArrayResource(RedisLua.STATISTICS_DANMU.toByteArray())
+            )
+        )
         return s
     }
 }
