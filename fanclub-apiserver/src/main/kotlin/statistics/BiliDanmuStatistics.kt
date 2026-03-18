@@ -1,24 +1,37 @@
 package llh.fanclubvup.apiserver.statistics
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.lettuce.core.RedisClient
+import jakarta.annotation.Resource
+import llh.fanclubvup.bilisdk.dm.cmd.Command
 import llh.fanclubvup.bilisdk.dm.cmd.DanmuMsgCommand
 import llh.fanclubvup.bilisdk.dm.cmd.SendGiftCommand
 import llh.fanclubvup.bilisdk.dm.cmd.SuperChatCommand
 import llh.fanclubvup.bilisdk.dm.cmd.UserToastMsgV2Cmd
 import llh.fanclubvup.bilisdk.scraper.BiliWsMsgBizHandler
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.redis.core.StringRedisTemplate
+import org.springframework.data.redis.core.script.DefaultRedisScript
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import java.time.Duration
+import java.time.LocalDate
+import java.util.concurrent.Executors
 
 @Service
-class BiliDanmuStatistics (
-    private val redisTemplate: StringRedisTemplate
-): BiliWsMsgBizHandler {
+class BiliDanmuStatistics(
+    private val redisTemplate: StringRedisTemplate,
+) : BiliWsMsgBizHandler {
 
     private val logger = KotlinLogging.logger {}
 
-    fun a(){
+    @Autowired
+    @Qualifier("statisticsDanmu")
+    private lateinit var statisticsDanmu: DefaultRedisScript<Boolean>
 
-    }
+    private val executors = Executors.newVirtualThreadPerTaskExecutor()
+
     override fun handle(cmd: UserToastMsgV2Cmd) {
         logger.info {
             "用户开通大航海 V2: " +
@@ -58,13 +71,27 @@ class BiliDanmuStatistics (
     }
 
     override fun handle(cmd: DanmuMsgCommand) {
-        val userInfo = cmd.getUserInfo()
-        logger.info {
-            "弹幕消息：" +
-                    "用户名=${userInfo?.username}, " +
-                    "UID=${userInfo?.uid}, " +
-                    "ts=${userInfo?.timestamp}, " +
-                    "内容=${cmd.getContent()}"
+        val now = LocalDate.now()
+        logger.info { "当前是否用虚拟线程：${Thread.currentThread().isVirtual}" }
+        cmd.getUserInfo()?.let { userInfo ->
+
+            logger.info {
+                "弹幕消息：" +
+                        "用户名=${userInfo.username}, " +
+                        "UID=${userInfo.uid}, " +
+                        "ts=${userInfo.timestamp}, " +
+                        "内容=${cmd.getContent()}"
+            }
+
+            executors.execute {
+                val key = "fanclub-statistics:danmu:$now"
+                redisTemplate.execute(
+                    statisticsDanmu,
+                    listOf(key),
+                    userInfo.uid.toString(), userInfo.timestamp, userInfo.username
+                )
+            }
         }
     }
+
 }

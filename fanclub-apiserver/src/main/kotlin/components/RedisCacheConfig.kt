@@ -4,12 +4,15 @@ import llh.fanclubvup.apiserver.consts.CacheKeyPrefix
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.io.ClassPathResource
 import org.springframework.data.redis.cache.RedisCacheConfiguration
 import org.springframework.data.redis.cache.RedisCacheManager
 import org.springframework.data.redis.connection.RedisConnectionFactory
+import org.springframework.data.redis.core.script.DefaultRedisScript
 import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer
 import org.springframework.data.redis.serializer.RedisSerializationContext
 import org.springframework.data.redis.serializer.StringRedisSerializer
+import org.springframework.scripting.support.ResourceScriptSource
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.time.Duration
 
@@ -38,5 +41,13 @@ class RedisCacheConfig {
         return RedisCacheManager.builder(factory)
             .cacheDefaults(config)
             .build()
+    }
+
+    @Bean("statisticsDanmu")
+    fun statisticsDanmu(): DefaultRedisScript<Boolean> {
+        val s = DefaultRedisScript<Boolean>()
+        s.resultType = Boolean::class.java
+        s.setScriptSource(ResourceScriptSource(ClassPathResource("lua/statistics_danmu.lua")))
+        return s
     }
 }
