@@ -1,4 +1,6 @@
 spring:
+  cache:
+    type: redis
   application:
     name: ${FANCLUB_APP_NAME:fanclub-vup}
     version: @project.version@
@@ -30,7 +32,7 @@ jimmer:
 logging:
   level:
     llh: ${FANCLUB_LOG_LEVEL:INFO}
-    org.springframework.web: WARN
+    org.springframework.web: ${FANCLUB_SPRING_LOG_LEVEL:warn}
 
 springdoc:
   api-docs:
