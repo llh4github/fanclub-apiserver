@@ -44,17 +44,20 @@ class RedisCacheConfig {
             .cacheDefaults(config)
             .build()
     }
+    @Bean
+    fun luaResourcesRegistration(): Array<String> {
+        // 返回需要在 Native 镜像中注册的资源路径
+        return arrayOf(
+            "lua/statistics_danmu.lua"
+        )
+    }
 
     @Bean("statisticsDanmu")
     fun statisticsDanmu(): DefaultRedisScript<Boolean> {
         val s = DefaultRedisScript<Boolean>()
         s.resultType = Boolean::class.java
-        s.setScriptSource(
-            ResourceScriptSource(
-                // TODO 没招了
-                ByteArrayResource(RedisLua.STATISTICS_DANMU.toByteArray())
-            )
-        )
+        s.setScriptSource(ResourceScriptSource(ClassPathResource("lua/statistics_danmu.lua")))
         return s
+
     }
 }
