@@ -1,0 +1,41 @@
+services:
+  redis-stack:
+    image: redis/redis-stack-server:7.4.0-v8
+    container_name: fanclub_redis
+    ports:
+      - "6379:6379"          # Redis 协议端口
+    environment:
+      - TZ=Asia/Shanghai
+      - REDIS_ARGS=--requirepass 123456  # 设置 Redis 访问密码
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - fanclub-network
+
+  mariadb:
+    image: mariadb:lts-ubi9
+    container_name: fanclub-mariadb
+    environment:
+      - TZ=Asia/Shanghai
+      - MARIADB_ROOT_PASSWORD=123456
+      - MARIADB_DATABASE=fanclub_dev
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./docker/mariadb/base_tables.sql:/docker-entrypoint-initdb.d/base_tables.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - fanclub-network
+
+networks:
+  fanclub-network:
+    driver: bridge
