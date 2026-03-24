@@ -62,4 +62,12 @@ class RedisCacheConfig {
         s.setScriptSource(ResourceScriptSource(ClassPathResource("lua/statistics_danmu.lua")))
         return s
     }
+
+    @Bean("nicknameChange")
+    fun nicknameChange(): DefaultRedisScript<Boolean> {
+        val s = DefaultRedisScript<Boolean>()
+        s.resultType = Boolean::class.java
+        s.setScriptSource(ResourceScriptSource(ClassPathResource("lua/nickname_change.lua")))
+        return s
+    }
 }

@@ -32,6 +32,10 @@ class BiliDanmuStatistics(
     @Qualifier("statisticsDanmu")
     private lateinit var statisticsDanmu: DefaultRedisScript<Boolean>
 
+    @Autowired
+    @Qualifier("nicknameChange")
+    private lateinit var nicknameChange: DefaultRedisScript<Boolean>
+
     private val executors = Executors.newVirtualThreadPerTaskExecutor()
 
     override fun handle(cmd: UserToastMsgV2Cmd) {
@@ -91,6 +95,15 @@ class BiliDanmuStatistics(
                     listOf(key, "${time.hour}-${time.minute}"),
                     userInfo.uid.toString(), userInfo.timestamp.toString()
                 )
+            }
+            executors.execute {
+                val key = StatisticsCacheKey.nicknameChange()
+                redisTemplate.execute(
+                    statisticsDanmu,
+                    listOf(key),
+                    userInfo.username, userInfo.uid.toString()
+                )
+
             }
         }
     }
