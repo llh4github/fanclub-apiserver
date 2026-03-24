@@ -8,6 +8,7 @@ package llh.fanclubvup.bilisdk.enums
 /**
  * 舰长等级枚举类
  */
+@Deprecated("移到别的地方了")
 enum class FanLevel(val level: Int, val displayName: String) {
     /** 总督 */
     ADMIRAL(1, "总督"),

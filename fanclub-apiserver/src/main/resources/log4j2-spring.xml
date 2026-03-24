@@ -54,36 +54,12 @@
     </Appenders>
 
     <Loggers>
-        <!-- 开发环境配置 -->
-        <Logger name="llh" level="DEBUG" additivity="false">
-            <AppenderRef ref="CONSOLE" />
-        </Logger>
-        
-        <Logger name="org.springframework.web" level="DEBUG" additivity="false">
-            <AppenderRef ref="CONSOLE" />
-        </Logger>
-        
-        <Logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
-            <AppenderRef ref="CONSOLE" />
-        </Logger>
-
-        <!-- 测试环境配置 -->
-        <Logger name="llh.test" level="INFO" additivity="false">
-            <AppenderRef ref="CONSOLE" />
-            <AppenderRef ref="FILE" />
-            <AppenderRef ref="ERROR_FILE" />
-        </Logger>
-
-        <!-- 生产环境配置 -->
-        <Logger name="llh.prod" level="INFO" additivity="false">
-            <AppenderRef ref="CONSOLE" />
-            <AppenderRef ref="FILE" />
-            <AppenderRef ref="ERROR_FILE" />
-        </Logger>
 
         <!-- 默认配置 -->
         <Root level="INFO">
             <AppenderRef ref="CONSOLE" />
+            <AppenderRef ref="FILE" />
+            <AppenderRef ref="ERROR_FILE" />
         </Root>
     </Loggers>
 </Configuration>

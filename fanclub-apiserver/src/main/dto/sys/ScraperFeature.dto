@@ -21,3 +21,22 @@ ScraperFeatureFollowerEnabledView {
         biliId
     }
 }
+
+specification ScraperMonitorFeatureSpec {
+    monitor
+    anchorInfo {
+        valueIn(roomId) as roomIds
+    }
+}
+
+/**
+* 启用粉丝监控的主播信息
+*/
+ScraperMonitorFeatureEnabledView {
+    monitor
+    anchorInfo {
+        id
+        biliId
+        roomId
+    }
+}

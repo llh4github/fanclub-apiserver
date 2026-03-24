@@ -5,11 +5,7 @@
 
 package llh.fanclubvup.bilisdk.scraper
 
-import llh.fanclubvup.bilisdk.dm.cmd.Command
-import llh.fanclubvup.bilisdk.dm.cmd.DanmuMsgCommand
-import llh.fanclubvup.bilisdk.dm.cmd.SendGiftCommand
-import llh.fanclubvup.bilisdk.dm.cmd.SuperChatCommand
-import llh.fanclubvup.bilisdk.dm.cmd.UserToastMsgV2Cmd
+import llh.fanclubvup.bilisdk.dm.cmd.*
 
 interface BiliWsMsgBizHandler {
 

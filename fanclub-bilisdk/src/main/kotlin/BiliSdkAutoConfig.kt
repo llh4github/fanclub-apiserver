@@ -8,10 +8,6 @@ package llh.fanclubvup.bilisdk
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilisdk.cache.BiliSignCacheManager
 import llh.fanclubvup.bilisdk.cache.PersistentCookieJarManager
-import llh.fanclubvup.bilisdk.dm.cmd.DanmuMsgCommand
-import llh.fanclubvup.bilisdk.dm.cmd.SendGiftCommand
-import llh.fanclubvup.bilisdk.dm.cmd.SuperChatCommand
-import llh.fanclubvup.bilisdk.dm.cmd.UserToastMsgV2Cmd
 import llh.fanclubvup.bilisdk.http.BiliLiveApiClient
 import llh.fanclubvup.bilisdk.props.BiliLiveApiProp
 import llh.fanclubvup.bilisdk.props.BiliScraperProp
@@ -21,6 +17,7 @@ import llh.fanclubvup.common.consts.PropsKeys
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.data.redis.core.StringRedisTemplate
 
@@ -68,13 +65,15 @@ class BiliSdkAutoConfig {
         manager: PersistentCookieJarManager,
         prop: BiliScraperProp,
         biliWsMsgBizHandler: BiliWsMsgBizHandler,
+        applicationEventPublisher: ApplicationEventPublisher,
     ): BiliScraperClient {
         logger.info { "BiliScraperClient init" }
         return BiliScraperClient(
             BiliSignCacheManager(redisTemplate),
             manager,
             prop,
-            biliWsMsgBizHandler
+            biliWsMsgBizHandler,
+            applicationEventPublisher
         )
     }
 }

@@ -16,6 +16,9 @@ interface ScraperFeature : BaseEntity {
     @get:Schema(title = "是否获取粉丝数", description = "是否获取粉丝数", example = "true")
     val follower: Boolean
 
+    @get:Schema(title = "是否数据监控", description = "是否数据监控", example = "true")
+    val monitor: Boolean
+
     @OneToOne
     @JoinColumn(name = "anchor_id")
     val anchorInfo: AnchorInfo

@@ -21,9 +21,13 @@ data class DanmuMsgCommand(
     val dmV2: String? = null
 ) : Command() {
 
+    /**
+     * @param timestamp 发送时间，用于去重
+     */
     data class UserInfo(
         @JsonProperty("uid") val uid: Long,
         @JsonProperty("username") val username: String,
+        @JsonProperty("timestamp") val timestamp: Long,
     )
 
     /**
@@ -37,11 +41,25 @@ data class DanmuMsgCommand(
      * 获取用户信息
      */
     fun getUserInfo(): UserInfo? {
-        val raw = info?.getOrNull(2) as? List<Any?> ?: return null
-
+        val first = info?.getOrNull(0) as? List<Any?> ?: return null
+        val raw = info.getOrNull(2) as? List<Any?> ?: return null
+        val timestamp = when (val value = first.getOrNull(4)) {
+            is Int -> value.toLong()
+            is Number -> value.toLong()
+            is String -> value.toLongOrNull() ?: 0L
+            else -> 0L
+        }
+        val uid = when (val value = raw.getOrNull(0)) {
+            is Long -> value
+            is Int -> value.toLong()
+            is Number -> value.toLong()
+            is String -> value.toLongOrNull() ?: 0L
+            else -> 0L
+        }
         return UserInfo(
-            uid = raw.getOrNull(0) as? Long ?: 0L,
+            uid = uid,
             username = raw.getOrNull(1) as? String ?: "",
+            timestamp = timestamp
         )
     }
 

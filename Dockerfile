@@ -3,6 +3,7 @@ FROM gradle:9.3.1-jdk25-graal-noble AS builder
 WORKDIR /app
 COPY .. .
 
+ENV SPRING_DOCKER_COMPOSE_ENABLED=false
 # 定义构建参数
 ARG APP_VERSION
 ARG BUILD_TIME
@@ -36,6 +37,7 @@ LABEL maintainer="lilinhong_coding@foxmail.com" \
       version=${APP_VERSION} \
       description="A api server."
 
+ENV SPRING_DOCKER_COMPOSE_ENABLED=false
 ENV SPRING_APPLICATION_VERSION=${APP_VERSION}
 # 创建日志目录
 RUN mkdir "logs"

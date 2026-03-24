@@ -1,4 +1,6 @@
 spring:
+  cache:
+    type: redis
   application:
     name: ${FANCLUB_APP_NAME:fanclub-vup}
     version: @project.version@
@@ -6,14 +8,20 @@ spring:
     virtual:
       enabled: true
   datasource:
-    url: ${FANCLUB_DATASOURCE_URL:jdbc:mariadb://localhost:3306/fanclub_dev}
-    username: ${FANCLUB_DATASOURCE_USERNAME:root}
-    password: ${FANCLUB_DATASOURCE_PASSWORD:123456}
+    url: jdbc:mariadb://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:fanclub_dev}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:123456}
   data:
     redis:
-      host: ${FANCLUB_REDIS_HOST:localhost}
-      port: ${FANCLUB_REDIS_PORT:6379}
-      password: ${FANCLUB_REDIS_PASSWORD:}
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  docker:
+    compose:
+      file: compose.yaml
+      enabled: ${DOCKER_COMPOSE_ENABLED:false}
+      lifecycle-management: ${DOCKER_LIFECYCLE:start_only}
+
 jimmer:
   language: kotlin
   show-sql: ${FANCLUB_SHOW_SQL:false}
@@ -24,7 +32,7 @@ jimmer:
 logging:
   level:
     llh: ${FANCLUB_LOG_LEVEL:INFO}
-    org.springframework.web: WARN
+    org.springframework.web: ${FANCLUB_SPRING_LOG_LEVEL:warn}
 
 springdoc:
   api-docs:

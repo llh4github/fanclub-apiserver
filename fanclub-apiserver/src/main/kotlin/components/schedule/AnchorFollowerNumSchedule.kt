@@ -12,6 +12,7 @@ import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
+import java.time.Duration
 import java.time.LocalDate
 
 
@@ -24,11 +25,12 @@ class AnchorFollowerNumSchedule(
 ) {
 
     private val logger = KotlinLogging.logger {}
+    private val expire = Duration.ofHours(4)
 
     /**
      * 启动后等待 5 分钟开始执行，之后每 4 小时执行一次，更新主播粉丝数
      */
-    @Scheduled(initialDelay = 5 * 60 * 1000, fixedRate = 4 * 60 * 60 * 1000)
+    @Scheduled(fixedRate = 4 * 60 * 60 * 1000)
     fun updateAnchorFollowerNum() {
         val now = LocalDate.now()
         val list = scraperFeatureService.queryFollowerEnabled()
@@ -58,9 +60,9 @@ class AnchorFollowerNumSchedule(
 
         // 更新缓存
         // see AnchorFollowerNumServiceImpl.queryNum
-        val key = CacheKeyPrefix.SERVICE_CACHE_KEY + ":AnchorFollowerNumService:queryNum:" +
+        val key = CacheKeyPrefix.SERVICE_CACHE_KEY + "AnchorFollowerNumService:queryNum:" +
                 input.biliId + ":" + now
-        redisTemplate.opsForValue().set(key, input.followerNum.toString())
+        redisTemplate.opsForValue().set(key, input.followerNum.toString(), expire)
         logger.info { "已更新主播 $uId 粉丝数：${data.follower}" }
     }
 }

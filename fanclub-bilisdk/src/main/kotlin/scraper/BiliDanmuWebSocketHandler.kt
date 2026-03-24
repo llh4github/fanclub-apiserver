@@ -8,19 +8,32 @@ package llh.fanclubvup.bilisdk.scraper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilisdk.consts.ScraperConst
 import llh.fanclubvup.bilisdk.dto.danmu.HostServer
+import llh.fanclubvup.bilisdk.enums.WsOperation
 import llh.fanclubvup.bilisdk.utils.WsMsgUtil
+import llh.fanclubvup.bilisdk.utils.WsMsgUtil.makePacket
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import okio.ByteString
+import okio.ByteString.Companion.toByteString
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 
+/**
+ * 弹幕 WebSocket 处理类
+ * @param connectionFailed 连接失败回调
+ * @param biliWsMsgBizHandler 弹幕消息业务处理类
+ */
 class BiliDanmuWebSocketHandler(
     private val client: OkHttpClient,
     private val hostList: List<HostServer>,
     private val biliWsMsgBizHandler: BiliWsMsgBizHandler,
-) : WebSocketListener() {
+    private val connectionFailed: () -> Unit = {},
+) {
+    private val scheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
 
     private val logger = KotlinLogging.logger {}
     private val maxRetryCount = 5
@@ -35,13 +48,28 @@ class BiliDanmuWebSocketHandler(
             .url(url)
             .addHeader("User-Agent", ScraperConst.USER_AGENT)
             .build()
-        webSocket = client.newWebSocket(request, InnerWebSocketListener(::reconnect, biliWsMsgBizHandler))
+        webSocket = client.newWebSocket(
+            request,
+            InnerWebSocketListener(::reconnect, biliWsMsgBizHandler)
+        )
+        webSocket?.let {
+            scheduler.scheduleAtFixedRate({
+                val reply = makePacket("{}", WsOperation.HEARTBEAT)
+                send(reply.toByteString())
+            }, 0, 30, TimeUnit.SECONDS)
+        }
+    }
+
+    fun isValid(): Boolean {
+        return webSocket != null
     }
 
     fun reconnect() {
         retry++
         if (retry > maxRetryCount) {
             logger.error { "重连次数达到最大限制，停止重连" }
+            webSocket = null
+            connectionFailed()
             return
         }
         logger.info { "正在尝试第 $retry 次重连..." }

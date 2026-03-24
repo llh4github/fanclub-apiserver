@@ -47,7 +47,7 @@ class PersistentCookieJarManager(private val redisTemplate: StringRedisTemplate)
         }
         val list = cookies.map { SerializableCookie.fromCookie(it) }.toList()
         val value = mapper.writeValueAsString(list)
-        logger.info { "resetCookies: \n$list \n$value" }
+        logger.debug { "resetCookies: \n$list \n$value" }
         redisTemplate.opsForValue().set(BiliSdkCacheKey.COOKIES, value, timeout)
         return cookies
     }
