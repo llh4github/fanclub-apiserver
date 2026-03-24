@@ -27,7 +27,7 @@ local timestamp = ARGV[2]
 -- 构建 set 键名（带分钟级时间）
 local setKey = timedKey .. ":set"
 -- 构建 ZSet 键名（用于分类计数）
-local countKey = key .. ":count"
+local countKey = key
 -- 过期时间：24 小时（86400 秒）
 local expireTime = 86400
 

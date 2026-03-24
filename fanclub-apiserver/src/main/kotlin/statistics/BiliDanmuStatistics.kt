@@ -3,6 +3,7 @@ package llh.fanclubvup.apiserver.statistics
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.lettuce.core.RedisClient
 import jakarta.annotation.Resource
+import llh.fanclubvup.apiserver.consts.StatisticsCacheKey
 import llh.fanclubvup.bilisdk.dm.cmd.Command
 import llh.fanclubvup.bilisdk.dm.cmd.DanmuMsgCommand
 import llh.fanclubvup.bilisdk.dm.cmd.SendGiftCommand
@@ -84,8 +85,7 @@ class BiliDanmuStatistics(
             }
 
             executors.execute {
-                val key = "fanclub-statistics:danmu:$now"
-                // FIXME 统计不准确
+                val key = StatisticsCacheKey.danmuCount(now)
                 redisTemplate.execute(
                     statisticsDanmu,
                     listOf(key, "${time.hour}-${time.minute}"),
