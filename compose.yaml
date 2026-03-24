@@ -6,7 +6,7 @@ services:
       - "6379:6379"          # Redis 协议端口
     environment:
       - TZ=Asia/Shanghai
-      - REDIS_ARGS=--requirepass 123456  # 设置 Redis 访问密码
+#      - REDIS_ARGS=--requirepass 123456  # 设置 Redis 访问密码
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s

@@ -1,11 +1,9 @@
 package llh.fanclubvup.apiserver.components
 
 import llh.fanclubvup.apiserver.consts.CacheKeyPrefix
-import llh.fanclubvup.common.excptions.AppRuntimeException
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.ClassPathResource
 import org.springframework.data.redis.cache.RedisCacheConfiguration
 import org.springframework.data.redis.cache.RedisCacheManager
