@@ -19,7 +19,7 @@ spring:
   docker:
     compose:
       file: compose.yaml
-      enabled: ${DOCKER_COMPOSE_ENABLED:true}
+      enabled: ${DOCKER_COMPOSE_ENABLED:false}
       lifecycle-management: ${DOCKER_LIFECYCLE:start_only}
 
 jimmer:

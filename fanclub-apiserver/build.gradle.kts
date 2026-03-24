@@ -83,6 +83,10 @@ sourceSets.main {
     kotlin.srcDir("build/generated/ksp/main/kotlin")
 }
 
+tasks.withType<Jar> {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 // 配置资源处理，启用过滤器替换 @project.version@
 tasks.withType<ProcessResources> {
     filter(
