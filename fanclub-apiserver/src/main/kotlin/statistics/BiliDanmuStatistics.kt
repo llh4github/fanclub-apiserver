@@ -17,6 +17,7 @@ import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.concurrent.Executors
 
 @Service
@@ -72,6 +73,7 @@ class BiliDanmuStatistics(
 
     override fun handle(cmd: DanmuMsgCommand) {
         val now = LocalDate.now()
+        val time = LocalTime.now()
         cmd.getUserInfo()?.let { userInfo ->
             logger.info {
                 "弹幕消息：" +
@@ -86,8 +88,8 @@ class BiliDanmuStatistics(
                 // FIXME 统计不准确
                 redisTemplate.execute(
                     statisticsDanmu,
-                    listOf(key),
-                    userInfo.uid.toString(), userInfo.timestamp.toString(), userInfo.username
+                    listOf(key, "${time.hour}-${time.minute}"),
+                    userInfo.uid.toString(), userInfo.timestamp.toString()
                 )
             }
         }
