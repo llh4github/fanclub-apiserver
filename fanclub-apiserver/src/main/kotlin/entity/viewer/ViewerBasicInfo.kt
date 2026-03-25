@@ -13,7 +13,7 @@ import org.babyfish.jimmer.sql.Table
 @Schema(title = "观众的基础信息")
 interface ViewerBasicInfo : BaseEntity {
 
-    @Key(group = "bid-nkname")
+    @Key
     val bid: BID
 
     /**
@@ -22,7 +22,6 @@ interface ViewerBasicInfo : BaseEntity {
      *
      * 其他地方就不存昵称了，都在这儿拿
      */
-    @Key(group = "bid-nkname")
     @get:Schema(title = "观众的B站昵称")
     val nickname: String
 }
