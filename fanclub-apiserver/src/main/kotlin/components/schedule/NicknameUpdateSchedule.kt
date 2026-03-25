@@ -45,5 +45,6 @@ class NicknameUpdateSchedule(
         } else {
             logger.info { "没有需要更新的昵称数据" }
         }
+        redisTemplate.delete(key)
     }
 }

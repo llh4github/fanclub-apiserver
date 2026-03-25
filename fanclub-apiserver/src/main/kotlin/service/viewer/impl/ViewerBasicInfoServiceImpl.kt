@@ -15,8 +15,11 @@ class ViewerBasicInfoServiceImpl(
     BaseDatabaseServiceImpl<ViewerBasicInfo>(ViewerBasicInfo::class, sqlClient) {
 
     override fun saveListNoTx(list: List<ViewerNicknameUpdateRequest>): Int {
-        return sqlClient.saveEntities(list) {
-            setMode(SaveMode.UPSERT)
-        }.totalAffectedRowCount
+        val entities = list.map { input ->
+            input.toEntity {
+                nickname = input.nickname
+            }
+        }
+        return sqlClient.saveEntities(entities).totalAffectedRowCount
     }
 }
