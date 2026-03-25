@@ -44,8 +44,7 @@ CREATE TABLE `sys_scraper_cookie`
     `created_time` datetime     NOT NULL DEFAULT current_timestamp() COMMENT '创建时间',
     `updated_time` datetime     NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `sys_scraper_cookie_unique` (`domain`, `name`),
-    KEY `idx_cache_name` (`domain`, `name`)
+    UNIQUE KEY `sys_scraper_cookie_unique` (`domain`, `name`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='爬虫 Cookie 配置表';
