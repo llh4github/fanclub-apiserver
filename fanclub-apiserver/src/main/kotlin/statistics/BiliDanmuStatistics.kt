@@ -99,11 +99,10 @@ class BiliDanmuStatistics(
             executors.execute {
                 val key = StatisticsCacheKey.nicknameChange()
                 redisTemplate.execute(
-                    statisticsDanmu,
+                    nicknameChange,
                     listOf(key),
                     userInfo.username, userInfo.uid.toString()
                 )
-
             }
         }
     }

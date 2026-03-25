@@ -1,8 +1,10 @@
 package llh.fanclubvup.apiserver.service.viewer.impl
 
 import llh.fanclubvup.apiserver.entity.viewer.ViewerBasicInfo
+import llh.fanclubvup.apiserver.entity.viewer.dto.ViewerNicknameUpdateRequest
 import llh.fanclubvup.apiserver.service.BaseDatabaseServiceImpl
 import llh.fanclubvup.apiserver.service.viewer.ViewerBasicInfoService
+import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.springframework.stereotype.Service
 
@@ -10,4 +12,11 @@ import org.springframework.stereotype.Service
 class ViewerBasicInfoServiceImpl(
     sqlClient: KSqlClient,
 ) : ViewerBasicInfoService,
-    BaseDatabaseServiceImpl<ViewerBasicInfo>(ViewerBasicInfo::class, sqlClient)
+    BaseDatabaseServiceImpl<ViewerBasicInfo>(ViewerBasicInfo::class, sqlClient) {
+
+    override fun saveListNoTx(list: List<ViewerNicknameUpdateRequest>): Int {
+        return sqlClient.saveEntities(list) {
+            setMode(SaveMode.UPSERT)
+        }.totalAffectedRowCount
+    }
+}
