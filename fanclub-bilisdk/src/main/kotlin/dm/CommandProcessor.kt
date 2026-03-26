@@ -8,7 +8,6 @@ package llh.fanclubvup.bilisdk.dm
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilisdk.dm.cmd.Command
 import llh.fanclubvup.bilisdk.dm.cmd.GuardBuyCommand
-import llh.fanclubvup.bilisdk.scraper.BiliWsMsgBizHandler
 import tools.jackson.module.kotlin.jacksonObjectMapper
 
 object CommandProcessor {

@@ -8,6 +8,7 @@ plugins {
 description = "fanclub-bilisdk"
 
 dependencies {
+    compileOnly(libs.ehcahe)
     compileOnly(libs.oshai)
     testImplementation(libs.oshai)
     compileOnly(project(":fanclub-common"))

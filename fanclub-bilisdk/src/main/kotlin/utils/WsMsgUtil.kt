@@ -6,6 +6,7 @@
 package llh.fanclubvup.bilisdk.utils
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import llh.fanclubvup.bilisdk.cache.EhcaheHashcodeExpiryManager
 import llh.fanclubvup.bilisdk.dm.CommandProcessor
 import llh.fanclubvup.bilisdk.enums.ProtoVer
 import llh.fanclubvup.bilisdk.enums.WsOperation
@@ -159,10 +160,13 @@ object WsMsgUtil {
                     ProtoVer.NORMAL.value -> {
                         if (body.size > 0) {
                             val json = body.readString(Charsets.UTF_8)
+                            // 过滤掉因网络抖动产生的重复消息
+                            if (EhcaheHashcodeExpiryManager.putIfAbsent(json) == null) {
 //                            logger.debug { "danmu: \n$json" }
-                            CommandProcessor.parseCommand(json)?.let {
-                                executors.execute {
-                                    biliWsMsgBizHandler.handleMsg(it)
+                                CommandProcessor.parseCommand(json)?.let {
+                                    executors.execute {
+                                        biliWsMsgBizHandler.handleMsg(it)
+                                    }
                                 }
                             }
                         }

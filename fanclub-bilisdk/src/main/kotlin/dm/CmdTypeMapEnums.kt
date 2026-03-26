@@ -11,6 +11,7 @@ import llh.fanclubvup.bilisdk.dm.cmd.DanmuMsgCommand
 import llh.fanclubvup.bilisdk.dm.cmd.EntryEffectCommand
 import llh.fanclubvup.bilisdk.dm.cmd.GuardBuyCommand
 import llh.fanclubvup.bilisdk.dm.cmd.OnlineRankCount
+import llh.fanclubvup.bilisdk.dm.cmd.RoomRealTimeMessageUpdateCommand
 import llh.fanclubvup.bilisdk.dm.cmd.SendGiftCommand
 import llh.fanclubvup.bilisdk.dm.cmd.SuperChatCommand
 import llh.fanclubvup.bilisdk.dm.cmd.UserToastMsgCommand
@@ -27,6 +28,7 @@ enum class CmdTypeMapEnums(val cmd: String, val clazz: KClass<out Command>) {
     SUPER_CHAT_MESSAGE("SUPER_CHAT_MESSAGE", SuperChatCommand::class),
     GUARD_BUY("GUARD_BUY", GuardBuyCommand::class),
     USER_TOAST_MSG_V2("USER_TOAST_MSG_V2", UserToastMsgV2Cmd::class),
+    ROOM_REAL_TIME_MESSAGE_UPDATE("ROOM_REAL_TIME_MESSAGE_UPDATE", RoomRealTimeMessageUpdateCommand::class),
     ;
 
     companion object {

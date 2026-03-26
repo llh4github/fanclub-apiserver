@@ -26,6 +26,7 @@ okhttp = "5.3.0"
 jjwt = "0.13.0"
 guava = "33.5.0-jre"
 brotli = "0.1.7"
+ehcache = "3.11.1"
 
 [libraries]
 kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
@@ -75,6 +76,8 @@ kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version.ref = "kotlin
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 brotli-dec = { module = "org.brotli:dec", version.ref = "brotli" }
 brotli-enc = { module = "org.brotli:enc", version.ref = "brotli" }
+
+ehcahe = { module = "org.ehcache:ehcache", version.ref = "ehcache" }
 
 [bundles]
 slf4j = [
