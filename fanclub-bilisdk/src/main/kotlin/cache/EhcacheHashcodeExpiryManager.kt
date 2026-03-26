@@ -12,14 +12,17 @@ import org.ehcache.config.builders.ResourcePoolsBuilder
 import java.time.Duration
 import kotlin.jvm.java
 
-object EhcaheHashcodeExpiryManager {
+object EhcacheHashcodeExpiryManager {
+    // ehcache 缓存分不清kotlin 与 java 的基本对象。
+    object EmptyValue
+
     private const val CACHE_NAME = "string-hashcode"
     private val cacheManager =
         CacheManagerBuilder.newCacheManagerBuilder()
             .withCache(CACHE_NAME) {
                 CacheConfigurationBuilder.newCacheConfigurationBuilder(
                     String::class.java,           // 键类型
-                    Int::class.java,           // 值类型
+                    EmptyValue::class.java,           // 值类型
                     ResourcePoolsBuilder.heap(1000)  // 堆内存储，最多1000个条目
                 )
                     .withExpiry(
@@ -32,10 +35,10 @@ object EhcaheHashcodeExpiryManager {
             .build(true)
 
     private val cache by lazy {
-        cacheManager.getCache(CACHE_NAME, String::class.java, Int::class.java)
+        cacheManager.getCache(CACHE_NAME, String::class.java, EmptyValue::class.java)
     }
 
-    fun putIfAbsent(str: String): Int? {
-        return cache.putIfAbsent(str, str.hashCode())
+    fun putIfAbsent(str: String): EmptyValue? {
+        return cache.putIfAbsent(str, EmptyValue)
     }
 }
