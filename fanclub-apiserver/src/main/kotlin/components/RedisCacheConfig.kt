@@ -51,20 +51,31 @@ class RedisCacheConfig {
 
     @Bean
     fun luaResourcesRegistration(): Array<String> {
-        // 使用 PathMatchingResourcePatternResolver 自动扫描所有 Lua 文件
-        val resolver = PathMatchingResourcePatternResolver()
-        val resources = resolver.getResources("classpath*:lua/*.lua")
-
         // 返回所有 Lua 文件的路径（用于 Native 镜像资源注册）
         //FIXME 这种方法还得测试下
-        return resources.map { it.uri.toString() }.toTypedArray()
+        return arrayOf(
+            "lua/statistics_danmu.lua",
+            "lua/nickname_change.lua",
+        )
+    }
+
+    @Bean
+    fun fuck(): ClassPathResource {
+        return ClassPathResource("lua/statistics_danmu.lua")
     }
 
     @Bean("statisticsDanmu")
     fun statisticsDanmu(): DefaultRedisScript<Boolean> {
         val s = DefaultRedisScript<Boolean>()
         s.resultType = Boolean::class.java
-        s.setScriptSource(ResourceScriptSource(ClassPathResource("lua/statistics_danmu.lua")))
+        s.setScriptSource(
+            ResourceScriptSource(
+                ClassPathResource(
+                    "lua/statistics_danmu.lua",
+                    this.javaClass.classLoader
+                )
+            )
+        )
         return s
     }
 
@@ -72,7 +83,14 @@ class RedisCacheConfig {
     fun nicknameChange(): DefaultRedisScript<Boolean> {
         val s = DefaultRedisScript<Boolean>()
         s.resultType = Boolean::class.java
-        s.setScriptSource(ResourceScriptSource(ClassPathResource("lua/nickname_change.lua")))
+        s.setScriptSource(
+            ResourceScriptSource(
+                ClassPathResource(
+                    "lua/nickname_change.lua",
+                    this.javaClass.classLoader
+                )
+            )
+        )
         return s
     }
 }
