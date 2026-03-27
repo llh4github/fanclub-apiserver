@@ -6,6 +6,10 @@
 package llh.fanclubvup.apiserver.service.anchor
 
 import llh.fanclubvup.apiserver.entity.anchor.AnchorLiveRecord
+import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordEndLiveInput
 import llh.fanclubvup.apiserver.service.BaseDatabaseService
 
-interface AnchorLiveRecordService : BaseDatabaseService<AnchorLiveRecord>
+interface AnchorLiveRecordService : BaseDatabaseService<AnchorLiveRecord> {
+
+    fun updateEndLiveStatus(input: AnchorLiveRecordEndLiveInput): Int
+}

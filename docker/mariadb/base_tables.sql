@@ -4,7 +4,7 @@ CREATE TABLE `anchor_follower_num`
 (
     `id`           bigint(20) unsigned NOT NULL COMMENT '主键ID',
     `follower_num` int(11)             NOT NULL COMMENT '粉丝数',
-    `cnt_date`     date                NOT NULL COMMENT '统计日期',
+    `cnt_date`     date NOT NULL COMMENT '统计日期',
     `bili_id`      bigint(20) unsigned NOT NULL COMMENT 'B站UID',
     `created_at`   datetime(3)         NOT NULL DEFAULT current_timestamp(3) COMMENT '创建时间',
     `updated_at`   datetime(3)         NOT NULL DEFAULT current_timestamp(3) ON UPDATE current_timestamp(3) COMMENT '更新时间',
@@ -21,7 +21,7 @@ CREATE TABLE `anchor_info`
 (
     `id`         bigint(20) unsigned NOT NULL COMMENT '主键ID',
     `bili_id`    bigint(20)          NOT NULL COMMENT 'B站ID，通常称为UID',
-    `bili_name`  varchar(255)        NOT NULL COMMENT 'B站昵称',
+    `bili_name`  varchar(255) NOT NULL COMMENT 'B站昵称',
     `room_id`    bigint(20)          NOT NULL COMMENT '直播间ID',
     `user_id`    bigint(20) unsigned NOT NULL COMMENT '用户ID',
     `created_at` datetime(3)         NOT NULL DEFAULT current_timestamp(3) COMMENT '创建时间',
@@ -55,14 +55,14 @@ CREATE TABLE `sys_scraper_cookie`
 CREATE TABLE `sys_user`
 (
     `id`            bigint(20) unsigned NOT NULL COMMENT '主键',
-    `username`      varchar(60)         NOT NULL COMMENT '用户名',
-    `nickname`      varchar(60)         NOT NULL DEFAULT '' COMMENT '昵称',
-    `password`      varchar(60)         NOT NULL COMMENT '密码',
-    `created_time`  datetime            NOT NULL DEFAULT current_timestamp() COMMENT '数据创建时间',
-    `updated_time`  datetime            NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() COMMENT '数据更新时间',
+    `username`      varchar(60) NOT NULL COMMENT '用户名',
+    `nickname`      varchar(60) NOT NULL DEFAULT '' COMMENT '昵称',
+    `password`      varchar(60) NOT NULL COMMENT '密码',
+    `created_time`  datetime    NOT NULL DEFAULT current_timestamp() COMMENT '数据创建时间',
+    `updated_time`  datetime    NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() COMMENT '数据更新时间',
     `created_by_id` bigint(20) unsigned          DEFAULT NULL COMMENT '创建者ID',
     `updated_by_id` bigint(20) unsigned          DEFAULT NULL COMMENT '更新者ID',
-    `role`          varchar(10)         NOT NULL COMMENT '用户所属角色',
+    `role`          varchar(10) NOT NULL COMMENT '用户所属角色',
     `anchor_id`     bigint(20) unsigned          DEFAULT NULL COMMENT '关联主播信息',
     PRIMARY KEY (`id`),
     UNIQUE KEY `sys_user_username_uniq` (`username`)
@@ -77,12 +77,12 @@ CREATE TABLE `viewer_basic_info`
 (
     `id`           bigint(20) unsigned NOT NULL COMMENT '数据主键',
     `bid`          bigint(20) unsigned NOT NULL COMMENT 'B站用户ID',
-    `nickname`     varchar(255)        NOT NULL COMMENT '观众的B站昵称',
+    `nickname`     varchar(255) NOT NULL COMMENT '观众的B站昵称',
     `created_time` datetime(3) DEFAULT current_timestamp(3) COMMENT '创建时间',
     `updated_time` datetime(3) DEFAULT current_timestamp(3) ON UPDATE current_timestamp(3) COMMENT '更新时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_bid` (`bid`),
-    KEY `bid_nickname_IDX` (`bid`, `nickname`) USING BTREE
+    KEY            `bid_nickname_IDX` (`bid`, `nickname`) USING BTREE
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='观众的基础信息';
@@ -102,7 +102,7 @@ CREATE TABLE `viewer_guard_buy_record`
     `created_time` datetime(3) DEFAULT current_timestamp(3) COMMENT '创建时间',
     `updated_time` datetime(3) DEFAULT current_timestamp(3) ON UPDATE current_timestamp(3) COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    KEY `viewer_guard_buy_record_bid_IDX` (`bid`) USING BTREE
+    KEY            `viewer_guard_buy_record_bid_IDX` (`bid`) USING BTREE
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='观众的舰长购买记录';
@@ -124,3 +124,17 @@ CREATE TABLE `sys_scraper_feature`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='爬虫功能配置';
+
+CREATE TABLE `anchor_live_record`
+(
+    `id`            bigint unsigned NOT NULL COMMENT '主键',
+    `room_id`       bigint       NOT NULL COMMENT '直播间ID',
+    `live_key`      varchar(255) NOT NULL COMMENT '直播场次key',
+    `live_time`     datetime(3) NOT NULL COMMENT '直播开始时间',
+    `is_live`       tinyint(1) NOT NULL COMMENT '是否直播中',
+    `end_live_time` datetime(3) DEFAULT NULL COMMENT '直播结束时间',
+    `created_at`    datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+    `updated_at`    datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_live_key` (`live_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='主播直播记录';

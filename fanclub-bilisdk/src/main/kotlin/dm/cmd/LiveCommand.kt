@@ -33,6 +33,9 @@ data class LiveCommand(
     @field:JsonProperty("roomid")
     val roomId: Long? = null,
 
+    /**
+     * 直播开始时间 (秒)
+     */
     @field:JsonProperty("live_time")
     val liveTime: Long? = null,
 

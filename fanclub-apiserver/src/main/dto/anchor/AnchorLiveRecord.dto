@@ -1,5 +1,5 @@
 export llh.fanclubvup.apiserver.entity.anchor.AnchorLiveRecord
- -> package llh.fanclubvup.apiserver.entity.anchor.dto
+    -> package llh.fanclubvup.apiserver.entity.anchor.dto
 
 @io.swagger.v3.oas.annotations.media.Schema(title = "数据分页查询请求体")
 specification AnchorLiveRecordQuerySpec {
@@ -9,4 +9,15 @@ specification AnchorLiveRecordQuerySpec {
 @io.swagger.v3.oas.annotations.media.Schema(title = "分页查询结果数据")
 AnchorLiveRecordPageView {
     #allScalars
+}
+
+input AnchorLiveRecordAddInput {
+    roomId
+    liveKey
+    liveTime
+}
+
+input AnchorLiveRecordEndLiveInput {
+    roomId
+    endLiveTime
 }

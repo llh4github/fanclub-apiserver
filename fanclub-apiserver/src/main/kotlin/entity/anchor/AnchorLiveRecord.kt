@@ -33,4 +33,13 @@ interface AnchorLiveRecord : BaseEntity {
     @get:Schema(title = "直播开始时间", description = "直播开始时间", example = "2023-01-01 00:00:00")
     @get:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DatetimeConstant.DATE_TIME_FORMAT)
     val liveTime: LocalDateTime
+
+    @get:Schema(title = "是否直播中", description = "是否直播中", example = "true")
+    @Column(name = "is_live")
+    val isLive: Boolean
+
+    @Column(name = "end_live_time")
+    @get:Schema(title = "直播结束时间", description = "直播结束时间", example = "2023-01-01 00:00:00")
+    @get:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DatetimeConstant.DATE_TIME_FORMAT)
+    val endLiveTime: LocalDateTime?
 }

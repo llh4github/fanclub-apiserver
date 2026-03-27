@@ -9,12 +9,18 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.lettuce.core.RedisClient
 import jakarta.annotation.Resource
 import llh.fanclubvup.apiserver.consts.StatisticsCacheKey
+import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordAddInput
+import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordEndLiveInput
+import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
 import llh.fanclubvup.bilisdk.dm.cmd.Command
 import llh.fanclubvup.bilisdk.dm.cmd.DanmuMsgCommand
+import llh.fanclubvup.bilisdk.dm.cmd.LiveCommand
+import llh.fanclubvup.bilisdk.dm.cmd.PreparingCommand
 import llh.fanclubvup.bilisdk.dm.cmd.SendGiftCommand
 import llh.fanclubvup.bilisdk.dm.cmd.SuperChatCommand
 import llh.fanclubvup.bilisdk.dm.cmd.UserToastMsgV2Cmd
 import llh.fanclubvup.bilisdk.scraper.BiliWsMsgBizHandler
+import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.redis.core.StringRedisTemplate
@@ -22,13 +28,17 @@ import org.springframework.data.redis.core.script.DefaultRedisScript
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
 import java.util.concurrent.Executors
 
 @Service
 class BiliDanmuStatistics(
     private val redisTemplate: StringRedisTemplate,
+    private val anchorLiveRecordService: AnchorLiveRecordService,
 ) : BiliWsMsgBizHandler {
 
     private val logger = KotlinLogging.logger {}
@@ -79,6 +89,38 @@ class BiliDanmuStatistics(
                     "总价=${cmd.data?.totalCoin}, " +
                     "动作=${cmd.data?.action}"
         }
+    }
+
+    override fun handle(cmd: PreparingCommand) {
+        val roomId = cmd.roomId
+        val endTime = cmd.sendTime
+        if (roomId == null || endTime == null) {
+            logger.error { "直播准备中命令关键参数缺乏:\n$cmd" }
+            return
+        }
+
+        val endLiveDateTime = Instant.ofEpochMilli(endTime)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDateTime()
+        val input = AnchorLiveRecordEndLiveInput(roomId, endLiveDateTime)
+        val result = anchorLiveRecordService.updateEndLiveStatus(input)
+        logger.info { "直播结束：直播间ID=$roomId, 结束时间=$endLiveDateTime, 更新数据库 $result 条数据" }
+    }
+
+    override fun handle(cmd: LiveCommand) {
+        val liveKey = cmd.liveKey
+        val roomId = cmd.roomId
+        val liveTime = cmd.liveTime
+        if (liveKey == null || roomId == null || liveTime == null) {
+            logger.error { "直播开始命令关键参数缺乏:\n$cmd" }
+            return
+        }
+
+        val liveDateTime = Instant.ofEpochSecond(liveTime)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDateTime()
+        val input = AnchorLiveRecordAddInput(roomId, liveKey, liveDateTime)
+        anchorLiveRecordService.save(input, SaveMode.UPSERT)
     }
 
     override fun handle(cmd: DanmuMsgCommand) {
