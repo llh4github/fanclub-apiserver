@@ -27,6 +27,7 @@ object CommandProcessor {
         "LIKE_INFO_V3_UPDATE",
         "INTERACT_WORD",
         "ONLINE_RANK_V3",
+        "TRADING_SCORE",
         "COMMON_NOTICE_DANMAKU",
         "STOP_LIVE_ROOM_LIST",
         "RANK_CHANGED",
