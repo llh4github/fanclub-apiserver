@@ -49,21 +49,6 @@ class RedisCacheConfig {
             .build()
     }
 
-    @Bean
-    fun luaResourcesRegistration(): Array<String> {
-        // 返回所有 Lua 文件的路径（用于 Native 镜像资源注册）
-        //FIXME 这种方法还得测试下
-        return arrayOf(
-            "lua/statistics_danmu.lua",
-            "lua/nickname_change.lua",
-        )
-    }
-
-    @Bean
-    fun fuck(): ClassPathResource {
-        return ClassPathResource("lua/statistics_danmu.lua")
-    }
-
     @Bean("statisticsDanmu")
     fun statisticsDanmu(): DefaultRedisScript<Boolean> {
         val s = DefaultRedisScript<Boolean>()
