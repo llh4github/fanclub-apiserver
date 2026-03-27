@@ -6,15 +6,21 @@
 package llh.fanclubvup.apiserver.service.anchor.impl
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import llh.fanclubvup.apiserver.consts.enums.LiveRecordStatus
 import llh.fanclubvup.apiserver.entity.anchor.*
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordEndLiveInput
 import llh.fanclubvup.apiserver.service.BaseDatabaseServiceImpl
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
 import org.babyfish.jimmer.sql.kt.KSqlClient
+import org.babyfish.jimmer.sql.kt.ast.expression.desc
 import org.babyfish.jimmer.sql.kt.ast.expression.eq
 import org.babyfish.jimmer.sql.kt.ast.expression.isNull
+import org.babyfish.jimmer.sql.kt.ast.expression.sql
+import org.babyfish.jimmer.sql.kt.ast.expression.valueIn
 import org.babyfish.jimmer.sql.kt.ast.table.makeOrders
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class AnchorLiveRecordServiceImpl(
@@ -25,11 +31,11 @@ class AnchorLiveRecordServiceImpl(
     private val logger = KotlinLogging.logger {}
     override fun updateEndLiveStatus(input: AnchorLiveRecordEndLiveInput): Int = sqlClient.transaction {
         val id = createQuery {
-            where {
-                table.roomId eq input.roomId
-                table.isLive eq true
+            where(
+                table.roomId eq input.roomId,
+                table.liveStatus eq LiveRecordStatus.LIVING,
                 table.endLiveTime.isNull()
-            }
+            )
             select(table.id)
         }.fetchFirstOrNull()
         if (id == null) {
@@ -37,7 +43,7 @@ class AnchorLiveRecordServiceImpl(
             return@transaction 0
         }
         val rs = createUpdate {
-            set(table.isLive, false)
+            set(table.liveStatus, LiveRecordStatus.NOT_LIVING)
             set(table.endLiveTime, input.endLiveTime)
             where {
                 table.id eq id
@@ -46,4 +52,35 @@ class AnchorLiveRecordServiceImpl(
         return@transaction rs
     }
 
+    override fun finishLiveForOvertime() {
+        val list = createQuery {
+            where(table.liveStatus eq LiveRecordStatus.LIVING)
+            where(
+                sql(Boolean::class, "TIMESTAMPDIFF(HOUR, %e, NOW()) >- 18") {
+                    expression(table.liveTime)
+                }
+            )
+            select(table.id)
+        }.execute()
+        if (list.isEmpty()) {
+            logger.info { "没有需要更新的直播状态数据" }
+            return
+        }
+        val cnt = createUpdate {
+            set(table.liveStatus, LiveRecordStatus.OVER_TIME)
+            set(table.endLiveTime, LocalDateTime.now())
+            where(table.id valueIn list)
+        }.execute()
+
+        logger.info { "更新了 $cnt 条超时直播状态数据" }
+    }
+
+    @Cacheable(cacheNames = ["AnchorLiveRecordService:isLive"], key = "#roomId")
+    override fun isLive(roomId: Long): LiveRecordStatus {
+        return createQuery {
+            orderBy(table.updatedTime.desc())
+            where { table.roomId eq roomId }
+            select(table.liveStatus)
+        }.fetchFirstOrNull() ?: LiveRecordStatus.NOT_LIVING
+    }
 }

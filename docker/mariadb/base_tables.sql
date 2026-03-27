@@ -127,14 +127,14 @@ CREATE TABLE `sys_scraper_feature`
 
 CREATE TABLE `anchor_live_record`
 (
-    `id`            bigint unsigned NOT NULL COMMENT '主键',
-    `room_id`       bigint       NOT NULL COMMENT '直播间ID',
+    `id`            bigint(20) unsigned NOT NULL COMMENT '主键',
+    `room_id`       bigint(20) NOT NULL COMMENT '直播间ID',
     `live_key`      varchar(255) NOT NULL COMMENT '直播场次key',
     `live_time`     datetime(3) NOT NULL COMMENT '直播开始时间',
-    `is_live`       tinyint(1) NOT NULL COMMENT '是否直播中',
+    `live_status`   tinyint(1) NOT NULL COMMENT '直播状态',
     `end_live_time` datetime(3) DEFAULT NULL COMMENT '直播结束时间',
-    `created_at`    datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-    `updated_at`    datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
+    `created_at`    datetime(3) NOT NULL DEFAULT current_timestamp(3) COMMENT '创建时间',
+    `updated_at`    datetime(3) NOT NULL DEFAULT current_timestamp(3) ON UPDATE current_timestamp(3) COMMENT '更新时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_live_key` (`live_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='主播直播记录';

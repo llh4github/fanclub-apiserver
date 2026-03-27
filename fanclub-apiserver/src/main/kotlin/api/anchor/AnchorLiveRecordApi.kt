@@ -11,9 +11,11 @@ import llh.fanclubvup.apiserver.dto.JsonWrapper
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordPageView
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordQuerySpec
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -22,11 +24,19 @@ import org.springframework.web.bind.annotation.RestController
 class AnchorLiveRecordApi(
     private val service: AnchorLiveRecordService
 ) {
-    
+
     @PostMapping("/page")
     @Operation(summary = "分页查询")
     fun pageQuery(@RequestBody queryParam: AnchorLiveRecordQuerySpec) =
         JsonWrapper.ok(
             service.pageQuery(AnchorLiveRecordPageView::class, queryParam, queryParam.pageParam)
         )
+
+    @GetMapping("/is-live")
+    @Operation(summary = "查询直播状态值")
+    fun isLive(@RequestParam roomId: Long) = JsonWrapper.ok(
+        service.isLive(roomId)
+    )
+
+
 }

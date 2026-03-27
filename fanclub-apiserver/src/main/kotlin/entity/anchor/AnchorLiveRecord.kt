@@ -7,6 +7,7 @@ package llh.fanclubvup.apiserver.entity.anchor
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
+import llh.fanclubvup.apiserver.consts.enums.LiveRecordStatus
 import llh.fanclubvup.apiserver.entity.BaseEntity
 import llh.fanclubvup.common.consts.DatetimeConstant
 import org.babyfish.jimmer.sql.Column
@@ -34,9 +35,9 @@ interface AnchorLiveRecord : BaseEntity {
     @get:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DatetimeConstant.DATE_TIME_FORMAT)
     val liveTime: LocalDateTime
 
-    @get:Schema(title = "是否直播中", description = "是否直播中", example = "true")
-    @Column(name = "is_live")
-    val isLive: Boolean
+    @get:Schema(title = "直播状态")
+    @Column(name = "live_status")
+    val liveStatus: LiveRecordStatus
 
     @Column(name = "end_live_time")
     @get:Schema(title = "直播结束时间", description = "直播结束时间", example = "2023-01-01 00:00:00")
