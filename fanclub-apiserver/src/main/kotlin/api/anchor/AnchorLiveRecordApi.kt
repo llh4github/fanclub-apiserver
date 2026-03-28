@@ -32,9 +32,9 @@ class AnchorLiveRecordApi(
             service.pageQuery(AnchorLiveRecordPageView::class, queryParam, queryParam.pageParam)
         )
 
-    @GetMapping("/is-live")
+    @GetMapping("/live-status")
     @Operation(summary = "查询直播状态值")
-    fun isLive(@RequestParam roomId: Long) = JsonWrapper.ok(
+    fun liveStatus(@RequestParam roomId: Long) = JsonWrapper.ok(
         service.fetchLiveStatus(roomId)
     )
 
