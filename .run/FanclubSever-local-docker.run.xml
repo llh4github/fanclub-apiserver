@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="FanclubSever-local-docker" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <option name="ACTIVE_PROFILES" value="docker" />
+    <module name="fanclub-vup.fanclub-apiserver.main" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="llh.fanclubvup.apiserver.FanclubVupApplication" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
