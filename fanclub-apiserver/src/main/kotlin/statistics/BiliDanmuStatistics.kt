@@ -9,9 +9,13 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.lettuce.core.RedisClient
 import jakarta.annotation.Resource
 import llh.fanclubvup.apiserver.consts.StatisticsCacheKey
+import llh.fanclubvup.apiserver.consts.enums.GuardLevel
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordAddInput
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordEndLiveInput
+import llh.fanclubvup.apiserver.entity.viewer.dto.ViewerGuardBuyRecordAddInput
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
+import llh.fanclubvup.apiserver.service.viewer.ViewerGuardBuyRecordService
+import llh.fanclubvup.apiserver.utils.ValidationUtil
 import llh.fanclubvup.bilisdk.dm.cmd.Command
 import llh.fanclubvup.bilisdk.dm.cmd.DanmuMsgCommand
 import llh.fanclubvup.bilisdk.dm.cmd.LiveCommand
@@ -20,6 +24,7 @@ import llh.fanclubvup.bilisdk.dm.cmd.SendGiftCommand
 import llh.fanclubvup.bilisdk.dm.cmd.SuperChatCommand
 import llh.fanclubvup.bilisdk.dm.cmd.UserToastMsgV2Cmd
 import llh.fanclubvup.bilisdk.scraper.BiliWsMsgBizHandler
+import llh.fanclubvup.common.utils.LocalDateTimeUtil
 import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -39,6 +44,7 @@ import java.util.concurrent.Executors
 class BiliDanmuStatistics(
     private val redisTemplate: StringRedisTemplate,
     private val anchorLiveRecordService: AnchorLiveRecordService,
+    private val viewerGuardBuyRecordService: ViewerGuardBuyRecordService,
 ) : BiliWsMsgBizHandler {
 
     private val logger = KotlinLogging.logger {}
@@ -54,16 +60,28 @@ class BiliDanmuStatistics(
     private val executors = Executors.newVirtualThreadPerTaskExecutor()
 
     override fun handle(cmd: UserToastMsgV2Cmd) {
-        logger.info {
-            "用户开通大航海 V2: " +
-                    "用户名=${cmd.data?.senderUinfo?.base?.name}, " +
-                    "UID=${cmd.data?.senderUinfo?.uid}, " +
-                    "舰队等级=${cmd.data?.guardInfo?.guardLevel}, " +
-                    "操作类型=${cmd.data?.guardInfo?.opType}, " +
-                    "数量=${cmd.data?.payInfo?.num}, " +
-                    "价格=${cmd.data?.payInfo?.price}, " +
-                    "舰长信息=${cmd.data?.guardInfo}, " +
-                    "提示消息=${cmd.data?.toastMsg}"
+        val senderUid = cmd.data?.senderUinfo?.uid
+        val reciverUid = cmd.data?.receiverInfo?.uid
+        val num = cmd.data?.payInfo?.num
+        val guardLevel = cmd.data?.guardInfo?.guardLevel
+        val price = cmd.data?.payInfo?.price
+        val startTime = cmd.data?.guardInfo?.startTime
+        val payflowId = cmd.data?.payInfo?.payflowId
+
+        if (ValidationUtil.isAllNotEmpty(senderUid, guardLevel, reciverUid, num, price, startTime, payflowId)) {
+            viewerGuardBuyRecordService.save(
+                ViewerGuardBuyRecordAddInput(
+                    senderBid = senderUid!!,
+                    receiverBid = reciverUid!!,
+                    guardType = GuardLevel.parse(guardLevel!!),
+                    num = num!!,
+                    price = price!!.toInt(),
+                    startTime = LocalDateTimeUtil.toLocalDateTime(startTime!!),
+                    payflowId = payflowId!!
+                )
+            )
+        } else {
+            logger.error { "用户开通大航海 V2 消息关键参数缺乏:\n$cmd" }
         }
     }
 
