@@ -19,5 +19,8 @@ interface AnchorLiveRecordService : BaseDatabaseService<AnchorLiveRecord> {
      */
     fun finishLiveForOvertime()
 
-    fun isLive(roomId: Long): LiveRecordStatus
+    /**
+     * 获取直播状态
+     */
+    fun fetchLiveStatus(roomId: Long): LiveRecordStatus
 }

@@ -23,7 +23,7 @@ CREATE TABLE `anchor_info`
     `bili_id`    bigint(20)          NOT NULL COMMENT 'B站ID，通常称为UID',
     `bili_name`  varchar(255) NOT NULL COMMENT 'B站昵称',
     `room_id`    bigint(20)          NOT NULL COMMENT '直播间ID',
-    `user_id`    bigint(20) unsigned NOT NULL COMMENT '用户ID',
+    `user_id`    bigint(20) unsigned NULL COMMENT '用户ID',
     `created_at` datetime(3)         NOT NULL DEFAULT current_timestamp(3) COMMENT '创建时间',
     `updated_at` datetime(3)         NOT NULL DEFAULT current_timestamp(3) ON UPDATE current_timestamp(3) COMMENT '更新时间',
     PRIMARY KEY (`id`)

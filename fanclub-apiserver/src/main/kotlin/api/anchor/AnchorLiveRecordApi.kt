@@ -35,7 +35,7 @@ class AnchorLiveRecordApi(
     @GetMapping("/is-live")
     @Operation(summary = "查询直播状态值")
     fun isLive(@RequestParam roomId: Long) = JsonWrapper.ok(
-        service.isLive(roomId)
+        service.fetchLiveStatus(roomId)
     )
 
 

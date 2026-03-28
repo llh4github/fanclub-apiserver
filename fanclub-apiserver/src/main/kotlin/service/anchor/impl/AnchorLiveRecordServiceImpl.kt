@@ -15,6 +15,7 @@ import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.babyfish.jimmer.sql.kt.ast.expression.desc
 import org.babyfish.jimmer.sql.kt.ast.expression.eq
 import org.babyfish.jimmer.sql.kt.ast.expression.isNull
+import org.babyfish.jimmer.sql.kt.ast.expression.le
 import org.babyfish.jimmer.sql.kt.ast.expression.sql
 import org.babyfish.jimmer.sql.kt.ast.expression.valueIn
 import org.babyfish.jimmer.sql.kt.ast.table.makeOrders
@@ -56,7 +57,7 @@ class AnchorLiveRecordServiceImpl(
         val list = createQuery {
             where(table.liveStatus eq LiveRecordStatus.LIVING)
             where(
-                sql(Boolean::class, "TIMESTAMPDIFF(HOUR, %e, NOW()) >- 18") {
+                sql(Boolean::class, "TIMESTAMPDIFF(HOUR, %e, NOW()) >= 18") {
                     expression(table.liveTime)
                 }
             )
@@ -75,8 +76,8 @@ class AnchorLiveRecordServiceImpl(
         logger.info { "更新了 $cnt 条超时直播状态数据" }
     }
 
-    @Cacheable(cacheNames = ["AnchorLiveRecordService:isLive"], key = "#roomId")
-    override fun isLive(roomId: Long): LiveRecordStatus {
+    @Cacheable(cacheNames = ["AnchorLiveRecordService:fetchLiveStatus"], key = "#roomId")
+    override fun fetchLiveStatus(roomId: Long): LiveRecordStatus {
         return createQuery {
             orderBy(table.updatedTime.desc())
             where { table.roomId eq roomId }
