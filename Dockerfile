@@ -36,7 +36,8 @@ LABEL maintainer="lilinhong_coding@foxmail.com" \
       license="Apache-2.0" \
       version=${APP_VERSION} \
       description="A api server."
-
+# 设置禁用 Flyway 的环境变量
+ENV SPRING_FLYWAY_ENABLED=false
 ENV SPRING_DOCKER_COMPOSE_ENABLED=false
 ENV SPRING_APPLICATION_VERSION=${APP_VERSION}
 # 创建日志目录
