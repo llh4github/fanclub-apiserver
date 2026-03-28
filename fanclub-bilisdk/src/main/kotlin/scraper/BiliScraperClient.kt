@@ -38,6 +38,9 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 
+/**
+ * 爬虫客户端
+ */
 class BiliScraperClient(
     private val cacheManager: BiliSignCacheManager,
     private val persistentCookieJarManager: PersistentCookieJarManager,
@@ -75,6 +78,9 @@ class BiliScraperClient(
         }
     }
 
+    /**
+     * 获取用户关系数据：关注的数量，粉丝数量
+     */
     fun fetchUserRelation(uId: BID): UserRelationResponse? {
         val url = BiliApiUrls.USER_RELATION_STAT_API
         val queryString = buildQueryString(TreeMap<String, String>().apply {
@@ -153,7 +159,6 @@ class BiliScraperClient(
     private fun buildAuthWs(token: String, roomId: Long): Result<ByteArray> = runCatching {
         val buvid = persistentCookieJarManager.fetchCookies().firstOrNull { it.name == "buvid3" }
             ?: throw AppRuntimeException("buvid3 cookie not found")
-        //FIXME 感觉不是稳定
         val text = """
              {"uid":${prop.currentBid},"roomid":$roomId,"protover":3,"buvid":"${buvid.value}","support_ack":true,"scene":"room","platform":"web","type":2,"key":"$token"}
         """.trimIndent()

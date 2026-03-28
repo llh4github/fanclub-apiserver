@@ -3,7 +3,7 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
-package llh.fanclubvup.bilisdk.response
+package llh.fanclubvup.bilisdk.http.response
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonProperty
