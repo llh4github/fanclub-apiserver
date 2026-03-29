@@ -8,6 +8,7 @@ package llh.fanclubvup.apiserver.statistics
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.apiserver.consts.StatisticsCacheKey
 import llh.fanclubvup.apiserver.consts.enums.GuardLevel
+import llh.fanclubvup.apiserver.consts.enums.LiveRecordStatus
 import llh.fanclubvup.apiserver.dto.viwer.DanmuWsMsg
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordAddInput
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordEndLiveInput
@@ -137,7 +138,7 @@ class BiliDanmuStatistics(
         val liveDateTime =
             if (liveTime != null) LocalDateTimeUtil.toLocalDateTime(liveTime)
             else LocalDateTime.now()
-        val input = AnchorLiveRecordAddInput(roomId, liveKey, liveDateTime)
+        val input = AnchorLiveRecordAddInput(roomId, liveKey, liveDateTime, LiveRecordStatus.LIVING)
         anchorLiveRecordService.save(input, SaveMode.UPSERT)
         logger.info { "保存开播记录" }
     }

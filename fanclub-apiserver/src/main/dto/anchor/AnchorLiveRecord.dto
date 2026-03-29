@@ -15,6 +15,7 @@ input AnchorLiveRecordAddInput {
     roomId
     liveKey
     liveTime
+    liveStatus
 }
 
 input AnchorLiveRecordEndLiveInput {

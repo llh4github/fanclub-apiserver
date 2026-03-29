@@ -29,4 +29,13 @@ class BiliDanmuStatisticsTest {
         val cmd = CommandProcessor.parseCommand(json) ?: throw Exception("JSON解析失败")
         service.handleMsg(cmd)
     }
+
+    @Test
+    fun test_LiveCommand() {
+        val json = """
+            {"cmd":"LIVE","live_key":"685442366582205620","voice_background":"http://i0.hdslb.com/bfs/live/live_room_skin/071b186fc69d448332c2473fb0238b0ff85ef7e4.jpg","sub_session_key":"685442366582205620sub_time:1773842193","live_platform":"android_link","live_model":3,"roomid":1713548468,"live_time":1773842193,"special_types":[]}
+       """.trimIndent()
+        val cmd = CommandProcessor.parseCommand(json) ?: throw Exception("JSON解析失败")
+        service.handleMsg(cmd)
+    }
 }

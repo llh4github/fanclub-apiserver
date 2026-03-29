@@ -33,8 +33,7 @@ alter table anchor_live_record
     change updated_at updated_time datetime(3) default current_timestamp (3) not null on
 update current_timestamp(3) comment '更新时间';
 
-----
-
+--
 CREATE TABLE `viewer_danmu_count`
 (
     `id`           bigint unsigned NOT NULL COMMENT '主键ID',
