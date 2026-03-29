@@ -146,14 +146,6 @@ class BiliDanmuStatistics(
         val now = LocalDate.now()
         val time = LocalTime.now()
         cmd.getUserInfo()?.let { userInfo ->
-            logger.info {
-                "弹幕消息：" +
-                        "用户名=${userInfo.username}, " +
-                        "UID=${userInfo.uid}, " +
-                        "ts=${userInfo.timestamp}, " +
-                        "内容=${cmd.getContent()}"
-            }
-
             executors.execute {
                 val key = StatisticsCacheKey.danmuCount(now)
                 redisTemplate.execute(
