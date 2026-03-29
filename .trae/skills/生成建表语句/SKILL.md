@@ -9,6 +9,6 @@ description: 根据Jimmer框架的Kotlin实体类生成对应的建表语句
 4. 有org.babyfish.jimmer.sql.Key的字段为唯一索引字段。
 5. 生成的语句符合mariadb数据库的语法与规范。
 6. 生成日期类型字段时，默认使用 DATETIME(3) 类型，毫秒精度，而不是TIMESTAMP类型。
-    1. created_at 字段默认当前时间
-    2. updated_at 字段默认当前时间，每次更新时自动设置为当前时间
+    1. created_time 字段默认当前时间
+    2. updated_time 字段默认当前时间，每次更新时自动设置为当前时间
 7. 根据kotlin语言的可空性决定对应字段是否可空
