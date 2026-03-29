@@ -31,9 +31,11 @@ FROM debian:bookworm-slim
 WORKDIR /app
 
 ARG APP_VERSION
+ARG GIT_COMMIT_ID
 
 LABEL maintainer="lilinhong_coding@foxmail.com" \
       license="Apache-2.0" \
+      git_commit_id=${GIT_COMMIT_ID} \
       version=${APP_VERSION} \
       description="A api server."
 # 设置禁用 Flyway 的环境变量

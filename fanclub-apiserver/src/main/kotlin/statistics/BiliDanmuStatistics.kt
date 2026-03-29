@@ -134,11 +134,10 @@ class BiliDanmuStatistics(
             return
         }
 
-        val liveDateTime = Instant.ofEpochSecond(liveTime)
-            .atZone(ZoneId.systemDefault())
-            .toLocalDateTime()
+        val liveDateTime = LocalDateTimeUtil.toLocalDateTime(liveTime)
         val input = AnchorLiveRecordAddInput(roomId, liveKey, liveDateTime)
         anchorLiveRecordService.save(input, SaveMode.UPSERT)
+        logger.info { "保存开播记录" }
     }
 
     override fun handle(cmd: DanmuMsgCommand) {
