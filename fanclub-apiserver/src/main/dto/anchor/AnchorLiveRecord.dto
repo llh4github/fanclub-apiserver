@@ -21,3 +21,8 @@ input AnchorLiveRecordEndLiveInput {
     roomId
     endLiveTime
 }
+
+AnchorLiveRecordLiveStatus {
+    liveTime?
+    liveStatus
+}

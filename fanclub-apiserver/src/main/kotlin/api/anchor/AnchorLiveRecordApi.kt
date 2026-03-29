@@ -33,7 +33,7 @@ class AnchorLiveRecordApi(
         )
 
     @GetMapping("/live-status")
-    @Operation(summary = "查询直播状态值")
+    @Operation(summary = "查询直播状态")
     fun liveStatus(@RequestParam roomId: Long) = JsonWrapper.ok(
         service.fetchLiveStatus(roomId)
     )

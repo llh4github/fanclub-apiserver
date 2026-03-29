@@ -9,6 +9,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.apiserver.consts.enums.LiveRecordStatus
 import llh.fanclubvup.apiserver.entity.anchor.*
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordEndLiveInput
+import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordLiveStatus
 import llh.fanclubvup.apiserver.service.BaseDatabaseServiceImpl
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
 import org.babyfish.jimmer.sql.kt.KSqlClient
@@ -77,11 +78,11 @@ class AnchorLiveRecordServiceImpl(
     }
 
     @Cacheable(cacheNames = ["AnchorLiveRecordService:fetchLiveStatus"], key = "#roomId")
-    override fun fetchLiveStatus(roomId: Long): LiveRecordStatus {
+    override fun fetchLiveStatus(roomId: Long): AnchorLiveRecordLiveStatus {
         return createQuery {
             orderBy(table.updatedTime.desc())
             where { table.roomId eq roomId }
-            select(table.liveStatus)
-        }.fetchFirstOrNull() ?: LiveRecordStatus.NOT_LIVING
+            select(table.fetch(AnchorLiveRecordLiveStatus::class))
+        }.fetchFirstOrNull() ?: AnchorLiveRecordLiveStatus(null, LiveRecordStatus.UNKNOWN)
     }
 }
