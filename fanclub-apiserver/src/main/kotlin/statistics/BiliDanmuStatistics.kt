@@ -33,6 +33,7 @@ import org.springframework.data.redis.core.script.DefaultRedisScript
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.util.concurrent.Executors
@@ -127,12 +128,14 @@ class BiliDanmuStatistics(
         val liveKey = cmd.liveKey
         val roomId = cmd.roomId
         val liveTime = cmd.liveTime
-        if (liveKey == null || roomId == null || liveTime == null) {
+        if (liveKey == null || roomId == null) {
             logger.error { "直播开始命令关键参数缺乏:\n$cmd" }
             return
         }
 
-        val liveDateTime = LocalDateTimeUtil.toLocalDateTime(liveTime)
+        val liveDateTime =
+            if (liveTime != null) LocalDateTimeUtil.toLocalDateTime(liveTime)
+            else LocalDateTime.now()
         val input = AnchorLiveRecordAddInput(roomId, liveKey, liveDateTime)
         anchorLiveRecordService.save(input, SaveMode.UPSERT)
         logger.info { "保存开播记录" }
