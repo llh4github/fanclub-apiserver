@@ -128,6 +128,7 @@ class BiliDanmuStatistics(
         val liveKey = cmd.liveKey
         val roomId = cmd.roomId
         val liveTime = cmd.liveTime
+        logger.info { "开播数据:\n$cmd" }
         if (liveKey == null || roomId == null) {
             logger.error { "直播开始命令关键参数缺乏:\n$cmd" }
             return
