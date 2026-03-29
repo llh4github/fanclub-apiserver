@@ -1,3 +1,4 @@
+.trae
 # Gradle相关
 .gradle/
 build/
@@ -56,3 +57,4 @@ node_modules/
 # Docker相关
 docker-compose.yml
 .docker/
+docker/

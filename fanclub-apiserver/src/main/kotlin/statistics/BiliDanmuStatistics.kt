@@ -1,15 +1,31 @@
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
 package llh.fanclubvup.apiserver.statistics
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.lettuce.core.RedisClient
 import jakarta.annotation.Resource
 import llh.fanclubvup.apiserver.consts.StatisticsCacheKey
+import llh.fanclubvup.apiserver.consts.enums.GuardLevel
+import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordAddInput
+import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordEndLiveInput
+import llh.fanclubvup.apiserver.entity.viewer.dto.ViewerGuardBuyRecordAddInput
+import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
+import llh.fanclubvup.apiserver.service.viewer.ViewerGuardBuyRecordService
+import llh.fanclubvup.apiserver.utils.ValidationUtil
 import llh.fanclubvup.bilisdk.dm.cmd.Command
 import llh.fanclubvup.bilisdk.dm.cmd.DanmuMsgCommand
+import llh.fanclubvup.bilisdk.dm.cmd.LiveCommand
+import llh.fanclubvup.bilisdk.dm.cmd.PreparingCommand
 import llh.fanclubvup.bilisdk.dm.cmd.SendGiftCommand
 import llh.fanclubvup.bilisdk.dm.cmd.SuperChatCommand
 import llh.fanclubvup.bilisdk.dm.cmd.UserToastMsgV2Cmd
 import llh.fanclubvup.bilisdk.scraper.BiliWsMsgBizHandler
+import llh.fanclubvup.common.utils.LocalDateTimeUtil
+import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.redis.core.StringRedisTemplate
@@ -17,13 +33,18 @@ import org.springframework.data.redis.core.script.DefaultRedisScript
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
 import java.util.concurrent.Executors
 
 @Service
 class BiliDanmuStatistics(
     private val redisTemplate: StringRedisTemplate,
+    private val anchorLiveRecordService: AnchorLiveRecordService,
+    private val viewerGuardBuyRecordService: ViewerGuardBuyRecordService,
 ) : BiliWsMsgBizHandler {
 
     private val logger = KotlinLogging.logger {}
@@ -32,19 +53,35 @@ class BiliDanmuStatistics(
     @Qualifier("statisticsDanmu")
     private lateinit var statisticsDanmu: DefaultRedisScript<Boolean>
 
+    @Autowired
+    @Qualifier("nicknameChange")
+    private lateinit var nicknameChange: DefaultRedisScript<Boolean>
+
     private val executors = Executors.newVirtualThreadPerTaskExecutor()
 
     override fun handle(cmd: UserToastMsgV2Cmd) {
-        logger.info {
-            "用户开通大航海 V2: " +
-                    "用户名=${cmd.data?.senderUinfo?.base?.name}, " +
-                    "UID=${cmd.data?.senderUinfo?.uid}, " +
-                    "舰队等级=${cmd.data?.guardInfo?.guardLevel}, " +
-                    "操作类型=${cmd.data?.guardInfo?.opType}, " +
-                    "数量=${cmd.data?.payInfo?.num}, " +
-                    "价格=${cmd.data?.payInfo?.price}, " +
-                    "舰长信息=${cmd.data?.guardInfo}, " +
-                    "提示消息=${cmd.data?.toastMsg}"
+        val senderUid = cmd.data?.senderUinfo?.uid
+        val reciverUid = cmd.data?.receiverInfo?.uid
+        val num = cmd.data?.payInfo?.num
+        val guardLevel = cmd.data?.guardInfo?.guardLevel
+        val price = cmd.data?.payInfo?.price
+        val startTime = cmd.data?.guardInfo?.startTime
+        val payflowId = cmd.data?.payInfo?.payflowId
+
+        if (ValidationUtil.isAllNotEmpty(senderUid, guardLevel, reciverUid, num, price, startTime, payflowId)) {
+            viewerGuardBuyRecordService.save(
+                ViewerGuardBuyRecordAddInput(
+                    senderBid = senderUid!!,
+                    receiverBid = reciverUid!!,
+                    guardType = GuardLevel.parse(guardLevel!!),
+                    num = num!!,
+                    price = price!!.toInt(),
+                    startTime = LocalDateTimeUtil.toLocalDateTime(startTime!!),
+                    payflowId = payflowId!!
+                )
+            )
+        } else {
+            logger.error { "用户开通大航海 V2 消息关键参数缺乏:\n$cmd" }
         }
     }
 
@@ -72,6 +109,37 @@ class BiliDanmuStatistics(
         }
     }
 
+    override fun handle(cmd: PreparingCommand) {
+        val roomId = cmd.roomId
+        val endTime = cmd.sendTime
+        if (roomId == null || endTime == null) {
+            logger.error { "直播准备中命令关键参数缺乏:\n$cmd" }
+            return
+        }
+
+        val endLiveDateTime = Instant.ofEpochMilli(endTime)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDateTime()
+        val input = AnchorLiveRecordEndLiveInput(roomId, endLiveDateTime)
+        val result = anchorLiveRecordService.updateEndLiveStatus(input)
+        logger.info { "直播结束：直播间ID=$roomId, 结束时间=$endLiveDateTime, 更新数据库 $result 条数据" }
+    }
+
+    override fun handle(cmd: LiveCommand) {
+        val liveKey = cmd.liveKey
+        val roomId = cmd.roomId
+        val liveTime = cmd.liveTime
+        if (liveKey == null || roomId == null || liveTime == null) {
+            logger.error { "直播开始命令关键参数缺乏:\n$cmd" }
+            return
+        }
+
+        val liveDateTime = LocalDateTimeUtil.toLocalDateTime(liveTime)
+        val input = AnchorLiveRecordAddInput(roomId, liveKey, liveDateTime)
+        anchorLiveRecordService.save(input, SaveMode.UPSERT)
+        logger.info { "保存开播记录" }
+    }
+
     override fun handle(cmd: DanmuMsgCommand) {
         val now = LocalDate.now()
         val time = LocalTime.now()
@@ -90,6 +158,14 @@ class BiliDanmuStatistics(
                     statisticsDanmu,
                     listOf(key, "${time.hour}-${time.minute}"),
                     userInfo.uid.toString(), userInfo.timestamp.toString()
+                )
+            }
+            executors.execute {
+                val key = StatisticsCacheKey.nicknameChange()
+                redisTemplate.execute(
+                    nicknameChange,
+                    listOf(key),
+                    userInfo.username, userInfo.uid.toString()
                 )
             }
         }

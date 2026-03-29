@@ -21,6 +21,11 @@ object BiliApiUrls {
     const val WBI_INIT_URL = UID_INIT_URL
 
     /**
+     * 直播间状态接口
+     */
+    const val LIVE_STATUS_API = "https://api.live.bilibili.com/room/v1/Room/get_status_info_by_uids"
+
+    /**
      * BUVID 初始化接口
      */
     const val BUVID_INIT_URL = "https://www.bilibili.com/"

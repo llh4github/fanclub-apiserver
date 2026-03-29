@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
 package llh.fanclubvup.apiserver.consts.enums
 
 import org.babyfish.jimmer.sql.EnumItem
@@ -26,6 +31,17 @@ enum class GuardLevel {
         3 to "舰长",
         -1 to "未知"
     )
+
+    companion object{
+        fun parse(value: Int): GuardLevel {
+            return when (value) {
+                1 -> ADMIRAL
+                2 -> VICE_ADMIRAL
+                3 -> CAPTAIN
+                else -> UNKNOWN
+            }
+        }
+    }
 
     fun toDisplayName(): String {
         return displayMap[ordinal] ?: "未知"

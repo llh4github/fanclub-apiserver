@@ -10,3 +10,13 @@ specification ViewerGuardBuyRecordQuerySpec {
 ViewerGuardBuyRecordPageView {
     #allScalars
 }
+
+input ViewerGuardBuyRecordAddInput {
+    senderBid
+    receiverBid
+    num
+    guardType
+    price
+    startTime
+    payflowId
+}

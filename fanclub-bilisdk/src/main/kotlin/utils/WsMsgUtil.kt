@@ -6,6 +6,7 @@
 package llh.fanclubvup.bilisdk.utils
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import llh.fanclubvup.bilisdk.cache.EhcacheHashcodeExpiryManager
 import llh.fanclubvup.bilisdk.dm.CommandProcessor
 import llh.fanclubvup.bilisdk.enums.ProtoVer
 import llh.fanclubvup.bilisdk.enums.WsOperation
@@ -13,7 +14,6 @@ import llh.fanclubvup.bilisdk.scraper.BiliWsMsgBizHandler
 import okhttp3.WebSocket
 import okio.Buffer
 import okio.ByteString
-import okio.ByteString.Companion.readByteString
 import okio.ByteString.Companion.toByteString
 import org.brotli.dec.BrotliInputStream
 import tools.jackson.module.kotlin.jacksonObjectMapper
@@ -159,10 +159,13 @@ object WsMsgUtil {
                     ProtoVer.NORMAL.value -> {
                         if (body.size > 0) {
                             val json = body.readString(Charsets.UTF_8)
+                            // 过滤掉因网络抖动产生的重复消息
+                            if (EhcacheHashcodeExpiryManager.putIfAbsent(json) == null) {
 //                            logger.debug { "danmu: \n$json" }
-                            CommandProcessor.parseCommand(json)?.let {
-                                executors.execute {
-                                    biliWsMsgBizHandler.handleMsg(it)
+                                CommandProcessor.parseCommand(json)?.let {
+                                    executors.execute {
+                                        biliWsMsgBizHandler.handleMsg(it)
+                                    }
                                 }
                             }
                         }

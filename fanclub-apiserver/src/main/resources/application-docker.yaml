@@ -1,0 +1,48 @@
+# Docker Compose 环境配置
+spring:
+  application:
+    name: fanclub-vup-docker
+  datasource:
+    url: jdbc:mariadb://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:fanclub_dev}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:123456}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  flyway:
+    enabled: true
+    locations: classpath:db/mariadb
+
+  docker:
+    compose:
+      file: compose.yaml
+      enabled: true
+      lifecycle-management: ${DOCKER_LIFECYCLE:start_only}
+
+jimmer:
+  language: kotlin
+  show-sql: true
+  pretty-sql: true
+  inline-sql-variables: true
+
+logging:
+  level:
+    llh: debug
+    org.springframework.web: WARN
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+# Bilibili Live SDK 配置
+fanclub:
+  bili-live:
+    signature-key: 1111
+    app-id: 22222
+  bili:
+    scraper:
+      current-bid: 1111

@@ -1,10 +1,17 @@
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
 package llh.fanclubvup.apiserver.entity.viewer
 
 import io.swagger.v3.oas.annotations.media.Schema
 import llh.fanclubvup.apiserver.consts.enums.GuardLevel
 import llh.fanclubvup.apiserver.entity.BaseEntity
 import llh.fanclubvup.common.BID
+import org.babyfish.jimmer.sql.Column
 import org.babyfish.jimmer.sql.Entity
+import org.babyfish.jimmer.sql.Key
 import org.babyfish.jimmer.sql.Table
 import java.time.LocalDateTime
 
@@ -12,7 +19,14 @@ import java.time.LocalDateTime
 @Table(name = "viewer_guard_buy_record")
 @Schema(title = "观众的舰长购买记录")
 interface ViewerGuardBuyRecord : BaseEntity {
-    val bid: BID
+
+    @Column(name = "sender_bid")
+    @get:Schema(title = "赠送者BID", example = "114514")
+    val senderBid: BID
+
+    @Column(name = "receiver_bid")
+    @get:Schema(title = "接受者BID", example = "114514")
+    val receiverBid: BID
 
     @get:Schema(title = "购买数量", description = "购买数量", example = "114514")
     val num: Int
@@ -26,6 +40,10 @@ interface ViewerGuardBuyRecord : BaseEntity {
     @get:Schema(title = "舰长开始时间", description = "舰长开始时间", example = "114514")
     val startTime: LocalDateTime?
 
-    @get:Schema(title = "舰长结束时间", description = "舰长结束时间", example = "114514")
-    val endTime: LocalDateTime?
+    /**
+     * 支付流水号。 唯一键
+     */
+    @Key
+    @get:Schema(title = "支付流水号", description = "支付流水号", example = "114514")
+    val payflowId: String
 }

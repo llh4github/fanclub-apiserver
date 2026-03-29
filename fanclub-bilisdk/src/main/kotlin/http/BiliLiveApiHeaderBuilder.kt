@@ -15,6 +15,7 @@ import kotlin.time.Clock
  *
  *  [接口文档](https://open-live.bilibili.com/document/74eec767-e594-7ddd-6aba-257e8317c05d#h1-u5FEBu901Fu5F00u59CB)
  */
+@Deprecated("不考虑使用SDK的方式")
 data class BiliLiveApiHeaderBuilder(
     val accessKeyId: String,
     val signatureKey: String,

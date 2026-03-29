@@ -47,7 +47,8 @@ class SpringSecurityConfig(
                     authorize(uri, permitAll)
                 }
                 // TODO 后面看看有没有其他方案
-                authorize("/anchor/follower/num/query-num", permitAll)
+                authorize("/anchor/follower/num/query", permitAll)
+                authorize("/anchor/live-record/live-status", permitAll)
                 authorize(anyRequest, authenticated)
             }
             csrf { disable() }

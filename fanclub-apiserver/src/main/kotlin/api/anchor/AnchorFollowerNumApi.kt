@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
 package llh.fanclubvup.apiserver.api.anchor
 
 import io.swagger.v3.oas.annotations.Operation
@@ -30,7 +35,7 @@ class AnchorFollowerNumApi(
         )
 
     @PermitAll
-    @PostMapping("/query-num")
+    @PostMapping("/query")
     @Operation(summary = "查询数量")
     fun queryNum(@RequestBody spec: AnchorFollowerDateNumQuerySpec) = JsonWrapper.ok(service.queryNum(spec))
 }

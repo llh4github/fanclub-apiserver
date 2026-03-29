@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
 package llh.fanclubvup.apiserver.components
 
 import llh.fanclubvup.apiserver.consts.CacheKeyPrefix
@@ -5,7 +10,6 @@ import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.ClassPathResource
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.data.redis.cache.RedisCacheConfiguration
 import org.springframework.data.redis.cache.RedisCacheManager
 import org.springframework.data.redis.connection.RedisConnectionFactory
@@ -44,22 +48,33 @@ class RedisCacheConfig {
             .build()
     }
 
-    @Bean
-    fun luaResourcesRegistration(): Array<String> {
-        // 使用 PathMatchingResourcePatternResolver 自动扫描所有 Lua 文件
-        val resolver = PathMatchingResourcePatternResolver()
-        val resources = resolver.getResources("classpath*:lua/*.lua")
-
-        // 返回所有 Lua 文件的路径（用于 Native 镜像资源注册）
-        //FIXME 这种方法还得测试下
-        return resources.map { it.uri.toString() }.toTypedArray()
-    }
-
     @Bean("statisticsDanmu")
     fun statisticsDanmu(): DefaultRedisScript<Boolean> {
         val s = DefaultRedisScript<Boolean>()
         s.resultType = Boolean::class.java
-        s.setScriptSource(ResourceScriptSource(ClassPathResource("lua/statistics_danmu.lua")))
+        s.setScriptSource(
+            ResourceScriptSource(
+                ClassPathResource(
+                    "lua/statistics_danmu.lua",
+                    this.javaClass.classLoader
+                )
+            )
+        )
+        return s
+    }
+
+    @Bean("nicknameChange")
+    fun nicknameChange(): DefaultRedisScript<Boolean> {
+        val s = DefaultRedisScript<Boolean>()
+        s.resultType = Boolean::class.java
+        s.setScriptSource(
+            ResourceScriptSource(
+                ClassPathResource(
+                    "lua/nickname_change.lua",
+                    this.javaClass.classLoader
+                )
+            )
+        )
         return s
     }
 }

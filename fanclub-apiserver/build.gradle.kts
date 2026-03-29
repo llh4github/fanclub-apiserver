@@ -31,11 +31,16 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-flyway")
+    implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-mysql")
     testImplementation("org.springframework.security:spring-security-test")
 
     implementation(platform(libs.okhttp.bom))
     implementation("com.squareup.okhttp3:okhttp")
+    implementation(libs.ehcahe)
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     ksp(libs.jimmer.ksp)

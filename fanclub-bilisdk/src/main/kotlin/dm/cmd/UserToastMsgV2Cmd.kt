@@ -43,7 +43,15 @@ data class UserToastMsgV2Cmd(
         val senderUinfo: SenderUinfo? = null,
         
         @field:JsonProperty("toast_msg")
-        val toastMsg: String? = null
+        val toastMsg: String? = null,
+
+        @field:JsonProperty("receiver_uinfo")
+        val receiverInfo: ReceiverInfo? = null
+    )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class ReceiverInfo(
+       val uid: Long? = null,
     )
     
     /**

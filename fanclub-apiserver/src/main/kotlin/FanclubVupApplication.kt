@@ -42,5 +42,6 @@ class ReflectionHintsRegistrar : RuntimeHintsRegistrar {
                     hints.reflection().registerType(clazz, *MemberCategory.entries.toTypedArray())
                 }
             }
+        hints.resources().registerPattern("lua/*.lua")
     }
 }

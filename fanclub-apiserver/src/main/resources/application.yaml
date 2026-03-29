@@ -11,6 +11,8 @@ spring:
     url: jdbc:mariadb://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:fanclub_dev}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:123456}
+  flyway:
+    enabled: ${DB_FLYWAY_ENABLED:false}
   data:
     redis:
       host: ${REDIS_HOST:localhost}

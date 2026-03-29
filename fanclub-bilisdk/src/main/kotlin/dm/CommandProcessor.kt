@@ -8,7 +8,6 @@ package llh.fanclubvup.bilisdk.dm
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilisdk.dm.cmd.Command
 import llh.fanclubvup.bilisdk.dm.cmd.GuardBuyCommand
-import llh.fanclubvup.bilisdk.scraper.BiliWsMsgBizHandler
 import tools.jackson.module.kotlin.jacksonObjectMapper
 
 object CommandProcessor {
@@ -28,6 +27,7 @@ object CommandProcessor {
         "LIKE_INFO_V3_UPDATE",
         "INTERACT_WORD",
         "ONLINE_RANK_V3",
+        "TRADING_SCORE",
         "COMMON_NOTICE_DANMAKU",
         "STOP_LIVE_ROOM_LIST",
         "RANK_CHANGED",

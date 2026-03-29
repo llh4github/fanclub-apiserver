@@ -8,8 +8,8 @@ package llh.fanclubvup.bilisdk.http
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilisdk.consts.BiliLiveUrls
 import llh.fanclubvup.bilisdk.props.BiliLiveApiProp
-import llh.fanclubvup.bilisdk.response.AppStartResponse
-import llh.fanclubvup.bilisdk.response.BaseResponse
+import llh.fanclubvup.bilisdk.http.response.AppStartResponse
+import llh.fanclubvup.bilisdk.http.response.BaseResponse
 import llh.fanclubvup.common.excptions.AppRuntimeException
 import llh.fanclubvup.common.utils.Md5Utils
 import okhttp3.MediaType.Companion.toMediaType
@@ -23,6 +23,7 @@ import tools.jackson.module.kotlin.jacksonObjectMapper
  *
  * 使用条件较苛刻，暂不使用。
  */
+@Deprecated("不考虑使用SDK的方式")
 class BiliLiveApiClient(private val prop: BiliLiveApiProp) {
     private val client = OkHttpClient()
     private val mapper = jacksonObjectMapper()

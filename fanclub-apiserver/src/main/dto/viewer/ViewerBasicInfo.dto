@@ -10,3 +10,8 @@ specification ViewerBasicInfoQuerySpec {
 ViewerBasicInfoPageView {
     #allScalars
 }
+
+input ViewerNicknameUpdateRequest {
+    nickname: String
+    bid
+}
