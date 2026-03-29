@@ -6,17 +6,16 @@
 package llh.fanclubvup.apiserver.statistics
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.lettuce.core.RedisClient
-import jakarta.annotation.Resource
 import llh.fanclubvup.apiserver.consts.StatisticsCacheKey
 import llh.fanclubvup.apiserver.consts.enums.GuardLevel
+import llh.fanclubvup.apiserver.dto.viwer.DanmuWsMsg
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordAddInput
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordEndLiveInput
 import llh.fanclubvup.apiserver.entity.viewer.dto.ViewerGuardBuyRecordAddInput
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
 import llh.fanclubvup.apiserver.service.viewer.ViewerGuardBuyRecordService
 import llh.fanclubvup.apiserver.utils.ValidationUtil
-import llh.fanclubvup.bilisdk.dm.cmd.Command
+import llh.fanclubvup.apiserver.websocket.DanmuWebsocketHandler
 import llh.fanclubvup.bilisdk.dm.cmd.DanmuMsgCommand
 import llh.fanclubvup.bilisdk.dm.cmd.LiveCommand
 import llh.fanclubvup.bilisdk.dm.cmd.PreparingCommand
@@ -25,17 +24,15 @@ import llh.fanclubvup.bilisdk.dm.cmd.SuperChatCommand
 import llh.fanclubvup.bilisdk.dm.cmd.UserToastMsgV2Cmd
 import llh.fanclubvup.bilisdk.scraper.BiliWsMsgBizHandler
 import llh.fanclubvup.common.utils.LocalDateTimeUtil
+import llh.fanclubvup.common.utils.StrUtil
 import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.data.redis.core.script.DefaultRedisScript
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.util.concurrent.Executors
@@ -45,6 +42,7 @@ class BiliDanmuStatistics(
     private val redisTemplate: StringRedisTemplate,
     private val anchorLiveRecordService: AnchorLiveRecordService,
     private val viewerGuardBuyRecordService: ViewerGuardBuyRecordService,
+    private val danmuWebsocketHandler: DanmuWebsocketHandler
 ) : BiliWsMsgBizHandler {
 
     private val logger = KotlinLogging.logger {}
@@ -167,6 +165,23 @@ class BiliDanmuStatistics(
                     listOf(key),
                     userInfo.username, userInfo.uid.toString()
                 )
+            }
+
+            executors.execute {
+                val senderInfo = cmd.extractSendInfo()
+                val content = cmd.getContent()
+                if (senderInfo == null) return@execute
+                if (content == null) return@execute
+
+                if (senderInfo.level <= 18) {
+                    return@execute
+                }
+                val msg = DanmuWsMsg(
+                    StrUtil.maskMiddle(senderInfo.name),
+                    content,
+                    senderInfo.ruid
+                )
+                danmuWebsocketHandler.sendDanmu(msg)
             }
         }
     }
