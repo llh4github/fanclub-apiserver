@@ -7,27 +7,30 @@ package llh.fanclubvup.apiserver.components.schedule
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.apiserver.consts.StatisticsCacheKey
-import llh.fanclubvup.apiserver.entity.viewer.dto.ViewerNicknameUpdateRequest
-import llh.fanclubvup.apiserver.service.viewer.ViewerBasicInfoService
+import llh.fanclubvup.apiserver.entity.viewer.dto.ViewerDanmuCountAddInput
+import llh.fanclubvup.apiserver.service.viewer.ViewerDanmuCountService
 import org.springframework.data.redis.core.ScanOptions
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
+import java.time.LocalDate
 
 @Component
-class NicknameUpdateSchedule(
+class DanmuCountSchedule(
+    private val service: ViewerDanmuCountService,
     private val redisTemplate: StringRedisTemplate,
-    private val service: ViewerBasicInfoService,
 ) {
-
     private val logger = KotlinLogging.logger {}
 
     /**
-     * 每天凌晨 3:30 执行，批量处理观众昵称更新任务
+     * 定时同步 Redis 中的弹幕计数到数据库
+     * 每天凌晨 1:10 执行，统计前一天的弹幕发送量
      */
-    @Scheduled(cron = "0 30 3 * * ?")
-    fun batchUpdateViewerNicknames() {
-        val key = StatisticsCacheKey.nicknameChange()
+    @Scheduled(cron = "0 10 1 * * ?")
+    fun syncDanmuCountToDatabase() {
+        val targetDate = LocalDate.now().minusDays(1L)
+        val key = StatisticsCacheKey.danmuCount(targetDate)
+
         val opt = ScanOptions.scanOptions().count(1000).build()
         val cursor = redisTemplate.opsForHash<String, String>().scan(key, opt)
 
@@ -41,7 +44,7 @@ class NicknameUpdateSchedule(
                 .forEach { batch ->
                     val list = batch.mapNotNull { entry ->
                         try {
-                            ViewerNicknameUpdateRequest(entry.key.toLong(), entry.value)
+                            ViewerDanmuCountAddInput(entry.key.toLong(), entry.value.toInt(), targetDate)
                         } catch (e: NumberFormatException) {
                             logger.warn(e) { "无效的 UID: ${entry.key}" }
                             null
@@ -52,12 +55,13 @@ class NicknameUpdateSchedule(
                         val affectedRows = service.saveListNoTx(list)
                         totalAffectedRows += affectedRows
                         totalProcessed += list.size
-                        logger.info { "批量更新昵称，批次大小=${list.size}, 影响行数=$affectedRows" }
+                        logger.info { "批量保存弹幕发送量数据，批次大小=${list.size}, 影响行数=$affectedRows" }
                     }
                 }
         }
 
-        logger.info { "批量更新昵称完成，总数=$totalProcessed, 总影响行数=$totalAffectedRows" }
+        logger.info { "保存弹幕发送量数据完成，总数=$totalProcessed, 总影响行数=$totalAffectedRows" }
         redisTemplate.delete(key)
     }
+
 }

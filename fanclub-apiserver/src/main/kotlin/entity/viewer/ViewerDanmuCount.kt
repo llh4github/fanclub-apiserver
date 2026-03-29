@@ -11,6 +11,7 @@ import llh.fanclubvup.common.BID
 import org.babyfish.jimmer.sql.Entity
 import org.babyfish.jimmer.sql.Key
 import org.babyfish.jimmer.sql.Table
+import java.time.LocalDate
 
 
 @Entity
@@ -18,7 +19,15 @@ import org.babyfish.jimmer.sql.Table
 @Schema(title = "观众弹幕数量统计")
 interface ViewerDanmuCount : BaseEntity {
 
-    @Key(group = "bid-nkname")
+    @Key(group = "bid-date")
+    @get:Schema(title = "B站UID", example = "114514")
     val bid: BID
+
+    @get:Schema(title = "统计时间", example = "2023-07-01")
+    @Key(group = "bid-date")
+    val cntDate: LocalDate
+
+    @get:Schema(title = "弹幕数量", example = "114514")
+    val cnt: Int
 
 }

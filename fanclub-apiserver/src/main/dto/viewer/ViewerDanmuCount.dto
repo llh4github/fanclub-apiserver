@@ -1,0 +1,18 @@
+export llh.fanclubvup.apiserver.entity.viewer.ViewerDanmuCount
+ -> package llh.fanclubvup.apiserver.entity.viewer.dto
+
+@io.swagger.v3.oas.annotations.media.Schema(title = "数据分页查询请求体")
+specification ViewerDanmuCountQuerySpec {
+    pageParam: llh.fanclubvup.apiserver.dto.PageQueryRequest
+}
+
+@io.swagger.v3.oas.annotations.media.Schema(title = "分页查询结果数据")
+ViewerDanmuCountPageView {
+    #allScalars
+}
+
+input  ViewerDanmuCountAddInput {
+    bid
+    cnt
+    cntDate
+}
