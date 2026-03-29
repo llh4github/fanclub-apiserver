@@ -13,14 +13,7 @@ import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordLiveStatus
 import llh.fanclubvup.apiserver.service.BaseDatabaseServiceImpl
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
 import org.babyfish.jimmer.sql.kt.KSqlClient
-import org.babyfish.jimmer.sql.kt.ast.expression.desc
-import org.babyfish.jimmer.sql.kt.ast.expression.eq
-import org.babyfish.jimmer.sql.kt.ast.expression.isNull
-import org.babyfish.jimmer.sql.kt.ast.expression.le
-import org.babyfish.jimmer.sql.kt.ast.expression.sql
-import org.babyfish.jimmer.sql.kt.ast.expression.valueIn
-import org.babyfish.jimmer.sql.kt.ast.table.makeOrders
-import org.springframework.cache.annotation.Cacheable
+import org.babyfish.jimmer.sql.kt.ast.expression.*
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -77,12 +70,16 @@ class AnchorLiveRecordServiceImpl(
         logger.info { "更新了 $cnt 条超时直播状态数据" }
     }
 
-    @Cacheable(cacheNames = ["AnchorLiveRecordService:fetchLiveStatus"], key = "#roomId")
     override fun fetchLiveStatus(roomId: Long): AnchorLiveRecordLiveStatus {
-        return createQuery {
-            orderBy(table.updatedTime.desc())
-            where { table.roomId eq roomId }
-            select(table.fetch(AnchorLiveRecordLiveStatus::class))
-        }.fetchFirstOrNull() ?: AnchorLiveRecordLiveStatus(null, LiveRecordStatus.UNKNOWN)
+        return cacheData(
+            "AnchorLiveRecordService:fetchLiveStatus:$roomId",
+            AnchorLiveRecordLiveStatus::class.java
+        ) {
+            createQuery {
+                orderBy(table.updatedTime.desc())
+                where { table.roomId eq roomId }
+                select(table.fetch(AnchorLiveRecordLiveStatus::class))
+            }.fetchFirstOrNull()
+        } ?: AnchorLiveRecordLiveStatus(null, LiveRecordStatus.UNKNOWN)
     }
 }

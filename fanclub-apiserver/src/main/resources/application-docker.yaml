@@ -12,7 +12,7 @@ spring:
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
   flyway:
-    enabled: true
+    enabled: false
     locations: classpath:db/mariadb
 
   docker:
