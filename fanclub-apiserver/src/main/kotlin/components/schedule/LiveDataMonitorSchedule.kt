@@ -6,7 +6,7 @@
 package llh.fanclubvup.apiserver.components.schedule
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import llh.fanclubvup.apiserver.entity.sys.dto.ScraperMonitorFeatureEnabledView
+import llh.fanclubvup.apiserver.entity.sys.dto.ScraperEnableFeatureEnabledView
 import llh.fanclubvup.apiserver.entity.sys.dto.ScraperMonitorFeatureSpec
 import llh.fanclubvup.apiserver.service.sys.ScraperFeatureService
 import llh.fanclubvup.bilisdk.event.DanmuWsFailedEvent
@@ -69,7 +69,7 @@ class LiveDataMonitorSchedule(
         }
     }
 
-    private fun queryEnabled(roomIds: List<Long> = emptyList()): List<ScraperMonitorFeatureEnabledView> {
+    private fun queryEnabled(roomIds: List<Long> = emptyList()): List<ScraperEnableFeatureEnabledView> {
         val querySpec = if (roomIds.isEmpty())
             ScraperMonitorFeatureSpec(
                 true,
@@ -78,7 +78,7 @@ class LiveDataMonitorSchedule(
         else ScraperMonitorFeatureSpec(true)
 
         val list = scraperFeatureService.listQuery(
-            staticType = ScraperMonitorFeatureEnabledView::class,
+            staticType = ScraperEnableFeatureEnabledView::class,
             querySpec = querySpec,
         )
         if (list.isEmpty()) {
