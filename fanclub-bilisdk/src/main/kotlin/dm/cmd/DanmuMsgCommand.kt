@@ -101,8 +101,7 @@ data class DanmuMsgCommand(
 
         return try {
             SenderInfo(
-                // FIXME 获取发送者的UID
-                suid = (userBase["?"] as? Long) ?: -1L,
+                suid = (userMap["uid"] as? Long) ?: -1L,
                 ts = timestamp,
                 name = (userBase["name"] as? String) ?: "",
                 level = when (val lvl = medalMap["level"]) {

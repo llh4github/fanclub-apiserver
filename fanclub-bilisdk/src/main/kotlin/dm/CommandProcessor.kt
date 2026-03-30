@@ -8,6 +8,7 @@ package llh.fanclubvup.bilisdk.dm
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilisdk.dm.cmd.Command
 import llh.fanclubvup.bilisdk.dm.cmd.GuardBuyCommand
+import llh.fanclubvup.bilisdk.dm.cmd.SuperChatCommand
 import tools.jackson.module.kotlin.jacksonObjectMapper
 
 object CommandProcessor {
@@ -50,9 +51,9 @@ object CommandProcessor {
                 logger.warn { "找不到对应的命令类型: \n$json" }
                 return null
             }
-            if (cmdType.clazz == GuardBuyCommand::class) {
+            if (cmdType.clazz == SuperChatCommand::class) {
                 // FIXME 调试后删除
-                logger.info { "舰长购买消息的原始json: \n$json" }
+                logger.info { "SuperChatCommand原始json: \n$json" }
             }
 
             return mapper.treeToValue(tree, cmdType.clazz.java)
