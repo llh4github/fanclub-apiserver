@@ -6,8 +6,9 @@
 package llh.fanclubvup.apiserver.service.sys.impl
 
 import llh.fanclubvup.apiserver.entity.sys.ScraperFeature
-import llh.fanclubvup.apiserver.entity.sys.dto.ScraperFeatureFollowerEnabledView
+import llh.fanclubvup.apiserver.entity.sys.dto.ScraperEnableFeatureEnabledView
 import llh.fanclubvup.apiserver.entity.sys.follower
+import llh.fanclubvup.apiserver.entity.sys.monitor
 import llh.fanclubvup.apiserver.service.BaseDatabaseServiceImpl
 import llh.fanclubvup.apiserver.service.sys.ScraperFeatureService
 import org.babyfish.jimmer.sql.kt.KSqlClient
@@ -19,10 +20,17 @@ class ScraperFeatureServiceImpl(
     sqlClient: KSqlClient,
 ) : ScraperFeatureService,
     BaseDatabaseServiceImpl<ScraperFeature>(ScraperFeature::class, sqlClient) {
-    override fun queryFollowerEnabled(): List<ScraperFeatureFollowerEnabledView> {
+    override fun queryFollowerEnabled(): List<ScraperEnableFeatureEnabledView> {
         return createQuery {
             where { table.follower eq true }
-            select(table.fetch(ScraperFeatureFollowerEnabledView::class))
+            select(table.fetch(ScraperEnableFeatureEnabledView::class))
+        }.execute()
+    }
+
+    override fun queryMonitorEnabled(): List<ScraperEnableFeatureEnabledView> {
+        return createQuery {
+            where { table.monitor eq true }
+            select(table.fetch(ScraperEnableFeatureEnabledView::class))
         }.execute()
     }
 }
