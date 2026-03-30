@@ -28,10 +28,10 @@ class DanmuWebsocketHandler : TextWebSocketHandler() {
             // 将 uid 存储到 session 属性中，方便后续使用
             session.attributes["uid"] = uid
             logger.info { "WebSocket 连接建立，uid=$uid, sessionId=${session.id}" }
+            sessions.add(session)
         } else {
             logger.warn { "WebSocket 连接缺少 uid 参数，sessionId=${session.id}" }
         }
-        sessions.add(session)
     }
 
     fun sendDanmu(msg: DanmuWsMsg) {
@@ -51,7 +51,7 @@ class DanmuWebsocketHandler : TextWebSocketHandler() {
     }
 
     override fun afterConnectionClosed(session: WebSocketSession, status: CloseStatus) {
-        val uid = session.attributes["uid"] as? Long
+        val uid = session.attributes["uid"]
         logger.info { "WebSocket 连接关闭，uid=$uid, sessionId=${session.id}, status=$status" }
         sessions.remove(session)
     }
