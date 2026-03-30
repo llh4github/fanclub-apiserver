@@ -32,16 +32,3 @@ alter table anchor_live_record
 alter table anchor_live_record
     change updated_at updated_time datetime(3) default current_timestamp (3) not null on
 update current_timestamp(3) comment '更新时间';
-
---
-CREATE TABLE `viewer_danmu_count`
-(
-    `id`           bigint unsigned NOT NULL COMMENT '主键ID',
-    `bid`          bigint unsigned NOT NULL COMMENT 'B站UID',
-    `cnt_date`     date NOT NULL COMMENT '统计时间',
-    `cnt`          int  NOT NULL COMMENT '弹幕数量',
-    `created_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-    `updated_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_bid_date` (`bid`, `cnt_date`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='观众弹幕数量统计';
