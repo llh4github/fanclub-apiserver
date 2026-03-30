@@ -146,15 +146,34 @@ class BiliDanmuStatistics(
     override fun handle(cmd: DanmuMsgCommand) {
         val now = LocalDate.now()
         val time = LocalTime.now()
-        cmd.getUserInfo()?.let { userInfo ->
+        val content = cmd.getContent() ?: return
+        cmd.extractSendInfo()?.let { sender ->
+            // 网页同步一些弹幕
             executors.execute {
-                val key = StatisticsCacheKey.danmuCount(now)
+                // 屏蔽等级小于18的弹幕
+                if (sender.level <= 18) {
+                    return@execute
+                }
+                val msg = DanmuWsMsg(
+                    StrUtil.maskMiddle(sender.name),
+                    content,
+                    sender.ruid
+                )
+                danmuWebsocketHandler.sendDanmu(msg)
+            }
+            // 统计弹幕发送量
+            executors.execute {
+                val key = StatisticsCacheKey.danmuCount(sender.ruid, now)
                 redisTemplate.execute(
                     statisticsDanmu,
                     listOf(key, "${time.hour}-${time.minute}"),
-                    userInfo.uid.toString(), userInfo.timestamp.toString()
+                    sender.suid.toString(),
+                    sender.ts.toString(),
                 )
             }
+        }
+
+        cmd.getUserInfo()?.let { userInfo ->
             executors.execute {
                 val key = StatisticsCacheKey.nicknameChange()
                 redisTemplate.execute(

@@ -31,11 +31,18 @@ data class DanmuMsgCommand(
         @JsonProperty("timestamp") val timestamp: Long,
     )
 
+    /**
+     * @param suid 发送者UID
+     * @param ruid 接收者UID
+     * @param ts 发送时间戳
+     */
     data class SenderInfo(
         @JsonProperty("name") val name: String,
         @JsonProperty("level") val level: Int,
         @JsonProperty("ruid") val ruid: Long,
-    )
+        @JsonProperty("suid") val suid: Long,
+        @JsonProperty("ts") val ts: Long,
+        )
 
     /**
      * 获取弹幕内容
@@ -78,6 +85,12 @@ data class DanmuMsgCommand(
     fun extractSendInfo(): SenderInfo? {
         val firstElement = info?.getOrNull(0) as? List<Any?> ?: return null
 
+        val timestamp = when (val value = firstElement.getOrNull(4)) {
+            is Int -> value.toLong()
+            is Number -> value.toLong()
+            is String -> value.toLongOrNull() ?: 0L
+            else -> System.currentTimeMillis()
+        }
         // 获取 user 对象（索引 15）
         val userMap = firstElement.getOrNull(15) as? Map<String, Any?> ?: return null
 
@@ -88,6 +101,9 @@ data class DanmuMsgCommand(
 
         return try {
             SenderInfo(
+                // FIXME 获取发送者的UID
+                suid = (userBase["?"] as? Long) ?: -1L,
+                ts = timestamp,
                 name = (userBase["name"] as? String) ?: "",
                 level = when (val lvl = medalMap["level"]) {
                     is Int -> lvl
