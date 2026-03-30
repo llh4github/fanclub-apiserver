@@ -8,7 +8,9 @@ package llh.fanclubvup.apiserver.components.schedule
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.apiserver.consts.StatisticsCacheKey
 import llh.fanclubvup.apiserver.entity.viewer.dto.ViewerDanmuCountAddInput
+import llh.fanclubvup.apiserver.service.sys.ScraperFeatureService
 import llh.fanclubvup.apiserver.service.viewer.ViewerDanmuCountService
+import llh.fanclubvup.common.BID
 import org.springframework.data.redis.core.ScanOptions
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.scheduling.annotation.Scheduled
@@ -19,6 +21,7 @@ import java.time.LocalDate
 class DanmuCountSchedule(
     private val service: ViewerDanmuCountService,
     private val redisTemplate: StringRedisTemplate,
+    private val scraperFeatureService: ScraperFeatureService,
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -28,8 +31,20 @@ class DanmuCountSchedule(
      */
     @Scheduled(cron = "0 10 1 * * ?")
     fun syncDanmuCountToDatabase() {
+        val list = scraperFeatureService.queryMonitorEnabled()
+        if (list.isEmpty()) {
+            logger.info { "没有开启数据监控的主播， 不统计弹幕发送量数据" }
+            return
+        }
+
         val targetDate = LocalDate.now().minusDays(1L)
-        val key = StatisticsCacheKey.danmuCount(targetDate)
+        list.forEach {
+            saveDanmuCnt(it.anchorInfo.biliId, targetDate)
+        }
+    }
+
+    private fun saveDanmuCnt(rbid: BID, targetDate: LocalDate) {
+        val key = StatisticsCacheKey.danmuCount(rbid, targetDate)
 
         val opt = ScanOptions.scanOptions().count(1000).build()
         val cursor = redisTemplate.opsForHash<String, String>().scan(key, opt)
@@ -44,7 +59,7 @@ class DanmuCountSchedule(
                 .forEach { batch ->
                     val list = batch.mapNotNull { entry ->
                         try {
-                            ViewerDanmuCountAddInput(entry.key.toLong(), entry.value.toInt(), targetDate)
+                            ViewerDanmuCountAddInput(entry.key.toLong(), rbid, entry.value.toInt(), targetDate)
                         } catch (e: NumberFormatException) {
                             logger.warn(e) { "无效的 UID: ${entry.key}" }
                             null
@@ -60,7 +75,7 @@ class DanmuCountSchedule(
                 }
         }
 
-        logger.info { "保存弹幕发送量数据完成，总数=$totalProcessed, 总影响行数=$totalAffectedRows" }
+        logger.info { "$rbid 主播保存弹幕发送量数据完成，总数=$totalProcessed, 总影响行数=$totalAffectedRows" }
         redisTemplate.delete(key)
     }
 

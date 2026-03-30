@@ -5,6 +5,7 @@
 
 package llh.fanclubvup.apiserver.consts
 
+import llh.fanclubvup.common.BID
 import java.time.LocalDate
 
 object StatisticsCacheKey {
@@ -15,10 +16,12 @@ object StatisticsCacheKey {
     fun nicknameChange(): String {
         return NICKNAME_CHANGE_PREFIX
     }
+
     /**
      * 弹幕发送数量统计key
+     * @param ruid 接收者UID
      */
-    fun danmuCount(date: LocalDate = LocalDate.now()): String {
-        return "$DANMU_STATISTICS_PREFIX:${date}"
+    fun danmuCount(ruid: BID, date: LocalDate = LocalDate.now()): String {
+        return "$DANMU_STATISTICS_PREFIX:$ruid:${date}"
     }
 }
