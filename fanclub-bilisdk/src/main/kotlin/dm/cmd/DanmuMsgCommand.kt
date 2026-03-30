@@ -42,7 +42,7 @@ data class DanmuMsgCommand(
         @JsonProperty("ruid") val ruid: Long,
         @JsonProperty("suid") val suid: Long,
         @JsonProperty("ts") val ts: Long,
-        )
+    )
 
     /**
      * 获取弹幕内容
@@ -99,9 +99,10 @@ data class DanmuMsgCommand(
         // 获取 medal 对象
         val medalMap = tmpUserMap["medal"] as? Map<String, Any?> ?: return null
 
+
         return try {
             SenderInfo(
-                suid = (userMap["uid"] as? Long) ?: -1L,
+                suid = (tmpUserMap["uid"] as? Int)?.toLong() ?: -1L,
                 ts = timestamp,
                 name = (userBase["name"] as? String) ?: "",
                 level = when (val lvl = medalMap["level"]) {
