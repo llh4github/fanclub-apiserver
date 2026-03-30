@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(
     JwtProperty::class,
-    WebsocketProperty::class,
+    WebConfigProperty::class,
 )
 class PropertiesRegister {
 }
