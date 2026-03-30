@@ -49,6 +49,8 @@ class SpringSecurityConfig(
                 // TODO 后面看看有没有其他方案
                 authorize("/anchor/follower/num/query", permitAll)
                 authorize("/anchor/live-record/live-status", permitAll)
+                // WebSocket 端点不需要 HTTP 认证，认证在握手拦截器中处理
+                authorize("/ws/**", permitAll)
                 authorize(anyRequest, authenticated)
             }
             csrf { disable() }

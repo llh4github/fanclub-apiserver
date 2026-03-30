@@ -14,6 +14,7 @@ import llh.fanclubvup.apiserver.service.sys.ScraperFeatureService
 import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.babyfish.jimmer.sql.kt.ast.expression.eq
 import org.springframework.stereotype.Service
+import tools.jackson.core.type.TypeReference
 
 @Service
 class ScraperFeatureServiceImpl(
@@ -21,16 +22,26 @@ class ScraperFeatureServiceImpl(
 ) : ScraperFeatureService,
     BaseDatabaseServiceImpl<ScraperFeature>(ScraperFeature::class, sqlClient) {
     override fun queryFollowerEnabled(): List<ScraperEnableFeatureEnabledView> {
-        return createQuery {
-            where { table.follower eq true }
-            select(table.fetch(ScraperEnableFeatureEnabledView::class))
-        }.execute()
+        return cacheData(
+            "ScraperFeatureService:queryFollowerEnabled",
+            object : TypeReference<List<ScraperEnableFeatureEnabledView>>() {}
+        ) {
+            createQuery {
+                where { table.follower eq true }
+                select(table.fetch(ScraperEnableFeatureEnabledView::class))
+            }.execute()
+        } ?: emptyList()
     }
 
     override fun queryMonitorEnabled(): List<ScraperEnableFeatureEnabledView> {
-        return createQuery {
-            where { table.monitor eq true }
-            select(table.fetch(ScraperEnableFeatureEnabledView::class))
-        }.execute()
+        return cacheData(
+            "ScraperFeatureService:queryMonitorEnabled",
+            object : TypeReference<List<ScraperEnableFeatureEnabledView>>() {}
+        ) {
+            createQuery {
+                where { table.monitor eq true }
+                select(table.fetch(ScraperEnableFeatureEnabledView::class))
+            }.execute()
+        } ?: emptyList()
     }
 }

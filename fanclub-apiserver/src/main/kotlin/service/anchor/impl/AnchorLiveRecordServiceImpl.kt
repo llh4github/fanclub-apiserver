@@ -15,6 +15,7 @@ import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
 import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.babyfish.jimmer.sql.kt.ast.expression.*
 import org.springframework.stereotype.Service
+import tools.jackson.core.type.TypeReference
 import java.time.LocalDateTime
 
 @Service
@@ -73,7 +74,7 @@ class AnchorLiveRecordServiceImpl(
     override fun fetchLiveStatus(roomId: Long): AnchorLiveRecordLiveStatus {
         return cacheData(
             "AnchorLiveRecordService:fetchLiveStatus:$roomId",
-            AnchorLiveRecordLiveStatus::class.java
+            object : TypeReference<AnchorLiveRecordLiveStatus>() {}
         ) {
             createQuery {
                 orderBy(table.updatedTime.desc())

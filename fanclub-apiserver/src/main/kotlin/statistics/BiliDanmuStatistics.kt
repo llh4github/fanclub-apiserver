@@ -68,7 +68,7 @@ class BiliDanmuStatistics(
         val startTime = cmd.data?.guardInfo?.startTime
         val payflowId = cmd.data?.payInfo?.payflowId
 
-        if (ValidationUtil.isAllNotEmpty(senderUid, guardLevel, reciverUid, num, price, startTime, payflowId)) {
+        if (ValidationUtil.isAllNotNull(senderUid, guardLevel, reciverUid, num, price, startTime, payflowId)) {
             viewerGuardBuyRecordService.save(
                 ViewerGuardBuyRecordAddInput(
                     senderBid = senderUid!!,
