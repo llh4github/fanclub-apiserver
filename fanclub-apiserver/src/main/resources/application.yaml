@@ -41,3 +41,9 @@ springdoc:
     enabled: ${FANCLUB_SWAGGER_ENABLED:false}
   swagger-ui:
     enabled: ${FANCLUB_SWAGGER_ENABLED:false}
+fanclub:
+  web:
+    domain: *
+  bili:
+    scraper:
+      current-bid: 1111
