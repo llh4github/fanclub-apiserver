@@ -11,5 +11,6 @@ import llh.fanclubvup.common.BID
 data class DanmuWsMsg(
     val sender: String,
     val content: String,
-    val targetUID: BID
+    val targetUID: BID,
+    val level: Int,
 )

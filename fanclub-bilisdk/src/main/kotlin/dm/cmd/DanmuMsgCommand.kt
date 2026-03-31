@@ -35,6 +35,7 @@ data class DanmuMsgCommand(
      * @param suid 发送者UID
      * @param ruid 接收者UID
      * @param ts 发送时间戳
+     * @param level 牌子等级
      */
     data class SenderInfo(
         @JsonProperty("name") val name: String,

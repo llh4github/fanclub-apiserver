@@ -148,6 +148,11 @@ class BiliDanmuStatistics(
         val time = LocalTime.now()
         val content = cmd.getContent() ?: return
         cmd.extractSendInfo()?.let { sender ->
+            if (sender.suid == -1L) {
+                // FIXME 为啥有-1的？
+                logger.warn { "发送者无效, 忽略\n$cmd" }
+                return
+            }
             // 网页同步一些弹幕
             executors.execute {
                 // 屏蔽等级小于18的弹幕
@@ -157,7 +162,8 @@ class BiliDanmuStatistics(
                 val msg = DanmuWsMsg(
                     StrUtil.maskMiddle(sender.name),
                     content,
-                    sender.ruid
+                    sender.ruid,
+                    sender.level
                 )
                 danmuWebsocketHandler.sendDanmu(msg)
             }
@@ -181,23 +187,6 @@ class BiliDanmuStatistics(
                     listOf(key),
                     userInfo.username, userInfo.uid.toString()
                 )
-            }
-
-            executors.execute {
-                val senderInfo = cmd.extractSendInfo()
-                val content = cmd.getContent()
-                if (senderInfo == null) return@execute
-                if (content == null) return@execute
-
-                if (senderInfo.level <= 18) {
-                    return@execute
-                }
-                val msg = DanmuWsMsg(
-                    StrUtil.maskMiddle(senderInfo.name),
-                    content,
-                    senderInfo.ruid
-                )
-                danmuWebsocketHandler.sendDanmu(msg)
             }
         }
     }
