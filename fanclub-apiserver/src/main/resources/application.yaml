@@ -43,7 +43,7 @@ springdoc:
     enabled: ${FANCLUB_SWAGGER_ENABLED:false}
 fanclub:
   web:
-    domain: *
+    domain: http://localhost
   bili:
     scraper:
       current-bid: 1111

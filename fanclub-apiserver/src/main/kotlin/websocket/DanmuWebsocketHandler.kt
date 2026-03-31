@@ -12,7 +12,6 @@ import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.handler.TextWebSocketHandler
-import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.util.concurrent.CopyOnWriteArraySet
 
 @Component
@@ -21,11 +20,9 @@ class DanmuWebsocketHandler : TextWebSocketHandler() {
 
     private val logger = KotlinLogging.logger {}
     override fun afterConnectionEstablished(session: WebSocketSession) {
-        // 从 URI 模板变量中获取 uid
+        // 从 session 属性中获取 uid (已在拦截器中设置)
         val uid = session.attributes["uid"]?.toString()?.toLong()
         if (uid != null) {
-            // 将 uid 存储到 session 属性中，方便后续使用
-            session.attributes["uid"] = uid
             logger.info { "WebSocket 连接建立，uid=$uid, sessionId=${session.id}" }
             sessions.add(session)
         } else {

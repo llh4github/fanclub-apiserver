@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
 package llh.fanclubvup.apiserver.websocket
 
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -28,20 +33,19 @@ class ValidConnHandshakeInterceptor(
         request: ServerHttpRequest,
         response: ServerHttpResponse,
         wsHandler: WebSocketHandler,
-        attributes: Map<String, Any>
+        attributes: MutableMap<String, Any>
     ): Boolean {
         if (request is ServletServerHttpRequest) {
-            val uri = request.servletRequest.requestURI
-            val segments = uri.split("/")
-            if (segments.size >= 4) {
-                val uid = segments[3].toLongOrNull()
-                if (!checkUID(uid)) {
-                    logger.warn { "$uid 无效, 拒绝WS连接" }
-                    // 设置 HTTP 状态码为
-                    response.setStatusCode(HttpStatus.UNAUTHORIZED)
-                    return false // 拒绝握手，主动断开连接
-                }
+            // 从查询参数中获取 uid
+            val uid = request.servletRequest.getParameter("uid")?.toLongOrNull()
+            if (uid == null || !checkUID(uid)) {
+                logger.warn { "uid=$uid 无效，拒绝 WS 连接" }
+                // 设置 HTTP 状态码为
+                response.setStatusCode(HttpStatus.UNAUTHORIZED)
+                return false // 拒绝握手，主动断开连接
             }
+            // 将 uid 存储到 session 属性中
+            attributes["uid"] = uid
             return true
         }
         return true
@@ -54,8 +58,8 @@ class ValidConnHandshakeInterceptor(
         exception: Exception?
     ) {
         if (request is ServletServerHttpRequest) {
-            val uri = request.servletRequest.requestURI
-            logger.info { "WS连接成功: $uri" }
+            val uid = request.servletRequest.getParameter("uid")
+            logger.info { "WS 连接成功：uid=$uid" }
         }
         // 握手后处理，可以留空
     }

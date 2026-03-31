@@ -146,8 +146,8 @@ class BiliDanmuStatistics(
             }
             // 网页同步一些弹幕
             executors.execute {
-                // 屏蔽等级小于18的弹幕
-                if (sender.level <= 18) {
+                // 屏蔽低等级的弹幕
+                if (sender.level <= 15) {
                     return@execute
                 }
                 val msg = DanmuWsMsg(

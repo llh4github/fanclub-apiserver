@@ -18,8 +18,9 @@ class CorsConfig(
     override fun addCorsMappings(registry: CorsRegistry) {
         registry.addMapping("/**")
             .allowedOrigins(property.domain)
+            .allowCredentials(true)
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-            .allowCredentials( true)
+            .allowedHeaders("*")
             .maxAge(3600)
     }
 }

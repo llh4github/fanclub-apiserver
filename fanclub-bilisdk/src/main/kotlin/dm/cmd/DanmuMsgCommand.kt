@@ -92,8 +92,12 @@ data class DanmuMsgCommand(
             is String -> value.toLongOrNull() ?: 0L
             else -> System.currentTimeMillis()
         }
-        // 获取 user 对象（索引 15）
-        val userMap = firstElement.getOrNull(15) as? Map<String, Any?> ?: return null
+        // 获取 user 对象 (可能在索引 15 或 17 处)
+        val userMap = (firstElement.getOrNull(15) as? Map<String, Any?>)
+            .takeIf { it?.isNotEmpty() == true }
+            ?: (firstElement.getOrNull(17) as? Map<String, Any?>)
+                .takeIf { it?.isNotEmpty() == true }
+            ?: return null
 
         val tmpUserMap = userMap["user"] as? Map<String, Any?> ?: return null
         val userBase = tmpUserMap["base"] as? Map<String, Any?> ?: return null

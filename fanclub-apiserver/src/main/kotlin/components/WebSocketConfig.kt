@@ -21,7 +21,7 @@ class WebSocketConfig(
     private val interceptor: ValidConnHandshakeInterceptor,
 ) : WebSocketConfigurer {
     override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
-        registry.addHandler(danmuWebsocketHandler, "/ws/danmu/{uid}")
+        registry.addHandler(danmuWebsocketHandler, "/ws/danmu")
             .setAllowedOriginPatterns(property.domain) // 允许跨域，生产环境应指定具体域名
             .addInterceptors(interceptor)
     }
