@@ -17,12 +17,7 @@ import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
 import llh.fanclubvup.apiserver.service.viewer.ViewerGuardBuyRecordService
 import llh.fanclubvup.apiserver.utils.ValidationUtil
 import llh.fanclubvup.apiserver.websocket.DanmuWebsocketHandler
-import llh.fanclubvup.bilisdk.dm.cmd.DanmuMsgCommand
-import llh.fanclubvup.bilisdk.dm.cmd.LiveCommand
-import llh.fanclubvup.bilisdk.dm.cmd.PreparingCommand
-import llh.fanclubvup.bilisdk.dm.cmd.SendGiftCommand
-import llh.fanclubvup.bilisdk.dm.cmd.SuperChatCommand
-import llh.fanclubvup.bilisdk.dm.cmd.UserToastMsgV2Cmd
+import llh.fanclubvup.bilisdk.dm.cmd.*
 import llh.fanclubvup.bilisdk.scraper.BiliWsMsgBizHandler
 import llh.fanclubvup.common.utils.LocalDateTimeUtil
 import llh.fanclubvup.common.utils.StrUtil
@@ -32,11 +27,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.data.redis.core.script.DefaultRedisScript
 import org.springframework.stereotype.Service
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneId
+import java.time.*
 import java.util.concurrent.Executors
 
 @Service
@@ -92,7 +83,7 @@ class BiliDanmuStatistics(
                     "UID=${cmd.data?.uid ?: cmd.data?.uinfo?.uid}, " +
                     "金额=${cmd.data?.price} 元，" +
                     "倍数=${cmd.data?.rate}, " +
-                    "内容=${cmd.data?.messageTrans ?: cmd.data?.message}"
+                    "内容=${cmd.data?.message}"
         }
     }
 
@@ -148,6 +139,11 @@ class BiliDanmuStatistics(
         val time = LocalTime.now()
         val content = cmd.getContent() ?: return
         cmd.extractSendInfo()?.let { sender ->
+            if (sender.suid == -1L) {
+                // FIXME 为啥有-1的？
+                logger.warn { "发送者无效, 忽略\n$cmd" }
+                return
+            }
             // 网页同步一些弹幕
             executors.execute {
                 // 屏蔽等级小于18的弹幕
@@ -157,7 +153,8 @@ class BiliDanmuStatistics(
                 val msg = DanmuWsMsg(
                     StrUtil.maskMiddle(sender.name),
                     content,
-                    sender.ruid
+                    sender.ruid,
+                    sender.level
                 )
                 danmuWebsocketHandler.sendDanmu(msg)
             }
@@ -181,23 +178,6 @@ class BiliDanmuStatistics(
                     listOf(key),
                     userInfo.username, userInfo.uid.toString()
                 )
-            }
-
-            executors.execute {
-                val senderInfo = cmd.extractSendInfo()
-                val content = cmd.getContent()
-                if (senderInfo == null) return@execute
-                if (content == null) return@execute
-
-                if (senderInfo.level <= 18) {
-                    return@execute
-                }
-                val msg = DanmuWsMsg(
-                    StrUtil.maskMiddle(senderInfo.name),
-                    content,
-                    senderInfo.ruid
-                )
-                danmuWebsocketHandler.sendDanmu(msg)
             }
         }
     }

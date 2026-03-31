@@ -18,7 +18,6 @@ import java.util.concurrent.CopyOnWriteArraySet
 @Component
 class DanmuWebsocketHandler : TextWebSocketHandler() {
     private val sessions = CopyOnWriteArraySet<WebSocketSession>()
-    private val mapper = jacksonObjectMapper()
 
     private val logger = KotlinLogging.logger {}
     override fun afterConnectionEstablished(session: WebSocketSession) {
@@ -35,8 +34,10 @@ class DanmuWebsocketHandler : TextWebSocketHandler() {
     }
 
     fun sendDanmu(msg: DanmuWsMsg) {
-        val json = mapper.writeValueAsString(msg)
         val targetId = msg.targetUID
+        val json = """
+            {"level":${msg.level},"content":"${msg.content}"}
+        """.trimIndent()
         val packet = TextMessage(json)
         sessions.forEach { session ->
             if (session.attributes["uid"] != targetId) {

@@ -38,4 +38,13 @@ class BiliDanmuStatisticsTest {
         val cmd = CommandProcessor.parseCommand(json) ?: throw Exception("JSON解析失败")
         service.handleMsg(cmd)
     }
+
+    @Test
+    fun test_SUPER_CHAT_MESSAGE() {
+        val json = """
+           {"cmd":"SUPER_CHAT_MESSAGE","data":{"dmscore":616,"end_time":1774878446,"id":15076419,"is_mystery":false,"is_ranked":0,"is_send_audit":0,"medal_info":{"anchor_roomid":1713548468,"anchor_uname":"莉蔻Liko","guard_level":0,"medal_level":21,"medal_name":"蔻萝特","target_id":1536601294},"message":"测试SC内容","price":30,"rate":1000,"start_time":1774878386,"time":60,"token":"E6739D0C","trans_mark":0,"ts":1774878386,"uid":114514,"user_info":{"face":"https://i2.hdslb.com/bfs/face/f73c9be5ced19cfbe5319a196547062dd01ab088.jpg","guard_level":0,"is_main_vip":1,"is_svip":0,"is_vip":0,"manager":0,"uname":"测试用户名","user_level":25}},"msg_id":"90517806075892740:1000:1000","send_time":1774878386832}
+       """.trimIndent()
+        val cmd = CommandProcessor.parseCommand(json) ?: throw Exception("JSON解析失败")
+        service.handleMsg(cmd)
+    }
 }
