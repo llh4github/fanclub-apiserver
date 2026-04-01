@@ -98,7 +98,7 @@ class AnchorLiveRecordServiceImpl(
             object : TypeReference<AnchorLiveRecordLiveStatus>() {}
         ) {
             createQuery {
-                orderBy(table.updatedTime.desc())
+                orderBy(table.liveTime.desc())
                 where { table.roomId eq roomId }
                 select(table.fetch(AnchorLiveRecordLiveStatus::class))
             }.fetchFirstOrNull()

@@ -14,3 +14,15 @@ create table viewer_danmu_count
 
 alter table anchor_live_record
     add live_duration int unsigned null comment '直播时长(秒)' after end_live_time;
+
+
+alter table anchor_live_record
+drop
+key uk_live_key;
+
+alter table anchor_live_record
+    add constraint room_live_record_uk
+        unique (room_id, live_key);
+
+create index anchor_live_record_live_time_index
+    on anchor_live_record (live_time desc);

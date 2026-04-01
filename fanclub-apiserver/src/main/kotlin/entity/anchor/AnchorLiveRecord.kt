@@ -21,11 +21,12 @@ import java.time.LocalDateTime
 @Schema(title = "主播直播记录")
 interface AnchorLiveRecord : BaseEntity {
 
+    @Key(group = "room_live_record_uk")
     @Column(name = "room_id")
     @get:Schema(title = "直播间ID", description = "直播间ID", example = "114514")
     val roomId: Long
 
-    @Key
+    @Key(group = "room_live_record_uk")
     @Column(name = "live_key")
     @get:Schema(title = "直播场次key", description = "直播场次key", example = "114514")
     val liveKey: String
