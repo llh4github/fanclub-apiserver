@@ -40,9 +40,6 @@ springdoc:
 
 # Bilibili Live SDK 配置
 fanclub:
-  bili-live:
-    signature-key: 1111
-    app-id: 22222
   bili:
     scraper:
       current-bid: 1111
