@@ -151,4 +151,4 @@ image-build.sh
 
 ## 📄 License
 
-MIT License
+[Apache License](./LICENSE)
