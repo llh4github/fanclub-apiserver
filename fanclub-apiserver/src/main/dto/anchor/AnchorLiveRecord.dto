@@ -27,4 +27,5 @@ AnchorLiveRecordLiveStatus {
     liveTime?
     liveStatus
     endLiveTime
+    liveDuration
 }
