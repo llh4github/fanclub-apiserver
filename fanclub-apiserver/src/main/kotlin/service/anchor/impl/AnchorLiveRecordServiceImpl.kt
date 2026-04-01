@@ -59,13 +59,17 @@ class AnchorLiveRecordServiceImpl(
                 table.id eq tuple._1
             }
         }.execute()
+
         // 清缓存
-        val deleted = redisTemplate.execute(
-            deleteByPattern,
-            listOf(CacheKeyPrefix.SERVICE_CACHE_KEY + "AnchorLiveRecordService:fetchEndLiveRecord:" + tuple._3 + ":*"),
-            ""
-        )
-        logger.debug { "删除缓存 $deleted 条" }
+        executorVirtualThread.execute {
+            val keys = listOf(
+                CacheKeyPrefix.SERVICE_CACHE_KEY + "AnchorLiveRecordService:fetchLiveStatus:" + tuple._3,
+                CacheKeyPrefix.SERVICE_CACHE_KEY + "AnchorLiveRecordService:fetchEndLiveRecord:" + tuple._3 + ":*"
+            )
+            val deleted = redisTemplate.execute(deleteByPattern, keys, "")
+
+            logger.debug { "删除缓存 $deleted 条" }
+        }
         return@transaction rs
     }
 

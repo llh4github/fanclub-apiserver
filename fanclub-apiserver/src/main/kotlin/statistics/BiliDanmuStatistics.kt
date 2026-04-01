@@ -27,7 +27,9 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.data.redis.core.script.DefaultRedisScript
 import org.springframework.stereotype.Service
-import java.time.*
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.util.concurrent.Executors
 
 @Service
@@ -108,9 +110,7 @@ class BiliDanmuStatistics(
             return
         }
 
-        val endLiveDateTime = Instant.ofEpochMilli(endTime)
-            .atZone(ZoneId.systemDefault())
-            .toLocalDateTime()
+        val endLiveDateTime = LocalDateTimeUtil.toLocalDateTime(endTime)
         val input = AnchorLiveRecordEndLiveInput(roomId, endLiveDateTime)
         val result = anchorLiveRecordService.updateEndLiveStatus(input)
         logger.info { "直播结束：直播间ID=$roomId, 结束时间=$endLiveDateTime, 更新数据库 $result 条数据" }
