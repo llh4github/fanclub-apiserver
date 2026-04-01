@@ -26,4 +26,5 @@ input AnchorLiveRecordEndLiveInput {
 AnchorLiveRecordLiveStatus {
     liveTime?
     liveStatus
+    endLiveTime
 }
