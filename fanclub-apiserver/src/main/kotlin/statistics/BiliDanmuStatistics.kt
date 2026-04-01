@@ -110,7 +110,7 @@ class BiliDanmuStatistics(
             return
         }
 
-        val endLiveDateTime = LocalDateTimeUtil.toLocalDateTime(endTime)
+        val endLiveDateTime = LocalDateTimeUtil.toLocalDateTimeEpochMilli(endTime)
         val input = AnchorLiveRecordEndLiveInput(roomId, endLiveDateTime)
         val result = anchorLiveRecordService.updateEndLiveStatus(input)
         logger.info { "直播结束：直播间ID=$roomId, 结束时间=$endLiveDateTime, 更新数据库 $result 条数据" }
