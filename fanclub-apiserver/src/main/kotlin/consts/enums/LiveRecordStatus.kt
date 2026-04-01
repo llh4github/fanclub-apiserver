@@ -14,13 +14,13 @@ enum class LiveRecordStatus {
     LIVING,
 
     @EnumItem(ordinal = 2)
-    NOT_LIVING,
+    END_LIVING,
 
     /**
      * 超时自动结束
      */
     @EnumItem(ordinal = 3)
-    OVER_TIME,
+    OVER_TIME_END,
 
     @EnumItem(ordinal = 0)
     UNKNOWN;

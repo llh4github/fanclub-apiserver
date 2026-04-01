@@ -39,7 +39,7 @@ class AnchorLiveRecordServiceImpl(
             return@transaction 0
         }
         val rs = createUpdate {
-            set(table.liveStatus, LiveRecordStatus.NOT_LIVING)
+            set(table.liveStatus, LiveRecordStatus.END_LIVING)
             set(table.endLiveTime, input.endLiveTime)
             where {
                 table.id eq id
@@ -63,7 +63,7 @@ class AnchorLiveRecordServiceImpl(
             return
         }
         val cnt = createUpdate {
-            set(table.liveStatus, LiveRecordStatus.OVER_TIME)
+            set(table.liveStatus, LiveRecordStatus.OVER_TIME_END)
             set(table.endLiveTime, LocalDateTime.now())
             where(table.id valueIn list)
         }.execute()
@@ -82,5 +82,22 @@ class AnchorLiveRecordServiceImpl(
                 select(table.fetch(AnchorLiveRecordLiveStatus::class))
             }.fetchFirstOrNull()
         } ?: AnchorLiveRecordLiveStatus(null, LiveRecordStatus.UNKNOWN)
+    }
+
+    override fun fetchEndLiveRecord(
+        roomId: Long,
+        last: Int
+    ): List<AnchorLiveRecordLiveStatus> {
+        return cacheData(
+            "AnchorLiveRecordService:fetchEndLiveRecord:$roomId:$last",
+            object : TypeReference<List<AnchorLiveRecordLiveStatus>>() {}
+        ) {
+            createQuery {
+                orderBy(table.liveTime.desc())
+                where { table.roomId eq roomId }
+                where(table.liveStatus eq LiveRecordStatus.END_LIVING)
+                select(table.fetch(AnchorLiveRecordLiveStatus::class))
+            }.limit(last).execute()
+        } ?: emptyList()
     }
 }
