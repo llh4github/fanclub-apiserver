@@ -10,6 +10,7 @@ import llh.fanclubvup.apiserver.consts.StatisticsCacheKey
 import llh.fanclubvup.apiserver.entity.viewer.dto.ViewerDanmuCountAddInput
 import llh.fanclubvup.apiserver.service.sys.ScraperFeatureService
 import llh.fanclubvup.apiserver.service.viewer.ViewerDanmuCountService
+import llh.fanclubvup.apiserver.utils.ValidationUtil
 import llh.fanclubvup.common.BID
 import org.springframework.data.redis.core.ScanOptions
 import org.springframework.data.redis.core.StringRedisTemplate
@@ -47,7 +48,7 @@ class DanmuCountSchedule(
         val key = StatisticsCacheKey.danmuCount(rbid, targetDate)
 
         val opt = ScanOptions.scanOptions().count(1000).build()
-        val cursor = redisTemplate.opsForHash<String, String>().scan(key, opt)
+        val cursor = redisTemplate.opsForZSet().scan(key, opt)
 
         val batchSize = 500 // 每批处理 500 条
         var totalProcessed = 0
@@ -59,9 +60,15 @@ class DanmuCountSchedule(
                 .forEach { batch ->
                     val list = batch.mapNotNull { entry ->
                         try {
-                            ViewerDanmuCountAddInput(entry.key.toLong(), rbid, entry.value.toInt(), targetDate)
+                            val uid = entry.value?.toLongOrNull()
+                            val cnt = entry.score?.toInt()
+                            if (ValidationUtil.isAllNotNull(uid, cnt)) {
+                                ViewerDanmuCountAddInput(uid!!, rbid, cnt!!, targetDate)
+                            } else {
+                                null
+                            }
                         } catch (e: NumberFormatException) {
-                            logger.warn(e) { "无效的 UID: ${entry.key}" }
+                            logger.warn(e) { "无效的 UID: ${entry.value}" }
                             null
                         }
                     }
