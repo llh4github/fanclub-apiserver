@@ -17,7 +17,7 @@ import java.time.Duration
 abstract class ServiceCacheHelper {
 
     @Autowired
-    private lateinit var redisTemplate: StringRedisTemplate
+    protected lateinit var redisTemplate: StringRedisTemplate
 
     private val mapper = jacksonObjectMapper()
     private val ttlDuration = Duration.ofHours(2)
