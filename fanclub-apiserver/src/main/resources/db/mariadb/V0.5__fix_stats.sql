@@ -11,3 +11,6 @@ create table viewer_danmu_count
     constraint uk_bid_date
         unique (bid, rbid, cnt_date)
 ) comment '观众弹幕数量统计';
+
+alter table anchor_live_record
+    add live_duration int unsigned null comment '直播时长(秒)' after end_live_time;

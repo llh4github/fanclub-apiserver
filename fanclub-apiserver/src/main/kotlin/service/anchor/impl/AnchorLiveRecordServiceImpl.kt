@@ -16,6 +16,7 @@ import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.babyfish.jimmer.sql.kt.ast.expression.*
 import org.springframework.stereotype.Service
 import tools.jackson.core.type.TypeReference
+import java.time.Duration
 import java.time.LocalDateTime
 
 @Service
@@ -26,23 +27,27 @@ class AnchorLiveRecordServiceImpl(
 
     private val logger = KotlinLogging.logger {}
     override fun updateEndLiveStatus(input: AnchorLiveRecordEndLiveInput): Int = sqlClient.transaction {
-        val id = createQuery {
+        val tuple2 = createQuery {
             where(
                 table.roomId eq input.roomId,
                 table.liveStatus eq LiveRecordStatus.LIVING,
                 table.endLiveTime.isNull()
             )
-            select(table.id)
+            select(table.id, table.liveTime)
         }.fetchFirstOrNull()
-        if (id == null) {
+        if (tuple2 == null) {
             logger.warn { "没有要更新的直播状态： $input" }
             return@transaction 0
         }
+
+        val endTime = input.endLiveTime ?: LocalDateTime.now()
+        val dur = Duration.between(tuple2._2, endTime)
         val rs = createUpdate {
             set(table.liveStatus, LiveRecordStatus.END_LIVING)
-            set(table.endLiveTime, input.endLiveTime)
+            set(table.liveDuration, dur.seconds)
+            set(table.endLiveTime, endTime)
             where {
-                table.id eq id
+                table.id eq tuple2._1
             }
         }.execute()
         return@transaction rs
