@@ -65,6 +65,7 @@ class DanmuCountSchedule(
                             if (ValidationUtil.isAllNotNull(uid, cnt)) {
                                 ViewerDanmuCountAddInput(uid!!, rbid, cnt!!, targetDate)
                             } else {
+                                logger.warn { "无效的 UID: ${entry.value}" }
                                 null
                             }
                         } catch (e: NumberFormatException) {
