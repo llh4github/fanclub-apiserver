@@ -3,8 +3,8 @@ spring:
   application:
     name: fanclub-vup-docker
   datasource:
-    url: jdbc:mariadb://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:fanclub_dev}
-    username: ${DB_USERNAME:root}
+    url: jdbc:postgres://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:fanclub_dev}
+    username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:123456}
   data:
     redis:
@@ -13,7 +13,7 @@ spring:
       password: ${REDIS_PASSWORD:}
   flyway:
     enabled: true
-    locations: classpath:db/mariadb
+    locations: classpath:db/pgsql
 
   docker:
     compose:
