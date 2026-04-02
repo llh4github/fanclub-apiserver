@@ -29,3 +29,8 @@ AnchorLiveRecordLiveStatus {
     endLiveTime
     liveDuration
 }
+// 直播起止时间
+AnchorLiveTimeRecord {
+    liveTime?
+    endLiveTime
+}

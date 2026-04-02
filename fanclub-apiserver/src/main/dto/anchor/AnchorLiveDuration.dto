@@ -10,3 +10,10 @@ specification AnchorLiveDurationQuerySpec {
 AnchorLiveDurationPageView {
     #allScalars
 }
+
+input AnchorLiveDurationAddInput {
+    id
+    roomId
+    statDate
+    liveDuration
+}
