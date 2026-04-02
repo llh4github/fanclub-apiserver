@@ -26,3 +26,15 @@ alter table anchor_live_record
 
 create index anchor_live_record_live_time_index
     on anchor_live_record (live_time desc);
+
+CREATE TABLE `anchor_live_duration`
+(
+    `id`            BIGINT UNSIGNED NOT NULL COMMENT '数据主键',
+    `room_id`       BIGINT UNSIGNED NOT NULL COMMENT '直播间 ID',
+    `stat_date`     DATE NOT NULL COMMENT '统计日期',
+    `live_duration` int UNSIGNED NOT NULL COMMENT '直播时长 (秒)',
+    `created_time`  DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '数据创建时间',
+    `updated_time`  DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '数据更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `live_stat_date_uk` (`room_id`, `stat_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='主播每日直播时长统计';

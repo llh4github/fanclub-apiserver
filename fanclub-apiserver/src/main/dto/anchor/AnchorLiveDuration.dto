@@ -1,0 +1,12 @@
+export llh.fanclubvup.apiserver.entity.anchor.AnchorLiveDuration
+    -> package llh.fanclubvup.apiserver.entity.anchor.dto
+
+@io.swagger.v3.oas.annotations.media.Schema(title = "数据分页查询请求体")
+specification AnchorLiveDurationQuerySpec {
+    pageParam: llh.fanclubvup.apiserver.dto.PageQueryRequest
+}
+
+@io.swagger.v3.oas.annotations.media.Schema(title = "主播每日直播时长统计分页查询结果数据")
+AnchorLiveDurationPageView {
+    #allScalars
+}
