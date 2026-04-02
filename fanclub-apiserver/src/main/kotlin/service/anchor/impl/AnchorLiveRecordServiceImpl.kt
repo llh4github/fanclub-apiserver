@@ -77,7 +77,7 @@ class AnchorLiveRecordServiceImpl(
         val list = createQuery {
             where(table.liveStatus eq LiveRecordStatus.LIVING)
             where(
-                sql(Boolean::class, "TIMESTAMPDIFF(HOUR, %e, NOW()) >= 18") {
+                sql(Boolean::class, "NOW() - %e >= INTERVAL '18 hours'") {
                     expression(table.liveTime)
                 }
             )
