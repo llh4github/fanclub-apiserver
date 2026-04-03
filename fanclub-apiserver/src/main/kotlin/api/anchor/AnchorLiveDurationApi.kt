@@ -11,7 +11,10 @@ import llh.fanclubvup.apiserver.dto.JsonWrapper
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveDurationPageView
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveDurationQuerySpec
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveDurationService
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/anchor/live-duration")
@@ -19,10 +22,6 @@ import org.springframework.web.bind.annotation.*
 class AnchorLiveDurationApi(
     private val service: AnchorLiveDurationService
 ) {
-
-    @GetMapping
-    fun getById(@RequestParam("id") id: Long) =
-        JsonWrapper.ok(service.getById(id))
 
     @PostMapping("/page")
     @Operation(summary = "分页查询")

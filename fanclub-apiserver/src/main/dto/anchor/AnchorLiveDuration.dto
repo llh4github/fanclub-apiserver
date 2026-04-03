@@ -17,3 +17,8 @@ input AnchorLiveDurationAddInput {
     statDate
     liveDuration
 }
+
+AnchorLiveDurationDateDuration {
+    statDate
+    liveDuration
+}

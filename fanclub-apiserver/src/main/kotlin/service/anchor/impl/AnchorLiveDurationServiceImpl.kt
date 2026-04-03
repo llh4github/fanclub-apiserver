@@ -9,6 +9,7 @@ import llh.fanclubvup.apiserver.consts.enums.LiveRecordStatus
 import llh.fanclubvup.apiserver.dto.anchor.AnchorLiveDateDurationDto
 import llh.fanclubvup.apiserver.entity.anchor.*
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveDurationAddInput
+import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveDurationDateDuration
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveTimeRecord
 import llh.fanclubvup.apiserver.service.BaseDatabaseServiceImpl
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveDurationService
@@ -18,7 +19,10 @@ import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.babyfish.jimmer.sql.kt.ast.expression.between
 import org.babyfish.jimmer.sql.kt.ast.expression.eq
 import org.babyfish.jimmer.sql.kt.ast.expression.isNotNull
+import org.babyfish.jimmer.sql.kt.ast.expression.le
 import org.springframework.stereotype.Service
+import tools.jackson.core.type.TypeReference
+import java.time.Duration
 import java.time.LocalDate
 
 @Service
@@ -26,7 +30,24 @@ class AnchorLiveDurationServiceImpl(
     sqlClient: KSqlClient,
 ) : AnchorLiveDurationService,
     BaseDatabaseServiceImpl<AnchorLiveDuration>(AnchorLiveDuration::class, sqlClient) {
+    override fun fetchLiveDurationHistory(
+        roomId: Long,
+        date: LocalDate
+    ): List<AnchorLiveDurationDateDuration> {
+        return cacheData(
+            "AnchorLiveDurationService:fetchLiveDurationHistory:$roomId:$date",
+            object : TypeReference<List<AnchorLiveDurationDateDuration>>() {},
+            Duration.ofHours(24)
+        ) {
+            createQuery {
+                where(table.roomId.eq(roomId))
+                where(table.statDate.le(date))
+                select(table.fetch(AnchorLiveDurationDateDuration::class))
+            }.execute()
+        } ?: emptyList()
+    }
 
+    //#region 计算直播时长
     override fun computeLiveDuration(roomId: Long, date: LocalDate): Int {
         val endLives = sqlClient.createQuery(AnchorLiveRecord::class) {
             where(table.roomId.eq(roomId))
@@ -106,4 +127,7 @@ class AnchorLiveDurationServiceImpl(
 
         return result
     }
+
+
+    //#endregion 计算直播时长
 }
