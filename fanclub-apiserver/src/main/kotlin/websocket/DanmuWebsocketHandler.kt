@@ -5,8 +5,11 @@
 
 package llh.fanclubvup.apiserver.websocket
 
+import io.github.oshai.kotlinlogging.KotlinLogging
+import llh.fanclubvup.apiserver.dto.viwer.DanmuWsMsg
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.CloseStatus
+import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.handler.TextWebSocketHandler
 import java.util.concurrent.CopyOnWriteArraySet
@@ -15,11 +18,40 @@ import java.util.concurrent.CopyOnWriteArraySet
 class DanmuWebsocketHandler : TextWebSocketHandler() {
     private val sessions = CopyOnWriteArraySet<WebSocketSession>()
 
+    private val logger = KotlinLogging.logger {}
     override fun afterConnectionEstablished(session: WebSocketSession) {
-        sessions.add(session)
+        // 从 session 属性中获取 uid (已在拦截器中设置)
+        val uid = session.attributes["uid"]?.toString()?.toLong()
+        if (uid != null) {
+            logger.info { "WebSocket 连接建立，uid=$uid, sessionId=${session.id}" }
+            sessions.add(session)
+        } else {
+            logger.warn { "WebSocket 连接缺少 uid 参数，sessionId=${session.id}" }
+        }
+    }
+
+    fun sendDanmu(msg: DanmuWsMsg) {
+        val targetId = msg.targetUID
+        val json = """
+            {"level":${msg.level},"content":"${msg.content}"}
+        """.trimIndent()
+        val packet = TextMessage(json)
+        sessions.forEach { session ->
+            if (session.attributes["uid"] != targetId) {
+                return@forEach
+            }
+            try {
+                session.sendMessage(packet)
+            } catch (e: Exception) {
+                logger.error(e) { "发送弹幕消息失败，uid=${session.attributes["uid"]}, sessionId=${session.id}" }
+            }
+        }
     }
 
     override fun afterConnectionClosed(session: WebSocketSession, status: CloseStatus) {
+        val uid = session.attributes["uid"]
+        logger.info { "WebSocket 连接关闭，uid=$uid, sessionId=${session.id}, status=$status" }
         sessions.remove(session)
     }
+
 }

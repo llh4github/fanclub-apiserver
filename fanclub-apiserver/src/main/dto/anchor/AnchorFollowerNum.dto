@@ -8,13 +8,19 @@ specification AnchorFollowerNumQuerySpec {
 
 @io.swagger.v3.oas.annotations.media.Schema(title = "查询指定日期的粉丝数量请求体")
 specification AnchorFollowerDateNumQuerySpec {
-    biliId
-    cntDate
+    @jakarta.validation.constraints.Min(value = 1, message = "biliId不能小于1")
+    biliId!
+    cntDate!
 }
 
 @io.swagger.v3.oas.annotations.media.Schema(title = "查询结果数据")
 AnchorFollowerNumPageView {
     #allScalars
+}
+@io.swagger.v3.oas.annotations.media.Schema(title = "日期-数量对")
+AnchorFollowerDateNum {
+    cntDate
+    followerNum
 }
 
 input AnchorFollowerNumInput {

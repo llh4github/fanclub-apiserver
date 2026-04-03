@@ -31,21 +31,23 @@ local countKey = key
 -- 过期时间：24 小时（86400 秒）
 local expireTime = 86400
 
--- 过期时间：2 分钟（120 秒）
-local expireTime2Min = 120
+-- 过期时间
+local expireTimeSet = 61
 
 -- 组合 uid 和 timestamp 作为唯一标识
 local uniqueValue = uid .. ":" .. timestamp
 
 -- 1. 使用 Set 检查是否存在
 local exists = redis.call('SADD', setKey, uniqueValue)
--- 设置过期时间（2 分钟）
-redis.call('EXPIRE', setKey, expireTime2Min)
 
 -- 2. 如果已存在 (返回 0)，则直接退出
 if exists == 0 then
     return 0
 end
+
+-- 设置过期时间
+redis.call('EXPIRE', setKey, expireTimeSet)
+
 -- 3. 不存在则进行计数操作
 -- ZINCRBY 会在 member 不存在时自动创建，初始为 0 后再增加指定分数
 redis.call('ZINCRBY', countKey, 1, uid)

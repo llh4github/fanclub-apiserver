@@ -6,38 +6,30 @@
 package llh.fanclubvup.apiserver.statistics
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.lettuce.core.RedisClient
-import jakarta.annotation.Resource
 import llh.fanclubvup.apiserver.consts.StatisticsCacheKey
 import llh.fanclubvup.apiserver.consts.enums.GuardLevel
+import llh.fanclubvup.apiserver.consts.enums.LiveRecordStatus
+import llh.fanclubvup.apiserver.dto.viwer.DanmuWsMsg
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordAddInput
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordEndLiveInput
 import llh.fanclubvup.apiserver.entity.viewer.dto.ViewerGuardBuyRecordAddInput
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
 import llh.fanclubvup.apiserver.service.viewer.ViewerGuardBuyRecordService
 import llh.fanclubvup.apiserver.utils.ValidationUtil
-import llh.fanclubvup.bilisdk.dm.cmd.Command
-import llh.fanclubvup.bilisdk.dm.cmd.DanmuMsgCommand
-import llh.fanclubvup.bilisdk.dm.cmd.LiveCommand
-import llh.fanclubvup.bilisdk.dm.cmd.PreparingCommand
-import llh.fanclubvup.bilisdk.dm.cmd.SendGiftCommand
-import llh.fanclubvup.bilisdk.dm.cmd.SuperChatCommand
-import llh.fanclubvup.bilisdk.dm.cmd.UserToastMsgV2Cmd
+import llh.fanclubvup.apiserver.websocket.DanmuWebsocketHandler
+import llh.fanclubvup.bilisdk.dm.cmd.*
 import llh.fanclubvup.bilisdk.scraper.BiliWsMsgBizHandler
 import llh.fanclubvup.common.utils.LocalDateTimeUtil
+import llh.fanclubvup.common.utils.StrUtil
 import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.data.redis.core.script.DefaultRedisScript
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import java.time.Duration
-import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.ZoneId
 import java.util.concurrent.Executors
 
 @Service
@@ -45,6 +37,7 @@ class BiliDanmuStatistics(
     private val redisTemplate: StringRedisTemplate,
     private val anchorLiveRecordService: AnchorLiveRecordService,
     private val viewerGuardBuyRecordService: ViewerGuardBuyRecordService,
+    private val danmuWebsocketHandler: DanmuWebsocketHandler
 ) : BiliWsMsgBizHandler {
 
     private val logger = KotlinLogging.logger {}
@@ -68,7 +61,7 @@ class BiliDanmuStatistics(
         val startTime = cmd.data?.guardInfo?.startTime
         val payflowId = cmd.data?.payInfo?.payflowId
 
-        if (ValidationUtil.isAllNotEmpty(senderUid, guardLevel, reciverUid, num, price, startTime, payflowId)) {
+        if (ValidationUtil.isAllNotNull(senderUid, guardLevel, reciverUid, num, price, startTime, payflowId)) {
             viewerGuardBuyRecordService.save(
                 ViewerGuardBuyRecordAddInput(
                     senderBid = senderUid!!,
@@ -92,7 +85,7 @@ class BiliDanmuStatistics(
                     "UID=${cmd.data?.uid ?: cmd.data?.uinfo?.uid}, " +
                     "金额=${cmd.data?.price} 元，" +
                     "倍数=${cmd.data?.rate}, " +
-                    "内容=${cmd.data?.messageTrans ?: cmd.data?.message}"
+                    "内容=${cmd.data?.message}"
         }
     }
 
@@ -117,9 +110,7 @@ class BiliDanmuStatistics(
             return
         }
 
-        val endLiveDateTime = Instant.ofEpochMilli(endTime)
-            .atZone(ZoneId.systemDefault())
-            .toLocalDateTime()
+        val endLiveDateTime = LocalDateTimeUtil.toLocalDateTimeEpochMilli(endTime)
         val input = AnchorLiveRecordEndLiveInput(roomId, endLiveDateTime)
         val result = anchorLiveRecordService.updateEndLiveStatus(input)
         logger.info { "直播结束：直播间ID=$roomId, 结束时间=$endLiveDateTime, 更新数据库 $result 条数据" }
@@ -129,13 +120,16 @@ class BiliDanmuStatistics(
         val liveKey = cmd.liveKey
         val roomId = cmd.roomId
         val liveTime = cmd.liveTime
-        if (liveKey == null || roomId == null || liveTime == null) {
+        logger.info { "开播数据:\n$cmd" }
+        if (liveKey == null || roomId == null) {
             logger.error { "直播开始命令关键参数缺乏:\n$cmd" }
             return
         }
 
-        val liveDateTime = LocalDateTimeUtil.toLocalDateTime(liveTime)
-        val input = AnchorLiveRecordAddInput(roomId, liveKey, liveDateTime)
+        val liveDateTime =
+            if (liveTime != null) LocalDateTimeUtil.toLocalDateTime(liveTime)
+            else LocalDateTime.now()
+        val input = AnchorLiveRecordAddInput(roomId, liveKey, liveDateTime, LiveRecordStatus.LIVING)
         anchorLiveRecordService.save(input, SaveMode.UPSERT)
         logger.info { "保存开播记录" }
     }
@@ -143,23 +137,40 @@ class BiliDanmuStatistics(
     override fun handle(cmd: DanmuMsgCommand) {
         val now = LocalDate.now()
         val time = LocalTime.now()
-        cmd.getUserInfo()?.let { userInfo ->
-            logger.info {
-                "弹幕消息：" +
-                        "用户名=${userInfo.username}, " +
-                        "UID=${userInfo.uid}, " +
-                        "ts=${userInfo.timestamp}, " +
-                        "内容=${cmd.getContent()}"
+        val content = cmd.getContent() ?: return
+        cmd.extractSendInfo()?.let { sender ->
+            if (sender.suid == -1L) {
+                // FIXME 为啥有-1的？
+                logger.warn { "发送者无效, 忽略\n$cmd" }
+                return
             }
-
+            // 网页同步一些弹幕
             executors.execute {
-                val key = StatisticsCacheKey.danmuCount(now)
+                // 屏蔽低等级的弹幕
+                if (sender.level <= 15) {
+                    return@execute
+                }
+                val msg = DanmuWsMsg(
+                    StrUtil.maskMiddle(sender.name),
+                    content,
+                    sender.ruid,
+                    sender.level
+                )
+                danmuWebsocketHandler.sendDanmu(msg)
+            }
+            // 统计弹幕发送量
+            executors.execute {
+                val key = StatisticsCacheKey.danmuCount(sender.ruid, now)
                 redisTemplate.execute(
                     statisticsDanmu,
                     listOf(key, "${time.hour}-${time.minute}"),
-                    userInfo.uid.toString(), userInfo.timestamp.toString()
+                    sender.suid.toString(),
+                    sender.ts.toString(),
                 )
             }
+        }
+
+        cmd.getUserInfo()?.let { userInfo ->
             executors.execute {
                 val key = StatisticsCacheKey.nicknameChange()
                 redisTemplate.execute(

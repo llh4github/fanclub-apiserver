@@ -7,13 +7,13 @@ package llh.fanclubvup.apiserver.service.sys.impl
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.apiserver.components.properties.JwtProperty
+import llh.fanclubvup.apiserver.consts.enums.JwtType
 import llh.fanclubvup.apiserver.dto.security.SecurityUserDetails
 import llh.fanclubvup.apiserver.dto.sys.LoginReq
 import llh.fanclubvup.apiserver.dto.sys.LoginTokenResp
 import llh.fanclubvup.apiserver.entity.sys.User
 import llh.fanclubvup.apiserver.entity.sys.dto.UserAccount
 import llh.fanclubvup.apiserver.entity.sys.username
-import llh.fanclubvup.apiserver.consts.enums.JwtType
 import llh.fanclubvup.apiserver.service.BaseDatabaseServiceImpl
 import llh.fanclubvup.apiserver.service.common.JwtService
 import llh.fanclubvup.apiserver.service.sys.UserService
@@ -21,7 +21,6 @@ import llh.fanclubvup.apiserver.utils.SecurityContextUtil
 import llh.fanclubvup.common.excptions.AppRuntimeException
 import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.babyfish.jimmer.sql.kt.ast.expression.eq
-import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.data.redis.core.script.RedisScript
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -33,7 +32,6 @@ class UserServiceImpl(
     sqlClient: KSqlClient,
     val jwtService: JwtService,
     val passwordEncoder: PasswordEncoder,
-    val redisTemplate: StringRedisTemplate,
     val jwtProperty: JwtProperty
 ) : UserService,
     UserDetailsService,

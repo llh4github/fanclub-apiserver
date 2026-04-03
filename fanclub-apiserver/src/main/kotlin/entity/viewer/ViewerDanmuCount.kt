@@ -23,6 +23,10 @@ interface ViewerDanmuCount : BaseEntity {
     @get:Schema(title = "B站UID", example = "114514")
     val bid: BID
 
+    @Key(group = "bid-date")
+    @get:Schema(title = "接收者的B站UID", example = "114514")
+    val rbid:BID
+
     @get:Schema(title = "统计时间", example = "2023-07-01")
     @Key(group = "bid-date")
     val cntDate: LocalDate

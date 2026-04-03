@@ -63,6 +63,22 @@ class RedisCacheConfig {
         return s
     }
 
+
+    @Bean("deleteByPattern")
+    fun deleteByPattern(): DefaultRedisScript<Long> {
+        val s = DefaultRedisScript<Long>()
+        s.resultType = Long::class.java
+        s.setScriptSource(
+            ResourceScriptSource(
+                ClassPathResource(
+                    "lua/delete_by_pattern.lua",
+                    this.javaClass.classLoader
+                )
+            )
+        )
+        return s
+    }
+
     @Bean("nicknameChange")
     fun nicknameChange(): DefaultRedisScript<Boolean> {
         val s = DefaultRedisScript<Boolean>()

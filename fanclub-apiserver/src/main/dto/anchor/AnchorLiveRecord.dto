@@ -15,6 +15,7 @@ input AnchorLiveRecordAddInput {
     roomId
     liveKey
     liveTime
+    liveStatus
 }
 
 input AnchorLiveRecordEndLiveInput {
@@ -25,4 +26,11 @@ input AnchorLiveRecordEndLiveInput {
 AnchorLiveRecordLiveStatus {
     liveTime?
     liveStatus
+    endLiveTime
+    liveDuration
+}
+// 直播起止时间
+AnchorLiveTimeRecord {
+    liveTime?
+    endLiveTime
 }

@@ -48,7 +48,11 @@ class SpringSecurityConfig(
                 }
                 // TODO 后面看看有没有其他方案
                 authorize("/anchor/follower/num/query", permitAll)
+                authorize("/anchor/follower/num/query-history", permitAll)
                 authorize("/anchor/live-record/live-status", permitAll)
+                authorize("/anchor/live-record/last-endLive", permitAll)
+                // WebSocket 端点不需要 HTTP 认证，认证在握手拦截器中处理
+                authorize("/ws/**", permitAll)
                 authorize(anyRequest, authenticated)
             }
             csrf { disable() }
@@ -57,13 +61,15 @@ class SpringSecurityConfig(
             addFilterBefore<UsernamePasswordAuthenticationFilter>(jwtAuthenticationFilter)
             exceptionHandling {
                 authenticationEntryPoint = { request, response, e ->
-                    logger.debug(e) { "用户未登录或认证凭证信息错误: ${request.requestURI}" }
+                    logger.debug(e) { "用户未登录或认证凭证信息错误：${request.requestURI}" }
                     response.status = 200
+                    response.contentType = "application/json;charset=UTF-8"
                     response.writer.write(errResp("用户未登录或认证凭证信息错误", "401"))
                 }
                 accessDeniedHandler = { request, response, e ->
-                    logger.debug(e) { "用户无权访问: ${request.requestURI}" }
+                    logger.debug(e) { "用户无权访问：${request.requestURI}" }
                     response.status = 200
+                    response.contentType = "application/json;charset=UTF-8"
                     response.writer.write(errResp("用户无权访问", "403"))
                 }
             }

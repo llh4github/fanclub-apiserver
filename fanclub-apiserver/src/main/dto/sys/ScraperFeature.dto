@@ -11,16 +11,6 @@ ScraperFeaturePageView {
     #allScalars
 }
 
-/**
-* 启用粉丝监控的主播信息
-*/
-ScraperFeatureFollowerEnabledView {
-    follower
-    anchorInfo {
-        id
-        biliId
-    }
-}
 
 specification ScraperMonitorFeatureSpec {
     monitor
@@ -30,12 +20,11 @@ specification ScraperMonitorFeatureSpec {
 }
 
 /**
-* 启用粉丝监控的主播信息
+* 启用爬虫功能的主播信息
 */
-ScraperMonitorFeatureEnabledView {
-    monitor
+ScraperEnableFeatureEnabledView {
+    id
     anchorInfo {
-        id
         biliId
         roomId
     }

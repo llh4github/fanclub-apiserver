@@ -5,7 +5,6 @@
 
 package llh.fanclubvup.apiserver.service.anchor
 
-import llh.fanclubvup.apiserver.consts.enums.LiveRecordStatus
 import llh.fanclubvup.apiserver.entity.anchor.AnchorLiveRecord
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordEndLiveInput
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordLiveStatus
@@ -24,4 +23,9 @@ interface AnchorLiveRecordService : BaseDatabaseService<AnchorLiveRecord> {
      * 获取直播状态
      */
     fun fetchLiveStatus(roomId: Long): AnchorLiveRecordLiveStatus
+
+    /**
+     * 获取最新[last]条 正常结束的直播数据
+     */
+    fun fetchEndLiveRecord(roomId: Long, last: Int): List<AnchorLiveRecordLiveStatus>
 }

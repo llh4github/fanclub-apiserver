@@ -21,11 +21,12 @@ import java.time.LocalDateTime
 @Schema(title = "主播直播记录")
 interface AnchorLiveRecord : BaseEntity {
 
+    @Key(group = "room_live_record_uk")
     @Column(name = "room_id")
     @get:Schema(title = "直播间ID", description = "直播间ID", example = "114514")
     val roomId: Long
 
-    @Key
+    @Key(group = "room_live_record_uk")
     @Column(name = "live_key")
     @get:Schema(title = "直播场次key", description = "直播场次key", example = "114514")
     val liveKey: String
@@ -43,4 +44,8 @@ interface AnchorLiveRecord : BaseEntity {
     @get:Schema(title = "直播结束时间", description = "直播结束时间", example = "2023-01-01 00:00:00")
     @get:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DatetimeConstant.DATE_TIME_FORMAT)
     val endLiveTime: LocalDateTime?
+
+    @Column(name = "live_duration")
+    @get:Schema(title = "直播时长(秒)", description = "异常情况下为 null", example = "114514")
+    val liveDuration: Long?
 }

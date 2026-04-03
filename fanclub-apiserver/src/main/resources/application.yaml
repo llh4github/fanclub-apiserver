@@ -8,8 +8,8 @@ spring:
     virtual:
       enabled: true
   datasource:
-    url: jdbc:mariadb://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:fanclub_dev}
-    username: ${DB_USERNAME:root}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:fanclub_dev}
+    username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:123456}
   flyway:
     enabled: ${DB_FLYWAY_ENABLED:false}
@@ -41,3 +41,9 @@ springdoc:
     enabled: ${FANCLUB_SWAGGER_ENABLED:false}
   swagger-ui:
     enabled: ${FANCLUB_SWAGGER_ENABLED:false}
+fanclub:
+  web:
+    domain: http://localhost
+  bili:
+    scraper:
+      current-bid: 1111

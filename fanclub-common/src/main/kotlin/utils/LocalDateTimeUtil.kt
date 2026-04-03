@@ -5,10 +5,17 @@
 
 package llh.fanclubvup.common.utils
 
-import java.time.Instant
-import java.time.ZoneId
+import java.time.*
 
 object LocalDateTimeUtil {
+
+    val ZERO_TIME: LocalTime = LocalTime.of(0, 0, 0, 0)
+    val END_TIME: LocalTime = LocalTime.of(23, 59, 59, 999999999)
+
+    /**
+     * 一天的总秒数：86400 秒 (24 * 60 * 60)
+     */
+    const val SECONDS_PER_DAY = 86400L
 
     /**
      * 将秒数转换为 LocalDateTime
@@ -25,6 +32,30 @@ object LocalDateTimeUtil {
      * @param ms 毫秒数
      * @return LocalDateTime 对象
      */
-    fun toLocalDateTimeEpochMilli(ms: Long) =
+    fun toLocalDateTimeEpochMilli(ms: Long): LocalDateTime =
         Instant.ofEpochMilli(ms).atZone(ZoneId.systemDefault()).toLocalDateTime()
+
+    fun diffSeconds(start: LocalDateTime, end: LocalDateTime): Long {
+        return Duration.between(start, end).seconds
+    }
+
+    fun dayOfStart(date: LocalDateTime): LocalDateTime {
+        return date.withHour(0).withMinute(0).withSecond(0).withNano(0)
+    }
+
+    fun isSameDay(date1: LocalDateTime, date2: LocalDateTime): Boolean {
+        return date1.toLocalDate() == date2.toLocalDate()
+    }
+
+    fun dayOfStart(date: LocalDate): LocalDateTime {
+        return LocalDateTime.of(date, ZERO_TIME)
+    }
+
+    fun dayOfEnd(date: LocalDate): LocalDateTime {
+        return LocalDateTime.of(date, END_TIME)
+    }
+
+    fun dayOfEnd(date: LocalDateTime): LocalDateTime {
+        return date.withHour(23).withMinute(59).withSecond(59).withNano(999999999)
+    }
 }

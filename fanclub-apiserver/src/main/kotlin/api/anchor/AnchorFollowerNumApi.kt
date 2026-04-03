@@ -13,8 +13,7 @@ import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorFollowerDateNumQuerySpec
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorFollowerNumPageView
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorFollowerNumQuerySpec
 import llh.fanclubvup.apiserver.service.anchor.AnchorFollowerNumService
-import org.springframework.cache.annotation.Cacheable
-import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -37,5 +36,12 @@ class AnchorFollowerNumApi(
     @PermitAll
     @PostMapping("/query")
     @Operation(summary = "查询数量")
-    fun queryNum(@RequestBody spec: AnchorFollowerDateNumQuerySpec) = JsonWrapper.ok(service.queryNum(spec))
+    fun queryNum(@RequestBody @Validated spec: AnchorFollowerDateNumQuerySpec) = JsonWrapper.ok(service.queryNum(spec))
+
+
+    @PostMapping("/query-history")
+    @Operation(summary = "查询历史数量")
+    fun queryHistoryNum(@RequestBody @Validated spec: AnchorFollowerDateNumQuerySpec) = JsonWrapper.ok(
+        service.queryHistoryNum(spec.biliId, spec.cntDate)
+    )
 }

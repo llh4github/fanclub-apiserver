@@ -29,14 +29,17 @@ import org.babyfish.jimmer.sql.kt.ast.query.specification.KSpecification
 import org.babyfish.jimmer.sql.kt.ast.table.KNonNullTable
 import org.babyfish.jimmer.sql.kt.ast.table.makeOrders
 import org.babyfish.jimmer.sql.kt.exists
-import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.transaction.support.TransactionTemplate
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import kotlin.reflect.KClass
 
 abstract class BaseDatabaseServiceImpl<E : BaseEntity>(
     private val entityType: KClass<E>,
     protected val sqlClient: KSqlClient,
 ) : ServiceCacheHelper(), BaseDatabaseService<E> {
+
+    protected val executorVirtualThread: ExecutorService = Executors.newVirtualThreadPerTaskExecutor()
 
     /**
      * 手动事务。在复杂操作中使用。
