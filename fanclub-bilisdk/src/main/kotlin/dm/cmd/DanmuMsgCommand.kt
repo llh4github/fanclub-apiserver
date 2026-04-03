@@ -107,7 +107,13 @@ data class DanmuMsgCommand(
 
         return try {
             SenderInfo(
-                suid = (tmpUserMap["uid"] as? Int)?.toLong() ?: -1L,
+                suid = when (val uid = tmpUserMap["uid"]) {
+                    is Long -> uid
+                    is Int -> uid.toLong()
+                    is Number -> uid.toLong()
+                    is String -> uid.toLongOrNull() ?: -1L
+                    else -> -1L
+                },
                 ts = timestamp,
                 name = (userBase["name"] as? String) ?: "",
                 level = when (val lvl = medalMap["level"]) {
