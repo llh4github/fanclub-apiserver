@@ -8,6 +8,7 @@ package llh.fanclubvup.apiserver.components.schedule
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.apiserver.entity.sys.dto.ScraperEnableFeatureEnabledView
 import llh.fanclubvup.apiserver.entity.sys.dto.ScraperMonitorFeatureSpec
+import llh.fanclubvup.apiserver.service.anchor.AnchorLiveDurationService
 import llh.fanclubvup.apiserver.service.sys.ScraperFeatureService
 import llh.fanclubvup.bilisdk.event.DanmuWsFailedEvent
 import llh.fanclubvup.bilisdk.scraper.BiliDanmuWebSocketHandler
@@ -16,6 +17,7 @@ import org.springframework.boot.context.event.ApplicationStartedEvent
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
+import java.time.LocalDate
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -25,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap
 class LiveDataMonitorSchedule(
     private val scraperFeatureService: ScraperFeatureService,
     private val scraperClient: BiliScraperClient,
+    private val liveDurationService: AnchorLiveDurationService,
 ) {
     private val logger = KotlinLogging.logger {}
     private val map = ConcurrentHashMap<Long, BiliDanmuWebSocketHandler>()
@@ -52,6 +55,17 @@ class LiveDataMonitorSchedule(
         logger.info { "清除计数表" }
         val invalidRoomIds = map.filter { !it.value.isValid() }.keys
         retryWsConnection(invalidRoomIds.toList())
+    }
+
+    @Scheduled(cron = "11 11 0 * * ?")
+    fun computeLiveDuration() {
+        // 获取昨天的日期
+        val targetDate = LocalDate.now().minusDays(1L)
+        queryEnabled().forEach { info ->
+            val roomId = info.anchorInfo.roomId
+            val cnt = liveDurationService.computeLiveDuration(roomId, targetDate)
+            logger.info { "$roomId 房间计算更新了 $cnt 条数据" }
+        }
     }
 
 

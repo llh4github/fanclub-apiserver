@@ -14,12 +14,10 @@ import llh.fanclubvup.apiserver.service.BaseDatabaseServiceImpl
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveDurationService
 import llh.fanclubvup.apiserver.utils.IdGenerator
 import llh.fanclubvup.common.utils.LocalDateTimeUtil
-import org.babyfish.jimmer.sql.ast.mutation.UpsertMask
 import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.babyfish.jimmer.sql.kt.ast.expression.between
 import org.babyfish.jimmer.sql.kt.ast.expression.eq
 import org.babyfish.jimmer.sql.kt.ast.expression.isNotNull
-import org.babyfish.jimmer.sql.kt.ast.mutation.addUpdatablePath
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
@@ -44,15 +42,30 @@ class AnchorLiveDurationServiceImpl(
                 )
             }
             .toList()
-        val rs = sqlClient.saveInputsCommand(endLives) {
-            setUpsertMask(
-                UpsertMask.of(AnchorLiveDuration::class.java)
-                    .addUpdatablePath(AnchorLiveDuration::liveDuration)
-            )
+        // 按日期是否等于指定日期分组
+        val groupedByDateMap = endLives.groupBy { record ->
+            record.statDate == date  // true 或 false 作为 key
         }
-            .execute()
-        println(rs)
-        return 1
+
+        return sqlClient.transaction {
+            var total = 0
+            createQuery {
+                where(table.roomId.eq(roomId))
+                where(table.statDate.eq(date))
+                select(table.id, table.liveDuration)
+            }.fetchFirstOrNull()?.let { (id, liveDuration) ->
+                val durationSum = groupedByDateMap[true]?.sumOf { it.liveDuration } ?: return@let
+                total += createUpdate {
+                    where(table.id.eq(id))
+                    set(table.liveDuration, durationSum + liveDuration)
+                }.execute()
+            }
+            groupedByDateMap[false]?.let {
+                val rs = sqlClient.saveInputsCommand(it).execute()
+                total += rs.totalAffectedRowCount
+            }
+            total
+        }
     }
 
     /**
