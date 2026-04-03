@@ -19,7 +19,7 @@ import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.babyfish.jimmer.sql.kt.ast.expression.between
 import org.babyfish.jimmer.sql.kt.ast.expression.eq
 import org.babyfish.jimmer.sql.kt.ast.expression.isNotNull
-import org.babyfish.jimmer.sql.kt.ast.expression.le
+import org.babyfish.jimmer.sql.kt.ast.expression.lt
 import org.springframework.stereotype.Service
 import tools.jackson.core.type.TypeReference
 import java.time.Duration
@@ -41,7 +41,7 @@ class AnchorLiveDurationServiceImpl(
         ) {
             createQuery {
                 where(table.roomId.eq(roomId))
-                where(table.statDate.le(date))
+                where(table.statDate.lt(date))
                 select(table.fetch(AnchorLiveDurationDateDuration::class))
             }.execute()
         } ?: emptyList()
