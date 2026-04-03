@@ -11,6 +11,9 @@ class KspRegister {
 
 class PublicAccessUrlProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        return PublicAccessUrlSymbolProcessor(environment.logger)
+        return PublicAccessUrlSymbolProcessor(
+            environment.logger,
+            environment.codeGenerator
+        )
     }
 }

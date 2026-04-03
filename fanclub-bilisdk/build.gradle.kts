@@ -1,3 +1,6 @@
+import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
     kotlin("jvm")
     id("org.springframework.boot")
@@ -25,4 +28,14 @@ dependencies {
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.named<BootJar>("bootJar") {
+    enabled = false
+}
+tasks.named<Jar>("jar") {
+    enabled = true
+}
+tasks.named<BootBuildImage>("bootBuildImage") {
+    enabled = false
 }

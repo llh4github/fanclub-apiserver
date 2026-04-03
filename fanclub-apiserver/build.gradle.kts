@@ -27,6 +27,8 @@ dependencies {
     implementation(libs.yitter.idgenerator)
     implementation(project(":fanclub-bilisdk"))
     implementation(project(":fanclub-common"))
+    implementation(project(":fanclub-ksp"))
+    ksp(project(":fanclub-ksp"))
     implementation(libs.bundles.jjwt)
 
     implementation("org.springframework.boot:spring-boot-starter-validation")

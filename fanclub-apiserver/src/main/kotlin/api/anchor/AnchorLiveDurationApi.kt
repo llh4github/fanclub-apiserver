@@ -12,6 +12,7 @@ import llh.fanclubvup.apiserver.dto.JsonWrapper
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveDurationPageView
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveDurationQuerySpec
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveDurationService
+import llh.fanclubvup.ksp.annon.PublicAccessUrl
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 
@@ -29,6 +30,7 @@ class AnchorLiveDurationApi(
             service.pageQuery(AnchorLiveDurationPageView::class, queryParam, queryParam.pageParam)
         )
 
+    @PublicAccessUrl
     @Operation(summary = "查询历史数量")
     @PostMapping("/query-history")
     fun queryHistory(
