@@ -8,6 +8,11 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
 -- 创建自动更新时间戳的触发器函数
 CREATE OR REPLACE FUNCTION update_updated_time_column()
 RETURNS TRIGGER AS $$
@@ -277,7 +282,7 @@ COMMENT ON COLUMN viewer_danmu_count.cnt IS '弹幕数量';
 COMMENT ON COLUMN viewer_danmu_count.created_time IS '创建时间';
 COMMENT ON COLUMN viewer_danmu_count.updated_time IS '更新时间';
 
-CREATE UNIQUE INDEX IF NOT EXISTS viewer_danmu_count_uk_bid_date ON viewer_danmu_count (bid, cnt_date);
+create unique index viewer_danmu_count_uk_bid_date on viewer_danmu_count (cnt_date, rbid, bid);
 
 -- 创建触发器以自动更新 updated_time
 CREATE TRIGGER trigger_viewer_danmu_count_update_updated_time

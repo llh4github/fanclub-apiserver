@@ -18,7 +18,7 @@ fanclub-vup/
 │   │   └── websocket/       # WebSocket 处理器
 │   └── src/main/resources/
 │       ├── lua/             # Redis Lua 脚本
-│       └── db/mariadb/      # 数据库迁移脚本
+│       └── db/pgsql/        # 数据库迁移脚本 (PostgreSQL)
 │
 ├── fanclub-bilisdk/         # B 站 SDK 模块
 │   ├── cache/               # 缓存管理
@@ -47,7 +47,7 @@ fanclub-vup/
 ### 主要依赖库
 
 - **ORM**: [Jimmer](https://babyfish-ct.github.io/jimmer-doc/zh/docs/overview/welcome/)(Kotlin 优先的 ORM 框架)
-- **数据库驱动**: MariaDB Java Client
+- **数据库驱动**: PostgreSQL Driver
 - **缓存**: Redis 7.4.0 + Spring Data Redis
 - **本地缓存**: Ehcache
 - **JSON 处理**: Jackson (tools.jackson.module)
@@ -64,10 +64,10 @@ fanclub-vup/
 
 ### 必需服务
 
-1. **MariaDB 11.8.5**
-    - 端口：3306
+1. **PostgreSQL 17**
+    - 端口：5432
     - 数据库：fanclub_dev
-    - 字符集：utf8mb4_unicode_ci
+    - 字符集：UTF8
 
 2. **Redis Stack 7.4.0**
     - 端口：6379
@@ -91,12 +91,12 @@ fanclub-vup/
 
 ### 方式一：使用 Docker  (推荐)
 
-#### 1. 项目导入IDEA
+#### 1. 项目导入 IDEA
 
 使用 `FanclubSever-local-docker` 启动项目，这将自动:
 
-- 启动ariaDB 数据库
-- 启动Redis Stack
+- 启动 PostgreSQL 数据库
+- 启动 Redis Stack
 - 创建数据库结构
 
 #### 2. 访问应用
@@ -144,10 +144,10 @@ image-build.sh
 ## 📝 注意事项
 
 1. **Redis 配置**: Redis 7.x 必须安装 RedisBloom 模块
-2. **数据库字符集**: 必须使用 `utf8mb4`，否则中文会出现乱码
+2. **数据库字符集**: PostgreSQL 默认使用 UTF8 编码，无需额外配置
 3. **Flyway 迁移**: 生产环境建议设置 `spring.flyway.enabled=false`
 4. **性能优化**: 生产环境建议关闭 SQL 显示
-5. **KSP插件**: 代码需编译一次后才是“完整”的
+5. **KSP 插件**: 代码需编译一次后才是"完整"的
 
 ## 📄 License
 
