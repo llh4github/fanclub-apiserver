@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
 package llh.fanclubvup.apiserver.service
 
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveDurationService
@@ -18,7 +23,9 @@ class AnchorLiveDurationServiceTest {
     // 需要先建立测试数据
     @Test
     fun test_computeLiveDuration() {
-        val liveDuration = service.computeLiveDuration(roomId = 111, date = LocalDate.now().minusDays(1L))
+        val liveDuration = service.computeLiveDuration(
+            roomId = 1, date = LocalDate.now()
+        )
         println(liveDuration)
     }
 }

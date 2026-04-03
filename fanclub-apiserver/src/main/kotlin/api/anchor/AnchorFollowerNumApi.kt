@@ -14,7 +14,6 @@ import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorFollowerNumQuerySpec
 import llh.fanclubvup.apiserver.service.anchor.AnchorFollowerNumService
 import llh.fanclubvup.ksp.annon.PublicAccessUrl
 import org.springframework.validation.annotation.Validated
-import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping

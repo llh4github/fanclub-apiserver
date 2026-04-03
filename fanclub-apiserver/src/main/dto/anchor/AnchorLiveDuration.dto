@@ -12,7 +12,6 @@ AnchorLiveDurationPageView {
 }
 
 input AnchorLiveDurationAddInput {
-    id
     roomId
     statDate
     liveDuration

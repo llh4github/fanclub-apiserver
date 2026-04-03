@@ -1,16 +1,19 @@
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
 package llh.fanclubvup.apiserver.entity.anchor
 
 import io.swagger.v3.oas.annotations.media.Schema
 import llh.fanclubvup.apiserver.entity.BaseEntity
-import org.babyfish.jimmer.sql.Column
-import org.babyfish.jimmer.sql.Entity
-import org.babyfish.jimmer.sql.Key
-import org.babyfish.jimmer.sql.Table
+import org.babyfish.jimmer.sql.*
 import java.time.LocalDate
 
 @Entity
 @Schema(title = "主播每日直播时长统计")
 @Table(name = "anchor_live_duration")
+@KeyUniqueConstraint
 interface AnchorLiveDuration : BaseEntity {
 
     @Key(group = "live_stat_date_uk")
