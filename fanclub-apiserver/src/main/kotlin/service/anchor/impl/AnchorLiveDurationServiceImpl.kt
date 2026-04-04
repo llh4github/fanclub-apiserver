@@ -13,7 +13,6 @@ import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveDurationDateDuration
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveTimeRecord
 import llh.fanclubvup.apiserver.service.BaseDatabaseServiceImpl
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveDurationService
-import llh.fanclubvup.apiserver.utils.IdGenerator
 import llh.fanclubvup.common.utils.LocalDateTimeUtil
 import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.babyfish.jimmer.sql.kt.ast.expression.between
@@ -55,13 +54,13 @@ class AnchorLiveDurationServiceImpl(
             where(table.liveStatus.eq(LiveRecordStatus.END_LIVING))
             where(table.endLiveTime.isNotNull())
             select(table.fetch(AnchorLiveTimeRecord::class))
-        }.execute()
-            .flatMap { splitLiveRecordByDate(it) }
-            .map {
-                AnchorLiveDurationAddInput(
-                    IdGenerator.nextId(), roomId, it.liveDate, it.liveDuration
-                )
+        }.execute().flatMap { splitLiveRecordByDate(it) }
+            // 合并相同日期的数据，累加时长
+            .groupBy { it.liveDate }
+            .map { (liveDate, durations) ->
+                AnchorLiveDateDurationDto(liveDate, durations.sumOf { it.liveDuration })
             }
+            .map { AnchorLiveDurationAddInput(roomId, it.liveDate, it.liveDuration) }
             .toList()
         // 按日期是否等于指定日期分组
         val groupedByDateMap = endLives.groupBy { record ->
@@ -70,17 +69,26 @@ class AnchorLiveDurationServiceImpl(
 
         return sqlClient.transaction {
             var total = 0
-            createQuery {
+            val existData = createQuery {
                 where(table.roomId.eq(roomId))
                 where(table.statDate.eq(date))
                 select(table.id, table.liveDuration)
-            }.fetchFirstOrNull()?.let { (id, liveDuration) ->
-                val durationSum = groupedByDateMap[true]?.sumOf { it.liveDuration } ?: return@let
-                total += createUpdate {
-                    where(table.id.eq(id))
-                    set(table.liveDuration, durationSum + liveDuration)
-                }.execute()
+            }.fetchFirstOrNull()
+            if (existData != null) {
+                val (id, liveDuration) = existData
+                groupedByDateMap[true]?.sumOf { it.liveDuration }?.let { durationSum ->
+                    total += createUpdate {
+                        where(table.id.eq(id))
+                        set(table.liveDuration, durationSum + liveDuration)
+                    }.execute()
+                }
+            } else {
+                groupedByDateMap[true]?.let {
+                    val rs = sqlClient.saveInputsCommand(it).execute()
+                    total += rs.totalAffectedRowCount
+                }
             }
+
             groupedByDateMap[false]?.let {
                 val rs = sqlClient.saveInputsCommand(it).execute()
                 total += rs.totalAffectedRowCount
@@ -129,5 +137,5 @@ class AnchorLiveDurationServiceImpl(
     }
 
 
-    //#endregion 计算直播时长
+//#endregion 计算直播时长
 }

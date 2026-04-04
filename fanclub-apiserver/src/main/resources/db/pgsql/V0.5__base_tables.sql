@@ -8,11 +8,6 @@
  * Contact: lilinhong_coding@foxmail.com
  */
 
-/*
- * Copyright (c) 2026 llh
- * Contact: lilinhong_coding@foxmail.com
- */
-
 -- 创建自动更新时间戳的触发器函数
 CREATE OR REPLACE FUNCTION update_updated_time_column()
 RETURNS TRIGGER AS $$

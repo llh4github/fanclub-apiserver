@@ -13,6 +13,7 @@ import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordLiveStatus
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordPageView
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordQuerySpec
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
+import llh.fanclubvup.ksp.annon.PublicAccessUrl
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -29,6 +30,7 @@ class AnchorLiveRecordApi(
             service.pageQuery(AnchorLiveRecordPageView::class, queryParam, queryParam.pageParam)
         )
 
+    @PublicAccessUrl
     @GetMapping("/live-status")
     @Operation(summary = "查询直播状态")
     fun liveStatus(
@@ -38,6 +40,7 @@ class AnchorLiveRecordApi(
         service.fetchLiveStatus(roomId)
     )
 
+    @PublicAccessUrl
     @GetMapping("/last-endLive")
     @Operation(summary = "查询最近几次已完成的直播")
     fun lastLiveStatus(
