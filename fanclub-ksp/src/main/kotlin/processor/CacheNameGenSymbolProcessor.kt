@@ -5,15 +5,10 @@
 
 package llh.fanclubvup.ksp.processor
 
-import com.google.devtools.ksp.processing.CodeGenerator
-import com.google.devtools.ksp.processing.KSPLogger
-import com.google.devtools.ksp.processing.Resolver
-import com.google.devtools.ksp.processing.SymbolProcessor
+import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import com.squareup.kotlinpoet.*
-import com.squareup.kotlinpoet.ksp.writeTo
 import llh.fanclubvup.ksp.annon.CacheNameGen
 
 class CacheNameGenSymbolProcessor(
@@ -44,6 +39,46 @@ class CacheNameGenSymbolProcessor(
                 val serviceName = className.removeSuffix("Impl")
                 
                 val containingClassPackage = containingClass.packageName.asString()
+                // 获取返回类型信息
+                val returnType = function.returnType?.resolve()
+                val returnTypeName = returnType?.declaration?.simpleName?.asString() ?: "Unit"
+                val returnTypeQualifiedName = returnType?.declaration?.qualifiedName?.asString()
+                
+                // 构建完整的返回类型字符串，包括泛型参数
+                val fullReturnType = buildString {
+                    if (returnTypeQualifiedName != null) {
+                        append(returnTypeQualifiedName)
+                        // 检查是否有泛型参数
+                        if (returnType.arguments.isNotEmpty()) {
+                            append("<")
+                            returnType.arguments.forEachIndexed { index, arg ->
+                                if (index > 0) append(", ")
+                                val argType = arg.type?.resolve()
+                                val argTypeQualifiedName = argType?.declaration?.qualifiedName?.asString()
+                                if (argTypeQualifiedName != null) {
+                                    append(argTypeQualifiedName)
+                                } else {
+                                    // 处理解析失败的类型
+                                    val argTypeStr = arg.type?.toString() ?: "Any"
+                                    if (argTypeStr.startsWith("<ERROR TYPE: ")) {
+                                        // 从错误信息中提取类型名
+                                        val typeName = argTypeStr.substringAfter("<ERROR TYPE: ").substringBefore(">")
+                                        // 尝试构建可能的包名
+                                        val possiblePackage = "llh.fanclubvup.apiserver.entity.anchor.dto"
+                                        append("$possiblePackage.$typeName")
+                                    } else {
+                                        append(argTypeStr)
+                                    }
+                                }
+                            }
+                            append(">")
+                        }
+                    } else {
+                        append(returnTypeName)
+                    }
+                }
+                logger.info("返回类型: $returnTypeName, 完全限定名: $returnTypeQualifiedName, 完整类型: $fullReturnType")
+                
                 val methodInfo = MethodInfo(
                     methodName = function.simpleName.asString(),
                     parameters = function.parameters.map { param ->
@@ -57,7 +92,10 @@ class CacheNameGenSymbolProcessor(
                             qualifiedName = qualifiedName,
                             containingClassPackage = containingClassPackage
                         )
-                    }
+                    },
+                    returnType = returnTypeName,
+                    returnTypeQualifiedName = returnTypeQualifiedName,
+                    fullReturnType = fullReturnType
                 )
                 
                 methodsByClass.getOrPut(serviceName) { mutableListOf() }.add(methodInfo)
@@ -79,63 +117,100 @@ class CacheNameGenSymbolProcessor(
      */
     private fun generateCacheNameMethods(methodsByClass: Map<String, List<MethodInfo>>) {
         methodsByClass.forEach { (serviceName, methods) ->
-            val objectBuilder = TypeSpec.objectBuilder("${serviceName}CacheHelper")
-            
-            methods.forEach { method ->
-                val functionName = "${method.methodName}CacheName"
-                val funBuilder = FunSpec.builder(functionName)
-                    .returns(String::class)
-                    .addKdoc("生成 ${method.methodName} 方法的缓存名称")
+            // 生成完整的文件内容
+            val fileContent = buildString {
+                append("package llh.fanclubvup.ksp.generated\n\n")
                 
-                // 添加参数 - 使用原始参数类型
-                method.parameters.forEach { param ->
-                    val paramType: TypeName = when (param.type) {
-                        "String" -> String::class.asTypeName()
-                        "Int" -> Int::class.asTypeName()
-                        "Long" -> Long::class.asTypeName()
-                        "Boolean" -> Boolean::class.asTypeName()
-                        "Double" -> Double::class.asTypeName()
-                        "Float" -> Float::class.asTypeName()
-                        "BID" -> Long::class.asTypeName() // 假设 BID 是 Long 类型的别名
-                        "LocalDate" -> java.time.LocalDate::class.asTypeName()
-                        else -> {
-                            // 处理自定义类型
-                            if (param.qualifiedName != null && !param.type.startsWith("<ERROR TYPE:")) {
-                                ClassName.bestGuess(param.qualifiedName)
-                            } else if (param.type.startsWith("<ERROR TYPE:")) {
-                                // 处理KSP生成的类型，尝试从错误信息中提取类型名
-                                val typeName = param.type.substringAfter("<ERROR TYPE: ").substringBefore(">")
-                                // 尝试构建可能的包名
-                                val possiblePackage = "llh.fanclubvup.apiserver.entity.anchor.dto"
-                                ClassName.bestGuess("$possiblePackage.$typeName")
-                            } else {
-                                Any::class.asTypeName()
+                // 收集所有需要导入的包
+                val imports = mutableSetOf<String>()
+                imports.add("com.fasterxml.jackson.core.type.TypeReference")
+                imports.add("kotlin.Long")
+                imports.add("kotlin.String")
+                
+                // 添加自定义类型的导入
+                methods.forEach { method ->
+                    method.parameters.forEach { param ->
+                        if (param.qualifiedName != null && !param.type.startsWith("<ERROR TYPE:")) {
+                            imports.add(param.qualifiedName)
+                        } else if (param.type.startsWith("<ERROR TYPE:")) {
+                            val typeName = param.type.substringAfter("<ERROR TYPE: ").substringBefore(">")
+                            val possiblePackage = "llh.fanclubvup.apiserver.entity.anchor.dto"
+                            imports.add("$possiblePackage.$typeName")
+                        }
+                    }
+                    
+                    // 添加返回类型的导入
+                    if (method.fullReturnType.contains(".")) {
+                        // 提取返回类型中的所有类名
+                        val typeRegex = Regex("""[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)*""")
+                        val matches = typeRegex.findAll(method.fullReturnType)
+                        matches.forEach { match ->
+                            val typeName = match.value
+                            if (typeName.contains(".")) {
+                                imports.add(typeName)
                             }
                         }
                     }
-                    funBuilder.addParameter(param.name, paramType)
                 }
                 
-                // 构建返回字符串模板
-                val cacheNameExpression = buildString {
-                    append("\"")
-                    append(serviceName)
-                    append(":")
-                    append(method.methodName)
+                // 生成导入语句
+                imports.forEach { import ->
+                    append("import $import\n")
+                }
+                
+                append("\n")
+                append("/**\n")
+                append(" * $serviceName 的缓存名称生成器\n")
+                append(" *\n")
+                append(" * 此对象在编译时由 KSP 自动生成，提供缓存名称生成方法。\n")
+                append(" */\n")
+                append("public object ${serviceName}CacheHelper {\n")
+                
+                // 生成缓存名称方法
+                methods.forEach { method ->
+                    append("  /**\n")
+                    append("   * 生成 ${method.methodName} 方法的缓存名称\n")
+                    append("   */\n")
+                    append("  public fun ${method.methodName}CacheName(")
+                    
+                    // 添加参数
+                    val params = method.parameters.map { param ->
+                        val paramType = when (param.type) {
+                            "String" -> "String"
+                            "Int" -> "Int"
+                            "Long" -> "Long"
+                            "Boolean" -> "Boolean"
+                            "Double" -> "Double"
+                            "Float" -> "Float"
+                            "BID" -> "Long" // 假设 BID 是 Long 类型的别名
+                            "LocalDate" -> "LocalDate"
+                            else -> {
+                                if (param.qualifiedName != null && !param.type.startsWith("<ERROR TYPE:")) {
+                                    param.type
+                                } else if (param.type.startsWith("<ERROR TYPE:")) {
+                                    param.type.substringAfter("<ERROR TYPE: ").substringBefore(">")
+                                } else {
+                                    "Any"
+                                }
+                            }
+                        }
+                        "${param.name}: $paramType"
+                    }
+                    append(params.joinToString(", "))
+                    append("): String = \"$serviceName:${method.methodName}")
+                    
+                    // 添加参数值
                     method.parameters.forEach { param ->
                         append(":")
                         when (param.type) {
                             "String", "Int", "Long", "Boolean", "Double", "Float" -> {
-                                append("$")
-                                append(param.name)
+                                append("${'$'}{${param.name}}")
                             }
                             "BID" -> {
-                                append("$")
-                                append(param.name)
+                                append("${'$'}{${param.name}}")
                             }
                             "LocalDate" -> {
-                                append("$")
-                                append(param.name)
+                                append("${'$'}{${param.name}}")
                             }
                             else -> {
                                 // 对于自定义类型，尝试展开其字段
@@ -145,21 +220,29 @@ class CacheNameGenSymbolProcessor(
                             }
                         }
                     }
-                    append("\"")
+                    append("\"\n\n")
                 }
                 
-                // 直接使用字符串模板
-                funBuilder.addStatement("return $cacheNameExpression")
-                objectBuilder.addFunction(funBuilder.build())
+                // 生成 TypeReference 实现
+                methods.forEach { method ->
+                    val returnTypeObjectName = "${method.methodName.replaceFirstChar { it.uppercase() }}ReturnType"
+                    append("  public object $returnTypeObjectName : TypeReference<")
+                    append(method.fullReturnType)
+                    append(">() {}\n\n")
+                }
+                
+                append("}\n")
             }
             
-            objectBuilder.addKdoc("$serviceName 的缓存名称生成器\n\n此对象在编译时由 KSP 自动生成，提供缓存名称生成方法。")
+            // 写入文件
+            val file = codeGenerator.createNewFile(
+                dependencies = Dependencies.ALL_FILES,
+                packageName = "llh.fanclubvup.ksp.generated",
+                fileName = "${serviceName}CacheNames"
+            )
+            file.write(fileContent.toByteArray())
+            file.close()
             
-            val fileSpec = FileSpec.builder("llh.fanclubvup.ksp.generated", "${serviceName}CacheNames")
-                .addType(objectBuilder.build())
-                .build()
-            
-            fileSpec.writeTo(codeGenerator, aggregating = false)
             logger.info("已生成 ${serviceName}CacheNames.kt 文件，包含 ${methods.size} 个方法")
         }
     }
@@ -169,7 +252,10 @@ class CacheNameGenSymbolProcessor(
      */
     private data class MethodInfo(
         val methodName: String,
-        val parameters: List<ParamInfo>
+        val parameters: List<ParamInfo>,
+        val returnType: String,
+        val returnTypeQualifiedName: String?,
+        val fullReturnType: String
     )
 
     /**
