@@ -10,6 +10,8 @@ package llh.fanclubvup.ksp.annon
  */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.SOURCE)
-annotation class CacheNameGen {
+annotation class CacheNameGen(
+    val prefix: String = "",
+) {
 
 }
