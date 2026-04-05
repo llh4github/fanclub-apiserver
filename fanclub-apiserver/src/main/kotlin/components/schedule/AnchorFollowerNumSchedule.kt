@@ -6,13 +6,12 @@
 package llh.fanclubvup.apiserver.components.schedule
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import llh.fanclubvup.apiserver.consts.CacheKeyPrefix
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorFollowerNumInput
 import llh.fanclubvup.apiserver.service.anchor.AnchorFollowerNumService
 import llh.fanclubvup.apiserver.service.sys.ScraperFeatureService
 import llh.fanclubvup.bilisdk.scraper.BiliScraperClient
 import llh.fanclubvup.common.BID
-import llh.fanclubvup.common.excptions.AppRuntimeException
+import llh.fanclubvup.common.consts.CacheKeyPrefix
 import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.scheduling.annotation.Scheduled

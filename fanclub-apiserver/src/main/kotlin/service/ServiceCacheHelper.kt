@@ -6,8 +6,8 @@
 package llh.fanclubvup.apiserver.service
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import llh.fanclubvup.apiserver.consts.CacheKeyPrefix
 import llh.fanclubvup.apiserver.utils.ValidationUtil
+import llh.fanclubvup.common.consts.CacheKeyPrefix
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.redis.core.StringRedisTemplate
 import tools.jackson.core.type.TypeReference

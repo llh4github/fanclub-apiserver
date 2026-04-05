@@ -6,12 +6,13 @@
 package llh.fanclubvup.apiserver.consts
 
 import llh.fanclubvup.common.BID
+import llh.fanclubvup.common.consts.CacheKeyPrefix
 import java.time.LocalDate
 
 object StatisticsCacheKey {
 
-    const val DANMU_STATISTICS_PREFIX = "fanclub-statistics:danmu"
-    const val NICKNAME_CHANGE_PREFIX = "fanclub-statistics:nickname-change"
+    const val DANMU_STATISTICS_PREFIX = CacheKeyPrefix.DANMU_STATS_CACHE_KEY + "danmu"
+    const val NICKNAME_CHANGE_PREFIX = CacheKeyPrefix.DANMU_STATS_CACHE_KEY + "nickname-change"
 
     fun nicknameChange(): String {
         return NICKNAME_CHANGE_PREFIX

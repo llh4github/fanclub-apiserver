@@ -55,6 +55,9 @@ dependencies {
     runtimeOnly("org.flywaydb:flyway-database-postgresql:12.3.0")
     runtimeOnly("org.postgresql:postgresql")
 
+    implementation(platform("org.springframework.ai:spring-ai-bom:1.1.4"))
+    implementation("org.springframework.ai:spring-ai-starter-model-deepseek")
+
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("tools.jackson.module:jackson-module-kotlin")
