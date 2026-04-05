@@ -5,6 +5,7 @@
 
 import java.time.Instant
 
+val springAiVersion by extra("2.0.0-M4")
 plugins {
     kotlin("jvm")
     kotlin("plugin.spring")
@@ -55,7 +56,6 @@ dependencies {
     runtimeOnly("org.flywaydb:flyway-database-postgresql:12.3.0")
     runtimeOnly("org.postgresql:postgresql")
 
-    implementation(platform("org.springframework.ai:spring-ai-bom:1.1.4"))
     implementation("org.springframework.ai:spring-ai-starter-model-deepseek")
 
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
@@ -67,6 +67,11 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     runtimeOnly("org.springframework.boot:spring-boot-docker-compose")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.ai:spring-ai-bom:$springAiVersion")
+    }
 }
 // 配置 KSP (如果有)
 ksp {
