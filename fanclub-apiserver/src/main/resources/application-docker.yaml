@@ -20,9 +20,6 @@ spring:
       file: compose.yaml
       enabled: true
       lifecycle-management: ${DOCKER_LIFECYCLE:start_only}
-  ai:
-    deepseek:
-      api-key: ${DEEPSEEK_API_KEY}
 
 jimmer:
   language: kotlin
@@ -34,7 +31,7 @@ jimmer:
 logging:
   level:
     llh: debug
-    org.springframework.web: WARN
+    org.springframework.web: DEBUG
 
 springdoc:
   api-docs:

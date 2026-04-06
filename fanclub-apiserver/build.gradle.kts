@@ -27,6 +27,7 @@ configurations {
 }
 
 dependencies {
+    implementation(libs.jsoup)
     implementation(libs.oshai)
     implementation(libs.classgraph)
     implementation(libs.springdoc.ui)
@@ -55,8 +56,6 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     runtimeOnly("org.flywaydb:flyway-database-postgresql:12.3.0")
     runtimeOnly("org.postgresql:postgresql")
-
-    implementation("org.springframework.ai:spring-ai-starter-model-deepseek")
 
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
