@@ -27,6 +27,9 @@ configurations {
 }
 
 dependencies {
+    ksp(libs.jimmer.ksp)
+    ksp(project(":fanclub-ksp"))
+
     implementation(libs.jsoup)
     implementation(libs.oshai)
     implementation(libs.classgraph)
@@ -35,7 +38,6 @@ dependencies {
     implementation(project(":fanclub-bilisdk"))
     implementation(project(":fanclub-common"))
     implementation(project(":fanclub-ksp"))
-    ksp(project(":fanclub-ksp"))
     implementation(libs.bundles.jjwt)
 
     implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -50,7 +52,6 @@ dependencies {
     implementation(libs.ehcahe)
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
-    ksp(libs.jimmer.ksp)
     implementation(libs.jimmer.springboot)
     implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation("org.flywaydb:flyway-core")
