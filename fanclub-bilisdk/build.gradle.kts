@@ -27,6 +27,7 @@ dependencies {
     compileOnly("org.jetbrains.kotlin:kotlin-reflect")
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    testImplementation("org.junit.jupiter:junit-jupiter-params")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
