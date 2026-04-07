@@ -11,11 +11,7 @@ import llh.fanclubvup.bilisdk.dto.danmu.HostServer
 import llh.fanclubvup.bilisdk.enums.WsOperation
 import llh.fanclubvup.bilisdk.utils.WsMsgUtil
 import llh.fanclubvup.bilisdk.utils.WsMsgUtil.makePacket
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
-import okhttp3.WebSocket
-import okhttp3.WebSocketListener
+import okhttp3.*
 import okio.ByteString
 import okio.ByteString.Companion.toByteString
 import java.util.concurrent.Executors
@@ -31,6 +27,7 @@ class BiliDanmuWebSocketHandler(
     private val client: OkHttpClient,
     private val hostList: List<HostServer>,
     private val biliWsMsgBizHandler: BiliWsMsgBizHandler,
+    private val roomId: Long,
     private val connectionFailed: () -> Unit = {},
 ) {
     private val scheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
@@ -50,7 +47,7 @@ class BiliDanmuWebSocketHandler(
             .build()
         webSocket = client.newWebSocket(
             request,
-            InnerWebSocketListener(::reconnect, biliWsMsgBizHandler)
+            InnerWebSocketListener(::reconnect, roomId, biliWsMsgBizHandler)
         )
         webSocket?.let {
             scheduler.scheduleAtFixedRate({
@@ -82,6 +79,7 @@ class BiliDanmuWebSocketHandler(
 
     class InnerWebSocketListener(
         private val reconnect: () -> Unit,
+        private val roomId: Long,
         private val biliWsMsgBizHandler: BiliWsMsgBizHandler,
     ) : WebSocketListener() {
         private val logger = KotlinLogging.logger {}
@@ -94,7 +92,7 @@ class BiliDanmuWebSocketHandler(
         }
 
         override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-            WsMsgUtil.parsePacket(bytes, webSocket, biliWsMsgBizHandler)
+            WsMsgUtil.parsePacket(bytes, webSocket, biliWsMsgBizHandler, roomId)
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {

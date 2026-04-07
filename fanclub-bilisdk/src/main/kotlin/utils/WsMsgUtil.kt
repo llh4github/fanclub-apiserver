@@ -93,6 +93,7 @@ object WsMsgUtil {
         packet: ByteString,
         webSocket: WebSocket,
         biliWsMsgBizHandler: BiliWsMsgBizHandler,
+        roomId: Long,
     ) {
 
         // 检查数据包长度是否足够
@@ -141,7 +142,7 @@ object WsMsgUtil {
                             brotliStream.readAllBytes()
                         }.toByteString()
                         logger.debug { "使用 BROTLI 算法解码请求" }
-                        parsePacket(a, webSocket, biliWsMsgBizHandler)
+                        parsePacket(a, webSocket, biliWsMsgBizHandler, roomId)
                     }
 
                     ProtoVer.DEFLATE.value -> {
@@ -153,7 +154,7 @@ object WsMsgUtil {
                         }
                         inflater.end()
                         logger.debug { "使用 ZIP 算法解码请求" }
-                        parsePacket(ba.toByteString(), webSocket, biliWsMsgBizHandler)
+                        parsePacket(ba.toByteString(), webSocket, biliWsMsgBizHandler, roomId)
                     }
 
                     ProtoVer.NORMAL.value -> {
@@ -164,7 +165,7 @@ object WsMsgUtil {
 //                            logger.debug { "danmu: \n$json" }
                                 CommandProcessor.parseCommand(json)?.let {
                                     executors.execute {
-                                        biliWsMsgBizHandler.handleMsg(it)
+                                        biliWsMsgBizHandler.handleMsg(it, roomId)
                                     }
                                 }
                             }

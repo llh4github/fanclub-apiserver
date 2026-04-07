@@ -11,14 +11,15 @@ ViewerScBvRecordPageView {
     #allScalars
 }
 
-input ViewScBvAddInput {
+input ViewerScBvAddInput {
+    scId
     bid
-    rbid
+    roomId
     bv
     sendTime
 }
 
-specification ViewScBvCountSpec {
-    rbid!
+specification ViewerScBvCountSpec {
+    roomId!
     bv!
 }

@@ -8,30 +8,29 @@ package llh.fanclubvup.bilisdk.scraper
 import llh.fanclubvup.bilisdk.dm.cmd.*
 
 interface BiliWsMsgBizHandler {
-
-    fun handleMsg(cmd: Command) {
+    fun handleMsg(cmd: Command, roomId: Long) {
         when (cmd) {
-            is UserToastMsgV2Cmd -> handle(cmd)
-            is SuperChatCommand -> handle(cmd)
-            is SendGiftCommand -> handle(cmd)
-            is DanmuMsgCommand -> handle(cmd)
-            is LiveCommand -> handle(cmd)
-            is PreparingCommand -> handle(cmd)
-            is SuperChatMessageJpnCommand -> handle(cmd)
+            is UserToastMsgV2Cmd -> handle(cmd, roomId)
+            is SuperChatCommand -> handle(cmd, roomId)
+            is SendGiftCommand -> handle(cmd, roomId)
+            is DanmuMsgCommand -> handle(cmd, roomId)
+            is LiveCommand -> handle(cmd, roomId)
+            is PreparingCommand -> handle(cmd, roomId)
+            is SuperChatMessageJpnCommand -> handle(cmd, roomId)
             else -> {}
         }
     }
 
-    fun handle(cmd: UserToastMsgV2Cmd) {}
+    fun handle(cmd: UserToastMsgV2Cmd, roomId: Long) {}
 
-    fun handle(cmd: SuperChatCommand) {}
-    fun handle(cmd: SuperChatMessageJpnCommand) {}
+    fun handle(cmd: SuperChatCommand, roomId: Long) {}
+    fun handle(cmd: SuperChatMessageJpnCommand, roomId: Long) {}
 
-    fun handle(cmd: SendGiftCommand) {}
+    fun handle(cmd: SendGiftCommand, roomId: Long) {}
 
-    fun handle(cmd: DanmuMsgCommand) {}
+    fun handle(cmd: DanmuMsgCommand, roomId: Long) {}
 
-    fun handle(cmd: LiveCommand) {}
+    fun handle(cmd: LiveCommand, roomId: Long) {}
 
-    fun handle(cmd: PreparingCommand) {}
+    fun handle(cmd: PreparingCommand, roomId: Long) {}
 }

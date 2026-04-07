@@ -13,6 +13,7 @@ import llh.fanclubvup.apiserver.dto.viwer.DanmuWsMsg
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordAddInput
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordEndLiveInput
 import llh.fanclubvup.apiserver.entity.viewer.dto.ViewerGuardBuyRecordAddInput
+import llh.fanclubvup.apiserver.entity.viewer.dto.ViewerScBvAddInput
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
 import llh.fanclubvup.apiserver.service.viewer.ViewerGuardBuyRecordService
 import llh.fanclubvup.apiserver.service.viewer.ViewerScBvRecordService
@@ -20,8 +21,10 @@ import llh.fanclubvup.apiserver.utils.ValidationUtil
 import llh.fanclubvup.apiserver.websocket.DanmuWebsocketHandler
 import llh.fanclubvup.bilisdk.dm.cmd.*
 import llh.fanclubvup.bilisdk.scraper.BiliWsMsgBizHandler
+import llh.fanclubvup.bilisdk.utils.BvUtil
 import llh.fanclubvup.common.utils.LocalDateTimeUtil
 import llh.fanclubvup.common.utils.StrUtil
+import llh.fanclubvup.ksp.generated.ViewerScBvRecordServiceCacheHelper
 import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -54,7 +57,7 @@ class BiliDanmuStatistics(
 
     private val executors = Executors.newVirtualThreadPerTaskExecutor()
 
-    override fun handle(cmd: UserToastMsgV2Cmd) {
+    override fun handle(cmd: UserToastMsgV2Cmd, roomId: Long) {
         val senderUid = cmd.data?.senderUinfo?.uid
         val reciverUid = cmd.data?.receiverInfo?.uid
         val num = cmd.data?.payInfo?.num
@@ -80,12 +83,56 @@ class BiliDanmuStatistics(
         }
     }
 
-    override fun handle(cmd: SuperChatMessageJpnCommand) {
-        // TODO 保存BV号点播记录
+    override fun handle(cmd: SuperChatMessageJpnCommand, roomId: Long) {
+        executors.execute {
+            BvUtil.extractBVFromString(cmd.data?.message)?.let {
+                val data = cmd.data
+                val id = data?.id
+                val sendTime = data?.ts
+                val bid = data?.uid
+                if (ValidationUtil.isAllNotNull(id, sendTime, bid)) {
+                    val input = ViewerScBvAddInput(
+                        scId = id!!,
+                        bv = it,
+                        roomId = roomId,
+                        bid = bid!!,
+                        sendTime = LocalDateTimeUtil.toLocalDateTime(sendTime!!)
+                    )
+                    viewerScBvRecordService.save(input)
+                    val key = ViewerScBvRecordServiceCacheHelper.BV_COUNT_CACHE_PREFIX + ":${roomId}:${it}"
+                    redisTemplate.delete(key)
+                } else {
+                    logger.error { "醒目留言关键参数缺乏，无法保SC发送记录\n$cmd" }
+                }
+            }
+
+        }
     }
 
-    override fun handle(cmd: SuperChatCommand) {
-        // TODO 保存BV号点播记录
+    override fun handle(cmd: SuperChatCommand, roomId: Long) {
+        executors.execute {
+            BvUtil.extractBVFromString(cmd.data?.message)?.let {
+                val data = cmd.data
+                val id = data?.id
+                val sendTime = data?.sendTime
+                val bid = data?.uid
+                if (ValidationUtil.isAllNotNull(id, sendTime, bid)) {
+                    val input = ViewerScBvAddInput(
+                        scId = id!!,
+                        bv = it,
+                        roomId = roomId,
+                        bid = bid!!,
+                        sendTime = LocalDateTimeUtil.toLocalDateTimeEpochMilli(sendTime!!)
+                    )
+                    val rs = viewerScBvRecordService.save(input)
+                    val key = ViewerScBvRecordServiceCacheHelper.BV_COUNT_CACHE_PREFIX + ":${roomId}:${it}"
+                    redisTemplate.delete(key)
+                    logger.info { "保存SC发送记录结果：${rs?.id}" }
+                } else {
+                    logger.error { "醒目留言关键参数缺乏，无法保SC发送记录\n$cmd" }
+                }
+            }
+        }
         logger.info {
             "醒目留言：" +
                     "用户=${cmd.data?.uinfo?.base?.name ?: cmd.data?.userInfo?.uname}, " +
@@ -96,7 +143,7 @@ class BiliDanmuStatistics(
         }
     }
 
-    override fun handle(cmd: SendGiftCommand) {
+    override fun handle(cmd: SendGiftCommand, roomId: Long) {
         logger.info {
             "赠送礼物：" +
                     "用户名=${cmd.data?.uname}, " +
@@ -109,8 +156,7 @@ class BiliDanmuStatistics(
         }
     }
 
-    override fun handle(cmd: PreparingCommand) {
-        val roomId = cmd.roomId
+    override fun handle(cmd: PreparingCommand, roomId: Long) {
         val endTime = cmd.sendTime
         if (roomId == null || endTime == null) {
             logger.error { "直播准备中命令关键参数缺乏:\n$cmd" }
@@ -123,9 +169,8 @@ class BiliDanmuStatistics(
         logger.info { "直播结束：直播间ID=$roomId, 结束时间=$endLiveDateTime, 更新数据库 $result 条数据" }
     }
 
-    override fun handle(cmd: LiveCommand) {
+    override fun handle(cmd: LiveCommand, roomId: Long) {
         val liveKey = cmd.liveKey
-        val roomId = cmd.roomId
         val liveTime = cmd.liveTime
         logger.info { "开播数据:\n$cmd" }
         if (liveKey == null || roomId == null) {
@@ -141,7 +186,7 @@ class BiliDanmuStatistics(
         logger.info { "保存开播记录" }
     }
 
-    override fun handle(cmd: DanmuMsgCommand) {
+    override fun handle(cmd: DanmuMsgCommand, roomId: Long) {
         val now = LocalDate.now()
         val time = LocalTime.now()
         val content = cmd.getContent() ?: return

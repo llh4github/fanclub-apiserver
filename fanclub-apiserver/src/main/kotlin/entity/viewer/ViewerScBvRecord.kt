@@ -10,8 +10,9 @@ import llh.fanclubvup.apiserver.entity.BaseEntity
 import llh.fanclubvup.common.BID
 import org.babyfish.jimmer.sql.Column
 import org.babyfish.jimmer.sql.Entity
+import org.babyfish.jimmer.sql.Key
 import org.babyfish.jimmer.sql.Table
-import java.time.LocalTime
+import java.time.LocalDateTime
 
 
 @Entity
@@ -19,18 +20,22 @@ import java.time.LocalTime
 @Schema(title = "观众SC点播的BV号记录")
 interface ViewerScBvRecord : BaseEntity {
 
-    @get:Schema(title = "发送者的BID")
-    @Column(name = "bid")
-    val bid: BID
+    @Key
+    @get:Schema(title = "SC的ID")
+    val scId: Long
 
-    // TODO 确定是用房间号还是用户ID
-    @Column(name = "rbid")
-    val rbid: BID
+    @Column(name = "room_id")
+    @get:Schema(title = "房间ID")
+    val roomId: Long
 
     @get:Schema(title = "发送的BV号")
     val bv: String
 
+    @get:Schema(title = "发送者的BID")
+    @Column(name = "bid")
+    val bid: BID
+
     @get:Schema(title = "发送时间")
     @Column(name = "send_time")
-    val sendTime: LocalTime
+    val sendTime: LocalDateTime
 }

@@ -42,6 +42,7 @@ data class SuperChatMessageJpnCommand(
         @field:JsonProperty("message_jpn")
         val messageJpn: String? = null,
 
+        /** 秒 */
         @field:JsonProperty("ts")
         val ts: Long? = null,
 
@@ -58,7 +59,7 @@ data class SuperChatMessageJpnCommand(
         val startTime: Long? = null,
 
         @field:JsonProperty("end_time")
-        val endTime: Long? = null
+        val endTime: Long? = null,
     )
 
     /**
