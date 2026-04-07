@@ -147,23 +147,17 @@ class CacheNameGenSymbolProcessor(
                         .build()
                 )
                 
-                // 为返回值生成对应的 TypeReference 实现子类
-                val nestedObjectName = "${method.methodName.replaceFirstChar { it.uppercase() }}TypeRef"
-                
-                // 直接生成一个带有类型参数的 TypeReference 实现
-                val typeRefCode = buildString {
-                    append("  /**\n")
-                    append("   * ${method.methodName} 方法的 TypeReference 生成器\n")
-                    append("   */\n")
-                    append("  public object $nestedObjectName : TypeReference<${method.returnType}>() {\n")
-                    append("  }\n")
-                }
+                // 检查返回类型是否是基本类型或字符串类型
+                val isBasicType = method.returnType in listOf("Int", "Long", "Double", "Float", "Boolean", "String", "Unit")
                 
                 // 将生成的代码添加到文件中
                 val fileContent = buildString {
                     append("package llh.fanclubvup.ksp.generated\n\n")
                     append("import kotlin.String\n")
-                    append("import tools.jackson.core.type.TypeReference\n\n")
+                    if (!isBasicType) {
+                        append("import tools.jackson.core.type.TypeReference\n")
+                    }
+                    append("\n")
                     append("/**\n")
                     append(" * $serviceName 的缓存名称生成器\n")
                     append(" *\n")
@@ -182,10 +176,18 @@ class CacheNameGenSymbolProcessor(
                         }
                         append("$serviceName:${method.methodName}")
                     }
-                    append("  public const val $constantName: String = \"$constantValue\"\n\n")
+                    append("  public const val $constantName: String = \"$constantValue\"\n")
                     
-                    // 添加 TypeReference 实现
-                    append(typeRefCode)
+                    // 为非基本类型生成 TypeReference 实现子类
+                    if (!isBasicType) {
+                        append("\n")
+                        val nestedObjectName = "${method.methodName.replaceFirstChar { it.uppercase() }}TypeRef"
+                        append("  /**\n")
+                        append("   * ${method.methodName} 方法的 TypeReference 生成器\n")
+                        append("   */\n")
+                        append("  public object $nestedObjectName : TypeReference<${method.returnType}>() {\n")
+                        append("  }\n")
+                    }
                     
                     append("}\n")
                 }
