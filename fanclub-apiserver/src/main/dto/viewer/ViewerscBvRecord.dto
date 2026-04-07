@@ -17,3 +17,8 @@ input ViewScBvAddInput {
     bv
     sendTime
 }
+
+specification ViewScBvCountSpec {
+    rbid!
+    bv!
+}
