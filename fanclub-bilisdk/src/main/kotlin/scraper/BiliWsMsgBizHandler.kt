@@ -17,6 +17,7 @@ interface BiliWsMsgBizHandler {
             is DanmuMsgCommand -> handle(cmd)
             is LiveCommand -> handle(cmd)
             is PreparingCommand -> handle(cmd)
+            is SuperChatMessageJpnCommand -> handle(cmd)
             else -> {}
         }
     }
@@ -24,6 +25,7 @@ interface BiliWsMsgBizHandler {
     fun handle(cmd: UserToastMsgV2Cmd) {}
 
     fun handle(cmd: SuperChatCommand) {}
+    fun handle(cmd: SuperChatMessageJpnCommand) {}
 
     fun handle(cmd: SendGiftCommand) {}
 

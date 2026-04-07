@@ -10,3 +10,10 @@ specification ViewerScBvRecordQuerySpec {
 ViewerScBvRecordPageView {
     #allScalars
 }
+
+input ViewScBvAddInput {
+    bid
+    rbid
+    bv
+    sendTime
+}

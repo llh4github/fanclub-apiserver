@@ -15,6 +15,7 @@ import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordEndLiveInput
 import llh.fanclubvup.apiserver.entity.viewer.dto.ViewerGuardBuyRecordAddInput
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
 import llh.fanclubvup.apiserver.service.viewer.ViewerGuardBuyRecordService
+import llh.fanclubvup.apiserver.service.viewer.ViewerScBvRecordService
 import llh.fanclubvup.apiserver.utils.ValidationUtil
 import llh.fanclubvup.apiserver.websocket.DanmuWebsocketHandler
 import llh.fanclubvup.bilisdk.dm.cmd.*
@@ -37,7 +38,8 @@ class BiliDanmuStatistics(
     private val redisTemplate: StringRedisTemplate,
     private val anchorLiveRecordService: AnchorLiveRecordService,
     private val viewerGuardBuyRecordService: ViewerGuardBuyRecordService,
-    private val danmuWebsocketHandler: DanmuWebsocketHandler
+    private val danmuWebsocketHandler: DanmuWebsocketHandler,
+    private val viewerScBvRecordService: ViewerScBvRecordService,
 ) : BiliWsMsgBizHandler {
 
     private val logger = KotlinLogging.logger {}
@@ -78,7 +80,12 @@ class BiliDanmuStatistics(
         }
     }
 
+    override fun handle(cmd: SuperChatMessageJpnCommand) {
+        // TODO 保存BV号点播记录
+    }
+
     override fun handle(cmd: SuperChatCommand) {
+        // TODO 保存BV号点播记录
         logger.info {
             "醒目留言：" +
                     "用户=${cmd.data?.uinfo?.base?.name ?: cmd.data?.userInfo?.uname}, " +
