@@ -52,7 +52,7 @@ CREATE TABLE sys_scraper_ws_auth
 (
     id           BIGINT       NOT NULL,
     room_id      BIGINT       NOT NULL,
-    auth         VARCHAR(255) NOT NULL,
+    auth VARCHAR(1000) NOT NULL,
     created_time TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_time TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
