@@ -149,7 +149,7 @@ class BiliScraperClient(
     }
 
 
-    private fun buildAuthWs(token: String, roomId: Long): Result<ByteArray> = runCatching {
+    fun buildAuthWs(token: String, roomId: Long): Result<ByteArray> = runCatching {
         val buvid = persistentCookieJarManager.fetchCookies().firstOrNull { it.name == "buvid3" }
             ?: throw AppRuntimeException("buvid3 cookie not found")
         val text = """

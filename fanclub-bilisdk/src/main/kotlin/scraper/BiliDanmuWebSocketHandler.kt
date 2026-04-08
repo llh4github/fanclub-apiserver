@@ -17,6 +17,7 @@ import okio.ByteString.Companion.toByteString
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
+import kotlin.io.encoding.Base64
 
 /**
  * 弹幕 WebSocket 处理类
@@ -69,11 +70,13 @@ class BiliDanmuWebSocketHandler(
             connectionFailed()
             return
         }
+        TimeUnit.SECONDS.sleep(2)
         logger.info { "正在尝试第 $retry 次重连..." }
         connect()
     }
 
     fun send(bytes: ByteString) {
+        logger.debug { "发送数据：\n${Base64.encode(bytes.toByteArray())}" }
         webSocket?.send(bytes)
     }
 
