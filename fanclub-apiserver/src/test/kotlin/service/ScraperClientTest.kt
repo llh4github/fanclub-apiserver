@@ -7,6 +7,7 @@ import org.junit.jupiter.api.condition.OS
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import java.util.concurrent.TimeUnit
+import kotlin.io.encoding.Base64
 import kotlin.test.Test
 
 /**
@@ -14,7 +15,7 @@ import kotlin.test.Test
  */
 @DisabledOnOs(OS.LINUX) // 应该没人在linux系统下开发吧
 @SpringBootTest
-@ActiveProfiles("dev")
+@ActiveProfiles("docker")
 class ScraperClientTest {
 
     @Resource
@@ -33,7 +34,13 @@ class ScraperClientTest {
 
     @Test
     fun test() {
-        println(scraperClient.fetchDanmuServerInfo(roomId))
+        val info = scraperClient.fetchDanmuServerInfo(roomId)?.data ?: throw Exception("未获取到弹幕服务器信息")
+        println(info)
+        val token = info.token ?: throw Exception("未获取到弹幕服务器信息")
+        println("token\n$token")
+        val packet = scraperClient.buildAuthWs(token, roomId).getOrNull() ?: throw Exception("未获取到弹幕服务器信息")
+        val encode = Base64.encode(packet)
+        println(encode)
     }
 
     @Test
