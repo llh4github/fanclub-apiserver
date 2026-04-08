@@ -64,7 +64,7 @@ class BiliDanmuWebSocketHandler(
         webSocket = client.newWebSocket(
             request,
             InnerWebSocketListener(roomId, biliWsMsgBizHandler) {
-                reconnect()
+                reconnect(fetchAuth)
                 cancelHeartbeat()
             }
         )
@@ -81,7 +81,7 @@ class BiliDanmuWebSocketHandler(
         return webSocket != null
     }
 
-    fun reconnect() {
+    fun reconnect(fetchAuth: (retry: Int) -> ByteString?) {
         retry++
         if (retry > maxRetryCount) {
             logger.error { "重连次数达到最大限制，停止重连" }
@@ -91,7 +91,7 @@ class BiliDanmuWebSocketHandler(
         }
         TimeUnit.SECONDS.sleep(2)
         logger.info { "正在尝试第 $retry 次重连..." }
-        connect()
+        connect(fetchAuth)
     }
 
     fun send(bytes: ByteString) {
