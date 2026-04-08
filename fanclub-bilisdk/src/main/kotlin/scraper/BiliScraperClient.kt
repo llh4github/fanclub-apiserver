@@ -23,7 +23,9 @@ import llh.fanclubvup.common.getOrNull
 import llh.fanclubvup.common.utils.Md5Utils
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okio.ByteString.Companion.encodeUtf8
 import okio.ByteString.Companion.toByteString
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationEventPublisher
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.net.URLEncoder
@@ -41,6 +43,9 @@ class BiliScraperClient(
     private val biliWsMsgBizHandler: BiliWsMsgBizHandler,
     private val eventPublisher: ApplicationEventPublisher,
 ) {
+
+    @Autowired
+    private lateinit var authFetcher: BiliWsAuthFetcher
 
     private val client by lazy {
         OkHttpClient.Builder()
@@ -163,15 +168,21 @@ class BiliScraperClient(
      */
     fun creatDanmuWebsocket(roomId: Long): BiliDanmuWebSocketHandler? {
         val info = fetchDanmuServerInfo(roomId)?.data ?: return null
-        val token = info.token ?: return null
         val servers = info.hostList
-        val packet = buildAuthWs(token, roomId).getOrNull(logger) ?: return null
         val handler = BiliDanmuWebSocketHandler(client, servers, biliWsMsgBizHandler, roomId) {
             eventPublisher.publishEvent(DanmuWsFailedEvent(roomId))
         }
-        handler.connect()
-        handler.send(packet.toByteString())
-        logger.info { "$roomId 的弹幕 WebSocket 创建成功" }
+        handler.connect { retry ->
+            if (retry % 2 == 0) {
+                val token = info.token ?: return@connect null
+                val packet = buildAuthWs(token, roomId).getOrNull(logger) ?: return@connect null
+                logger.debug { "使用接口组装授权字符串" }
+                packet.toByteString()
+            } else {
+                logger.debug { "使用数据库中的授权字符串" }
+                authFetcher.fetch(roomId)?.encodeUtf8()
+            }
+        }
         return handler
     }
 

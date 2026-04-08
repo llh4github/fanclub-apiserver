@@ -16,6 +16,7 @@ import okio.ByteString
 import okio.ByteString.Companion.toByteString
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import kotlin.io.encoding.Base64
 
@@ -38,8 +39,22 @@ class BiliDanmuWebSocketHandler(
 
     private var retry = 0
     private var webSocket: WebSocket? = null
+    private var heartbeatTask: ScheduledFuture<*>? = null
 
-    fun connect() {
+    fun cancelHeartbeat() {
+        heartbeatTask?.cancel(true)
+        logger.info { "取消心跳任务" }
+        heartbeatTask = null
+    }
+
+    fun startHeartbeat() {
+        heartbeatTask = scheduler.scheduleAtFixedRate({
+            val reply = makePacket("{}", WsOperation.HEARTBEAT)
+            send(reply.toByteString())
+        }, 0, 30, TimeUnit.SECONDS)
+    }
+
+    fun connect(fetchAuth: (retry: Int) -> ByteString?) {
         val server = hostList[retry % hostList.size]
         val url = "wss://${server.host}:${server.wssPort}/sub"
         val request = Request.Builder()
@@ -48,13 +63,17 @@ class BiliDanmuWebSocketHandler(
             .build()
         webSocket = client.newWebSocket(
             request,
-            InnerWebSocketListener(::reconnect, roomId, biliWsMsgBizHandler)
+            InnerWebSocketListener(roomId, biliWsMsgBizHandler) {
+                reconnect()
+                cancelHeartbeat()
+            }
         )
         webSocket?.let {
-            scheduler.scheduleAtFixedRate({
-                val reply = makePacket("{}", WsOperation.HEARTBEAT)
-                send(reply.toByteString())
-            }, 0, 30, TimeUnit.SECONDS)
+            fetchAuth(retry)?.let { auth ->
+                it.send(auth)
+                startHeartbeat()
+                TimeUnit.SECONDS.sleep(1L)
+            }
         }
     }
 
@@ -81,9 +100,9 @@ class BiliDanmuWebSocketHandler(
     }
 
     class InnerWebSocketListener(
-        private val reconnect: () -> Unit,
         private val roomId: Long,
         private val biliWsMsgBizHandler: BiliWsMsgBizHandler,
+        private val reconnect: () -> Unit,
     ) : WebSocketListener() {
         private val logger = KotlinLogging.logger {}
         override fun onOpen(webSocket: WebSocket, response: Response) {
