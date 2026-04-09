@@ -5,6 +5,9 @@
 1. 你必须使用中文回答问题。
 2. 所有函数体不得超过100行。
 3. ORM框架使用 Jimmer, 使用文档链接 https://babyfish-ct.github.io/jimmer-doc/zh/docs/overview/welcome
+4. kotlin 代码模块目录结构遵循省略了公共根包的包结构。如，代码位于org.example.kotlin 包及其子包中，那么 org.example.kotlin
+   包的文件应该直接放在源代码根目录下，而 org.example.kotlin.network.socket 中的文件应该放在源代码根目录下的
+   network/socket 子目录中。
 
 ## 项目结构
 
