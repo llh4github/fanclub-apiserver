@@ -1,9 +1,12 @@
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
 package llh.fanclubvup.apiserver.service
 
 import jakarta.annotation.Resource
 import llh.fanclubvup.bilisdk.scraper.BiliScraperClient
-import org.junit.jupiter.api.condition.DisabledOnOs
-import org.junit.jupiter.api.condition.OS
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import java.util.concurrent.TimeUnit
@@ -13,7 +16,6 @@ import kotlin.test.Test
 /**
  * 接口测试
  */
-@DisabledOnOs(OS.LINUX) // 应该没人在linux系统下开发吧
 @SpringBootTest
 @ActiveProfiles("docker")
 class ScraperClientTest {
@@ -46,7 +48,7 @@ class ScraperClientTest {
     @Test
     fun test_danmu() {
         scraperClient.creatDanmuWebsocket(roomId)
-        TimeUnit.SECONDS.sleep(2)
+        TimeUnit.SECONDS.sleep(5)
     }
 
     @Test

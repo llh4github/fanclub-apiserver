@@ -57,7 +57,20 @@ class BiliDanmuStatistics(
 
     private val executors = Executors.newVirtualThreadPerTaskExecutor()
 
-    override fun handle(cmd: UserToastMsgV2Cmd, roomId: Long) {
+    override fun handleMsg(cmd: Command, roomId: Long) {
+        when (cmd) {
+            is UserToastMsgV2Cmd -> handleUserToastMsgV2Cmd(cmd, roomId)
+            is SuperChatMessageJpnCommand -> handleSuperChatMessageJpnCommand(cmd, roomId)
+            is SuperChatCommand -> handleSuperChatCommand(cmd, roomId)
+            is SendGiftCommand -> handleSendGiftCommand(cmd, roomId)
+            is PreparingCommand -> handlePreparingCommand(cmd, roomId)
+            is LiveCommand -> handleLiveCommand(cmd, roomId)
+            is DanmuMsgCommand -> handleDanmuMsgCommand(cmd, roomId)
+            else -> logger.warn { "未处理的命令类型: ${cmd::class.simpleName}, cmd=${cmd.cmd}" }
+        }
+    }
+
+    private fun handleUserToastMsgV2Cmd(cmd: UserToastMsgV2Cmd, roomId: Long) {
         val senderUid = cmd.data?.senderUinfo?.uid
         val reciverUid = cmd.data?.receiverInfo?.uid
         val num = cmd.data?.payInfo?.num
@@ -83,7 +96,7 @@ class BiliDanmuStatistics(
         }
     }
 
-    override fun handle(cmd: SuperChatMessageJpnCommand, roomId: Long) {
+    private fun handleSuperChatMessageJpnCommand(cmd: SuperChatMessageJpnCommand, roomId: Long) {
         executors.execute {
             BvUtil.extractBVFromString(cmd.data?.message)?.let {
                 val data = cmd.data
@@ -109,7 +122,7 @@ class BiliDanmuStatistics(
         }
     }
 
-    override fun handle(cmd: SuperChatCommand, roomId: Long) {
+    private fun handleSuperChatCommand(cmd: SuperChatCommand, roomId: Long) {
         executors.execute {
             BvUtil.extractBVFromString(cmd.data?.message)?.let {
                 val data = cmd.data
@@ -143,7 +156,7 @@ class BiliDanmuStatistics(
         }
     }
 
-    override fun handle(cmd: SendGiftCommand, roomId: Long) {
+    private fun handleSendGiftCommand(cmd: SendGiftCommand, roomId: Long) {
         logger.info {
             "赠送礼物：" +
                     "用户名=${cmd.data?.uname}, " +
@@ -156,7 +169,7 @@ class BiliDanmuStatistics(
         }
     }
 
-    override fun handle(cmd: PreparingCommand, roomId: Long) {
+    private fun handlePreparingCommand(cmd: PreparingCommand, roomId: Long) {
         val endTime = cmd.sendTime
         if (roomId == null || endTime == null) {
             logger.error { "直播准备中命令关键参数缺乏:\n$cmd" }
@@ -169,7 +182,7 @@ class BiliDanmuStatistics(
         logger.info { "直播结束：直播间ID=$roomId, 结束时间=$endLiveDateTime, 更新数据库 $result 条数据" }
     }
 
-    override fun handle(cmd: LiveCommand, roomId: Long) {
+    private fun handleLiveCommand(cmd: LiveCommand, roomId: Long) {
         val liveKey = cmd.liveKey
         val liveTime = cmd.liveTime
         logger.info { "开播数据:\n$cmd" }
@@ -186,7 +199,7 @@ class BiliDanmuStatistics(
         logger.info { "保存开播记录" }
     }
 
-    override fun handle(cmd: DanmuMsgCommand, roomId: Long) {
+    private fun handleDanmuMsgCommand(cmd: DanmuMsgCommand, roomId: Long) {
         val now = LocalDate.now()
         val time = LocalTime.now()
         val content = cmd.getContent() ?: return
