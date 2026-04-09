@@ -11,7 +11,7 @@ private const val HEADER_SIZE = 16
 fun makePacket(data: ByteArray, operation: WsOperation): ByteString {
     val buffer = Buffer()
     buffer.writeInt(HEADER_SIZE + data.size)
-    buffer.writeShort(HEADER_SIZE.toShort())
+    buffer.writeShort(HEADER_SIZE)
     buffer.writeShort(1)
     buffer.writeInt(operation.value)
     buffer.writeInt(1)
