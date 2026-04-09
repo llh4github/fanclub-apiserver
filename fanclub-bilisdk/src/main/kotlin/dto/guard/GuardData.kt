@@ -18,7 +18,7 @@ data class GuardData(
     val list: List<GuardListItem> = emptyList(),
 
     @JsonProperty("top3")
-    val top3: List<GuardTop3> = emptyList(),
+    val top3: List<GuardListItem> = emptyList(),
 
     @JsonProperty("my_follow_info")
     val myFollowInfo: GuardMyFollowInfo? = null,
