@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName
  */
 @JsonTypeName("COMBO_SEND")
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Deprecated("连击送礼，暂未使用")
 data class ComboSendCommand(
     @field:JsonProperty("data")
     val data: ComboData? = null

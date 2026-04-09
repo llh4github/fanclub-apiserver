@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName
  */
 @JsonTypeName("ENTRY_EFFECT")
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Deprecated("过度建模，暂未使用")
 data class EntryEffectCommand(
     @field:JsonProperty("data")
     val data: EntryEffectData? = null

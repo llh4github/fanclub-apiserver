@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName
  */
 @JsonTypeName("GUARD_BUY")
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Deprecated("推荐使用 UserToastMsgV2Cmd")
 data class GuardBuyCommand(
     @field:JsonProperty("data")
     val data: GuardBuyData? = null

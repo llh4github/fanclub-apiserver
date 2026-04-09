@@ -13,47 +13,34 @@ import tools.jackson.module.kotlin.jacksonObjectMapper
 
 object CommandProcessor {
     private val mapper = jacksonObjectMapper()
-
     private val logger = KotlinLogging.logger {}
 
-    private val shouldIgnoreCommands = listOf(
-        "WIDGET_BANNER", // 忽略横幅
-        "WATCHED_CHANGE", // 忽略观看人数改变
-        "NOTICE_MSG", // 忽略礼物公告
-        "RANK_CHANGED_V2", // 忽略排行榜
-        "DM_INTERACTION", // 忽略互动(xx人点赞)
-        "INTERACT_WORD_V2",
-        "LIVE_PANEL_CHANGE_CONTENT",
-        "LIKE_INFO_V3_CLICK", // 点赞数据
-        "LIKE_INFO_V3_UPDATE",
-        "INTERACT_WORD",
-        "ONLINE_RANK_V3",
-        "TRADING_SCORE",
-        "COMMON_NOTICE_DANMAKU",
-        "STOP_LIVE_ROOM_LIST",
-        "RANK_CHANGED",
-        "POPULAR_RANK_CHANGED",
+    private val shouldIgnoreCommands = setOf(
+        "WIDGET_BANNER", "WATCHED_CHANGE", "NOTICE_MSG",
+        "RANK_CHANGED_V2", "DM_INTERACTION", "INTERACT_WORD_V2",
+        "LIVE_PANEL_CHANGE_CONTENT", "LIKE_INFO_V3_CLICK",
+        "LIKE_INFO_V3_UPDATE", "INTERACT_WORD", "ONLINE_RANK_V3",
+        "TRADING_SCORE", "COMMON_NOTICE_DANMAKU", "STOP_LIVE_ROOM_LIST",
+        "RANK_CHANGED", "POPULAR_RANK_CHANGED"
     )
+
+    // 使用 Map 替代线性查找，O(1) 时间复杂度
+    private val commandTypeMap = CmdTypeMapEnums.entries.associateBy { it.cmd }
 
     fun parseCommand(json: String): Command? {
         return try {
             val tree = mapper.readTree(json)
-            val cmd = tree.get("cmd")?.asString()?.split(":")[0] ?: return null
+            val cmd = tree.get("cmd")?.asString()?.split(":")?.get(0) ?: return null
+
             if (shouldIgnoreCommands.contains(cmd)) {
                 logger.debug { "应当忽略的命令不进行数据解析" }
                 return null
             }
 
-            val cmdType = CmdTypeMapEnums.getValues().firstOrNull {
-                it.cmd == cmd
-            }
+            val cmdType = commandTypeMap[cmd]
             if (cmdType == null) {
-                logger.warn { "找不到对应的命令类型: \n$json" }
+                logger.warn { "找不到对应的命令类型: $cmd" }
                 return null
-            }
-            if (cmdType.clazz == SuperChatCommand::class) {
-                // FIXME 调试后删除
-                logger.info { "SuperChatCommand原始json: \n$json" }
             }
 
             return mapper.treeToValue(tree, cmdType.clazz.java)
@@ -62,5 +49,4 @@ object CommandProcessor {
             null
         }
     }
-
 }

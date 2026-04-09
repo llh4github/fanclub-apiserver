@@ -11,7 +11,10 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 
 /**
  * 用户开通大航海提示消息命令
+ * 
+ * @deprecated 推荐使用 [UserToastMsgV2Cmd]，此版本已不再使用
  */
+@Deprecated("推荐使用 UserToastMsgV2Cmd", ReplaceWith("UserToastMsgV2Cmd"))
 @JsonTypeName("USER_TOAST_MSG")
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class UserToastMsgCommand(
