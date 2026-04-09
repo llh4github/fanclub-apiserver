@@ -65,7 +65,10 @@ fun parsePacket(packet: ByteString, roomId: Long): List<DanmuMessage> {
             WsOperation.HEARTBEAT_REPLY -> {
                 if (body.size >= 4) {
                     val popularity =
-                        ((body[0].toInt() and 0xFF) shl 24) or ((body[1].toInt() and 0xFF) shl 16) or ((body[2].toInt() and 0xFF) shl 8) or (body[3].toInt() and 0xFF)
+                        ((body[0].toInt() and 0xFF) shl 24) or
+                                ((body[1].toInt() and 0xFF) shl 16) or
+                                ((body[2].toInt() and 0xFF) shl 8) or
+                                (body[3].toInt() and 0xFF)
                     messages.add(
                         DanmuMessage(
                             "_HEARTBEAT",

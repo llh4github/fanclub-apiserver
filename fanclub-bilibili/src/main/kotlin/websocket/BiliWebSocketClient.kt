@@ -5,7 +5,7 @@ import llh.fanclubvup.bilibili.constants.ApiConstants
 import llh.fanclubvup.bilibili.dto.DanmuHost
 import okhttp3.*
 import okio.ByteString
-import tools.jackson.module.kotlin.jsonMapper
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
@@ -26,13 +26,7 @@ class BiliWebSocketClient(
     private var heartbeatTask: ScheduledFuture<*>? = null
     private val retryCounter = AtomicInteger(0)
     private val maxRetryCount = 5
-    private val mapper by lazy {
-        jsonMapper {
-            addModule(
-                tools.jackson.module.kotlin.KotlinModule.Builder().build()
-            )
-        }.build()
-    }
+    private val mapper = jacksonObjectMapper()
 
     fun connect() {
         val currentRetry = retryCounter.get()
