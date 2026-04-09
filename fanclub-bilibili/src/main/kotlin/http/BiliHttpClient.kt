@@ -5,12 +5,13 @@ import llh.fanclubvup.bilibili.constants.ApiConstants
 import llh.fanclubvup.bilibili.dto.BiliBaseResponse
 import llh.fanclubvup.bilibili.dto.DanmuInfoResponse
 import llh.fanclubvup.bilibili.dto.WbiInfoResponse
+import llh.fanclubvup.bilibili.exception.BiliApiException
+import llh.fanclubvup.bilibili.utils.JsonUtils
 import llh.fanclubvup.bilibili.wbi.buildQueryString
 import llh.fanclubvup.bilibili.wbi.wbiSign
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
-import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -39,7 +40,7 @@ class BiliHttpClient(cookie: String? = null, enableLogging: Boolean = true) {
         }
         builder.build()
     }
-    private val mapper = jacksonObjectMapper()
+    private val mapper = JsonUtils.mapper
     private var wbiSignCache: String? = null
 
     fun <T> executeGet(url: String, clazz: Class<T>): Result<T> {
@@ -52,7 +53,7 @@ class BiliHttpClient(cookie: String? = null, enableLogging: Boolean = true) {
 
                 // 检查 B站 API 响应码
                 if (result is BiliBaseResponse && result.code != 0) {
-                    return Result.failure(IllegalStateException("B站API错误 [${result.code}]: ${result.message}"))
+                    return Result.failure(BiliApiException(result.code, result.message))
                 }
 
                 Result.success(result)

@@ -3,9 +3,9 @@ package llh.fanclubvup.bilibili.websocket
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilibili.constants.ApiConstants
 import llh.fanclubvup.bilibili.dto.DanmuHost
+import llh.fanclubvup.bilibili.utils.JsonUtils
 import okhttp3.*
 import okio.ByteString
-import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
@@ -26,7 +26,7 @@ class BiliWebSocketClient(
     private var heartbeatTask: ScheduledFuture<*>? = null
     private val retryCounter = AtomicInteger(0)
     private val maxRetryCount = 5
-    private val mapper = jacksonObjectMapper()
+    private val mapper = JsonUtils.mapper
 
     fun connect() {
         val currentRetry = retryCounter.get()
