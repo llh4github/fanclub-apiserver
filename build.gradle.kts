@@ -1,8 +1,11 @@
-import org.gradle.api.plugins.JavaPluginExtension
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
 
 plugins {
     kotlin("jvm") version "2.3.10" apply true
-    kotlin("plugin.spring") version "2.3.10" apply false
+    kotlin("plugin.spring") version "2.3.10"
     id("org.springframework.boot") version "4.0.3" apply false
     id("io.spring.dependency-management") version "1.1.7" apply false
     id("org.graalvm.buildtools.native") version "0.11.4" apply false
@@ -19,7 +22,6 @@ repositories {
 }
 
 subprojects {
-
     configurations {
         all {
             exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
