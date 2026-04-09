@@ -28,10 +28,17 @@ class PersistentCookieJarManager(private val redisTemplate: StringRedisTemplate)
     }
 
     override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
-//        redisTemplate.opsForValue().set(BiliSdkCacheKey.COOKIES, mapper.writeValueAsString(cookies))
-//        localCache.put(BiliSdkCacheKey.COOKIES, cookies)
-        //TODO 测试有没有必要缓存下来
-        logger.info { "saveFromResponse: $url, $cookies" }
+        if (cookies.isEmpty()) return
+
+        val existingCookies = fetchCookies().associateBy { it.name }.toMutableMap()
+        cookies.forEach { cookie ->
+            existingCookies[cookie.name] = cookie
+        }
+
+        val allCookies = existingCookies.values.toList()
+        val list = allCookies.map { SerializableCookie.fromCookie(it) }
+        val value = mapper.writeValueAsString(list)
+        redisTemplate.opsForValue().set(BiliSdkCacheKey.COOKIES, value, timeout)
     }
 
     fun resetCookies(block: () -> List<Cookie>) {
