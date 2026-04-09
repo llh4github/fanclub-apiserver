@@ -6,6 +6,7 @@
 package llh.fanclubvup.bilibili.websocket
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import llh.fanclubvup.bilibili.utils.JsonUtils
 import okio.Buffer
 import okio.ByteString
 import okio.ByteString.Companion.toByteString
@@ -14,6 +15,9 @@ import java.io.ByteArrayOutputStream
 import java.util.zip.Inflater
 
 private const val HEADER_SIZE = 16
+
+// JSON 映射器
+private val objectMapper = JsonUtils.mapper
 
 fun makePacket(data: ByteArray, operation: WsOperation): ByteString {
     val buffer = Buffer()
@@ -108,9 +112,15 @@ fun parsePacket(packet: ByteString, roomId: Long): List<DanmuMessage> {
                         if (body.isNotEmpty()) {
                             try {
                                 val json = String(body, Charsets.UTF_8)
-                                messages.add(DanmuMessage("UNKNOWN", json))
+                                // 从 JSON 数据中提取 cmd 字段
+                                val tree = objectMapper.readTree(json)
+                                val cmd = tree.get("cmd")?.asString() ?: "UNKNOWN"
+                                messages.add(DanmuMessage(cmd, json))
                             } catch (e: Exception) {
                                 logger.error(e) { "解析普通消息失败" }
+                                // 解析失败时使用 UNKNOWN
+                                val json = String(body, Charsets.UTF_8)
+                                messages.add(DanmuMessage("UNKNOWN", json))
                             }
                         }
                     }
