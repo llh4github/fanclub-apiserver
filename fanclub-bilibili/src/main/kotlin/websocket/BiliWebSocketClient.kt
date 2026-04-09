@@ -7,6 +7,7 @@ package llh.fanclubvup.bilibili.websocket
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilibili.constants.ApiConstants
+import llh.fanclubvup.bilibili.dm.CommandProcessor
 import llh.fanclubvup.bilibili.dto.DanmuHost
 import llh.fanclubvup.bilibili.utils.JsonUtils
 import llh.fanclubvup.common.BID
@@ -40,40 +41,40 @@ class BiliWebSocketClient(
     private val onConnectionFailed: () -> Unit = {}
 ) : AutoCloseable {
     private val logger = KotlinLogging.logger {}
-    
+
     /**
      * OkHttp 客户端
      * 使用 lazy 初始化，避免在不需要时创建
      */
     private val client by lazy { OkHttpClient.Builder().build() }
-    
+
     /**
      * 调度器
      * 用于执行心跳任务和重连任务
      */
     private val scheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
-    
+
     /**
      * WebSocket 连接
      */
     private var webSocket: WebSocket? = null
-    
+
     /**
      * 心跳任务
      */
     private var heartbeatTask: ScheduledFuture<*>? = null
-    
+
     /**
      * 重连计数器
      * 用于实现重连逻辑
      */
     private val retryCounter = AtomicInteger(0)
-    
+
     /**
      * 最大重连次数
      */
     private val maxRetryCount = 5
-    
+
     /**
      * JSON 映射器
      * 使用项目统一的 JsonUtils.mapper，确保配置一致
@@ -115,8 +116,8 @@ class BiliWebSocketClient(
      * 每 30 秒发送一次心跳，保持连接活跃
      */
     private fun startHeartbeat() {
-        heartbeatTask = scheduler.scheduleAtFixedRate({ 
-            webSocket?.send(makePacket(byteArrayOf(), WsOperation.HEARTBEAT)) 
+        heartbeatTask = scheduler.scheduleAtFixedRate({
+            webSocket?.send(makePacket("{}".encodeToByteArray(), WsOperation.HEARTBEAT))
         }, 0, 30, TimeUnit.SECONDS)
     }
 
@@ -159,9 +160,18 @@ class BiliWebSocketClient(
             override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
                 try {
                     // 解析数据包，处理消息
-                    parsePacket(bytes, roomId).forEach { msg ->
-                        logger.debug { "解析到消息: ${msg.cmd}" }
-                        onMessage(msg)
+                    val list = parsePacket(bytes, roomId)
+                    println("fuck "+ list.size)
+                    list.forEach { msg ->
+                        logger.debug { "解析到消息: $msg" }
+                        // 使用 CommandProcessor 解析消息
+                        val command = CommandProcessor.parseCommand(msg.rawData)
+                        if (command != null) {
+                            logger.debug { "解析到命令: ${command.cmd}" }
+                            // 这里可以根据命令类型进行不同的处理
+                            // 目前仍然调用 onMessage 回调，保持兼容性
+                            onMessage(msg)
+                        }
                     }
                 } catch (e: Exception) {
                     logger.error(e) { "处理消息失败" }

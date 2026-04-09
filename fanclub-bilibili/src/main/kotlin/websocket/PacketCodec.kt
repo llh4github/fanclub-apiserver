@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
 package llh.fanclubvup.bilibili.websocket
 
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -55,11 +60,12 @@ fun parsePacket(packet: ByteString, roomId: Long): List<DanmuMessage> {
     while (offset < packetBytes.size) {
         if (offset + HEADER_SIZE > packetBytes.size) break
         val header = parseHeader(packetBytes.sliceArray(offset until offset + HEADER_SIZE)) ?: break
-        if (header.packLen > packetBytes.size - offset) break
+//        if (header.packLen > packetBytes.size - offset) break
 
         val bodyStart = offset + header.headerSize.toInt()
         val bodyEnd = offset + header.packLen
         val body = packetBytes.sliceArray(bodyStart until bodyEnd)
+        logger.debug { "Packet-body: ${body.toString(Charsets.UTF_8)}" }
 
         when (WsOperation.fromValue(header.operation)) {
             WsOperation.HEARTBEAT_REPLY -> {

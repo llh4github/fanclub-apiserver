@@ -8,33 +8,68 @@ package llh.fanclubvup.bilibili
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
+import llh.fanclubvup.bilibili.dto.SerializableCookie
 import llh.fanclubvup.bilibili.http.BiliHttpClient
+import llh.fanclubvup.bilibili.props.BiliClientConfig
 import llh.fanclubvup.bilibili.websocket.BiliWebSocketClient
+import llh.fanclubvup.common.BID
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.milliseconds
 
-private val logger = KotlinLogging.logger {}
 
 /**
  * WebSocket 客户端测试
  */
 class BiliClientTest {
+    init {
+        // 设置日志级别为 debug
+        System.setProperty("kotlin-logging.level", "DEBUG")
+    }
+    
+    private val logger = KotlinLogging.logger {}
 
     @Test
     fun testDanmuWebSocketConnection() = runBlocking {
-        println("\n测试弹幕 WebSocket 连接，room_id: 30655190")
-        println("========================================")
+        
+        println("\n测试弹幕 WebSocket 连接")
+        println("=======================================")
 
         // 创建 HTTP 客户端获取弹幕服务器信息（带 Cookie，启用详细日志）
-//        val cookie = "SESSDATA=8fb041a0%2C1791162879%2Cc763a%2A42CjDCFTwMNT2Oa4AWYvC0N7Qlwq_RU_Nu-zNTJxqCO5H4jR1nONQjTa-txASaaFCLcS4SVmRnZjExTENZNVowSHpJaHJlZjRxYXJhOWtKWlc4XzU5VUs5TjJubjlSV0IzUndzT3c4dmdoSy1paVZMYmM2QVJJank2b0RMZnRuM1B5b1NOTDZ0WGtnIIEC"
-        val cookie =
-            "SESSDATA=63ddc0b7,1790081482,bfb12*31CjDAzvYFacbVlutGGydgAQj_z1G5qR0M25jqS7aY8-kCFnVsJWGprMqgaUuTzxoZpCYSVkRqMy1BV01OSXVmQVZ1OUcxU2s2Y2RJVnlHYm44S2JWSTExcFFBUHhJeWwyRThaUFpaZ19SQzFWTUxVdlNfMlAzREpSa3VOaU94M3NEV3J1d3MwX0lRIIEC"
-        val httpClient = BiliHttpClient(cookie, enableLogging = true)
-        val roomId = 30655190L
+        val cookie = """
+        """.trimIndent()
+        
+        // 创建测试用的 BiliClientConfig 实现
+        val config = object : BiliClientConfig {
+            override fun getUid(): BID = 3706943656954202L
+            override fun getBuvid(): String = ""
+            override fun getCookies(): List<SerializableCookie> {
+                // 将 cookie 字符串转换为 SerializableCookie
+                return cookie.split(";")
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                    .mapNotNull {
+                        val parts = it.split("=", limit = 2)
+                        if (parts.size == 2) {
+                            SerializableCookie(
+                                name = parts[0],
+                                value = parts[1],
+                                domain = "bilibili.com"
+                            )
+                        } else {
+                            null
+                        }
+                    }
+            }
+            override fun refresh() {}
+        }
+        
+        val httpClient = BiliHttpClient(config, enableLogging = true)
+        val roomId = 23771189L
 
         // 获取弹幕服务器信息（带超时）
-        val danmuInfoResult = withTimeoutOrNull(10000) {
+        val danmuInfoResult = withTimeoutOrNull(10000.milliseconds) {
             httpClient.fetchDanmuServerInfo(roomId)
         }
 
@@ -84,10 +119,12 @@ class BiliClientTest {
             hostList = hostList,
             roomId = roomId,
             token = token,
+            uid = config.getUid(),
+            buvid = config.getBuvid(),
             onMessage = { msg ->
                 messageCount++
-                logger.info { "收到消息 #${messageCount}: ${msg.cmd}" }
-                if (messageCount >= 5) {
+                logger.info { "收到消息 #${messageCount}: $msg" }
+                if (messageCount >= 10) {
                     latch.countDown()
                 }
             },
@@ -103,7 +140,7 @@ class BiliClientTest {
             println("WebSocket 连接已启动，等待接收消息...")
 
             // 等待最多 10 秒或收到 5 条消息
-            val completed = latch.await(10, TimeUnit.SECONDS)
+            val completed = latch.await(15, TimeUnit.SECONDS)
 
             if (completed) {
                 if (messageCount > 0) {
