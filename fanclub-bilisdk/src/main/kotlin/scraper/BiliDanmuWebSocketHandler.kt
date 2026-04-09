@@ -18,6 +18,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.encoding.Base64
 
 /**
@@ -31,13 +32,13 @@ class BiliDanmuWebSocketHandler(
     private val biliWsMsgBizHandler: BiliWsMsgBizHandler,
     private val roomId: Long,
     private val connectionFailed: () -> Unit = {},
-) {
+) : AutoCloseable {
     private val scheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
 
     private val logger = KotlinLogging.logger {}
     private val maxRetryCount = 5
 
-    private var retry = 0
+    private val retryCounter = AtomicInteger(0)
     private var webSocket: WebSocket? = null
     private var heartbeatTask: ScheduledFuture<*>? = null
 
@@ -55,7 +56,8 @@ class BiliDanmuWebSocketHandler(
     }
 
     fun connect(fetchAuth: (retry: Int) -> ByteString?) {
-        val server = hostList[retry % hostList.size]
+        val currentRetry = retryCounter.get()
+        val server = hostList[currentRetry % hostList.size]
         val url = "wss://${server.host}:${server.wssPort}/sub"
         val request = Request.Builder()
             .url(url)
@@ -69,10 +71,9 @@ class BiliDanmuWebSocketHandler(
             }
         )
         webSocket?.let {
-            fetchAuth(retry)?.let { auth ->
+            fetchAuth(currentRetry)?.let { auth ->
                 it.send(auth)
                 startHeartbeat()
-                TimeUnit.SECONDS.sleep(1L)
             }
         }
     }
@@ -82,21 +83,36 @@ class BiliDanmuWebSocketHandler(
     }
 
     fun reconnect(fetchAuth: (retry: Int) -> ByteString?) {
-        retry++
-        if (retry > maxRetryCount) {
+        val currentRetry = retryCounter.incrementAndGet()
+        if (currentRetry > maxRetryCount) {
             logger.error { "重连次数达到最大限制，停止重连" }
             webSocket = null
             connectionFailed()
             return
         }
-        TimeUnit.SECONDS.sleep(2)
-        logger.info { "正在尝试第 $retry 次重连..." }
-        connect(fetchAuth)
+
+        scheduler.schedule({
+            logger.info { "正在尝试第 $currentRetry 次重连..." }
+            connect(fetchAuth)
+        }, 2, TimeUnit.SECONDS)
     }
 
     fun send(bytes: ByteString) {
         logger.debug { "发送数据：\n${Base64.encode(bytes.toByteArray())}" }
         webSocket?.send(bytes)
+    }
+
+    override fun close() {
+        cancelHeartbeat()
+        webSocket?.close(1000, "Normal closure")
+        scheduler.shutdown()
+        try {
+            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow()
+            }
+        } catch (e: InterruptedException) {
+            scheduler.shutdownNow()
+        }
     }
 
     class InnerWebSocketListener(

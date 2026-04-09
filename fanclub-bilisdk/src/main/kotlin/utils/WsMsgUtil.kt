@@ -17,6 +17,7 @@ import okio.ByteString
 import okio.ByteString.Companion.toByteString
 import org.brotli.dec.BrotliInputStream
 import tools.jackson.module.kotlin.jacksonObjectMapper
+import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.concurrent.Executors
@@ -147,14 +148,24 @@ object WsMsgUtil {
 
                     ProtoVer.DEFLATE.value -> {
                         val inflater = Inflater()
-                        val ba = ByteBuffer.allocate(1024)
-                        inflater.setInput(body.readByteArray())
-                        while (!inflater.finished()) {
-                            inflater.inflate(ba)
+                        val outputStream = ByteArrayOutputStream()
+                        val buffer = ByteArray(4096)
+
+                        try {
+                            inflater.setInput(body.readByteArray())
+                            while (!inflater.finished()) {
+                                val count = inflater.inflate(buffer)
+                                if (count > 0) {
+                                    outputStream.write(buffer, 0, count)
+                                }
+                            }
+                            val decompressed = outputStream.toByteArray().toByteString()
+                            logger.debug { "使用 ZIP 算法解码请求" }
+                            parsePacket(decompressed, webSocket, biliWsMsgBizHandler, roomId)
+                        } finally {
+                            inflater.end()
+                            outputStream.close()
                         }
-                        inflater.end()
-                        logger.debug { "使用 ZIP 算法解码请求" }
-                        parsePacket(ba.toByteString(), webSocket, biliWsMsgBizHandler, roomId)
                     }
 
                     ProtoVer.NORMAL.value -> {

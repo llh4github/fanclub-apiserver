@@ -8,12 +8,14 @@ package llh.fanclubvup.bilisdk
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilisdk.cache.BiliSignCacheManager
 import llh.fanclubvup.bilisdk.cache.PersistentCookieJarManager
+import llh.fanclubvup.bilisdk.http.BiliHttpClient
 import llh.fanclubvup.bilisdk.http.BiliLiveApiClient
 import llh.fanclubvup.bilisdk.props.BiliLiveApiProp
 import llh.fanclubvup.bilisdk.props.BiliScraperProp
-import llh.fanclubvup.bilisdk.scraper.BiliScraperClient
-import llh.fanclubvup.bilisdk.scraper.BiliWsMsgBizHandler
+import llh.fanclubvup.bilisdk.scraper.*
+import llh.fanclubvup.bilisdk.security.WbiSignService
 import llh.fanclubvup.common.consts.PropsKeys
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -49,8 +51,33 @@ class BiliSdkAutoConfig {
     }
 
     @Bean
+    fun biliHttpClient(manager: PersistentCookieJarManager): BiliHttpClient {
+        logger.info { "BiliHttpClient init" }
+        return BiliHttpClient(manager)
+    }
+
+    @Bean
+    fun wbiSignService(
+        redisTemplate: StringRedisTemplate,
+        httpClient: BiliHttpClient
+    ): WbiSignService {
+        logger.info { "WbiSignService init" }
+        return WbiSignService(BiliSignCacheManager(redisTemplate), httpClient)
+    }
+
+    @Bean
+    fun danmuCommandDispatcher(
+        handlers: ObjectProvider<DanmuCommandHandler<*>>
+    ): DanmuCommandDispatcher {
+        logger.info { "DanmuCommandDispatcher init with ${handlers.orderedStream().count()} handlers" }
+        return DanmuCommandDispatcher(handlers.orderedStream().toList())
+    }
+
+    @Bean
     @ConditionalOnMissingBean(BiliWsMsgBizHandler::class)
-    fun biliWsMsgBizHandler() = object : BiliWsMsgBizHandler {
+    fun biliWsMsgBizHandler(dispatcher: DanmuCommandDispatcher): BiliWsMsgBizHandler {
+        logger.info { "DefaultBiliWsMsgBizHandler init" }
+        return DefaultBiliWsMsgBizHandler(dispatcher)
     }
 
     @Bean
@@ -61,19 +88,21 @@ class BiliSdkAutoConfig {
     )
     @ConditionalOnMissingBean(BiliScraperClient::class)
     fun biliScraperClient(
-        redisTemplate: StringRedisTemplate,
-        manager: PersistentCookieJarManager,
+        httpClient: BiliHttpClient,
+        wbiSignService: WbiSignService,
         prop: BiliScraperProp,
         biliWsMsgBizHandler: BiliWsMsgBizHandler,
         applicationEventPublisher: ApplicationEventPublisher,
+        authFetcher: BiliWsAuthFetcher,
     ): BiliScraperClient {
         logger.info { "BiliScraperClient init" }
         return BiliScraperClient(
-            BiliSignCacheManager(redisTemplate),
-            manager,
+            httpClient,
+            wbiSignService,
             prop,
             biliWsMsgBizHandler,
-            applicationEventPublisher
+            applicationEventPublisher,
+            authFetcher
         )
     }
 }

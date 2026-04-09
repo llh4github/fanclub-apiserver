@@ -6,87 +6,46 @@
 package llh.fanclubvup.bilisdk.scraper
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import llh.fanclubvup.bilisdk.cache.BiliSignCacheManager
-import llh.fanclubvup.bilisdk.cache.PersistentCookieJarManager
 import llh.fanclubvup.bilisdk.consts.BiliApiUrls
-import llh.fanclubvup.bilisdk.consts.BiliSdkCacheKey
-import llh.fanclubvup.bilisdk.consts.ScraperConst
 import llh.fanclubvup.bilisdk.dto.*
 import llh.fanclubvup.bilisdk.enums.WsOperation
 import llh.fanclubvup.bilisdk.event.DanmuWsFailedEvent
+import llh.fanclubvup.bilisdk.http.BiliHttpClient
 import llh.fanclubvup.bilisdk.props.BiliScraperProp
-import llh.fanclubvup.bilisdk.utils.WbiUtil
+import llh.fanclubvup.bilisdk.security.WbiSignService
 import llh.fanclubvup.bilisdk.utils.WsMsgUtil
 import llh.fanclubvup.common.BID
-import llh.fanclubvup.common.excptions.AppRuntimeException
 import llh.fanclubvup.common.getOrNull
-import llh.fanclubvup.common.utils.Md5Utils
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import okio.ByteString.Companion.encodeUtf8
 import okio.ByteString.Companion.toByteString
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationEventPublisher
-import tools.jackson.module.kotlin.jacksonObjectMapper
-import java.net.URLEncoder
-import java.time.Duration
-import java.time.Instant
 import java.util.*
 
 /**
- * 爬虫客户端
+ * B站爬虫客户端
+ * 协调 HTTP 请求和 WebSocket 连接
  */
 class BiliScraperClient(
-    private val cacheManager: BiliSignCacheManager,
-    private val persistentCookieJarManager: PersistentCookieJarManager,
+    private val httpClient: BiliHttpClient,
+    private val wbiSignService: WbiSignService,
     private val prop: BiliScraperProp,
     private val biliWsMsgBizHandler: BiliWsMsgBizHandler,
     private val eventPublisher: ApplicationEventPublisher,
+    private val authFetcher: BiliWsAuthFetcher,
 ) {
-
-    @Autowired
-    private lateinit var authFetcher: BiliWsAuthFetcher
-
-    private val client by lazy {
-        OkHttpClient.Builder()
-            .cookieJar(persistentCookieJarManager)
-            .callTimeout(Duration.ofSeconds(3))
-            .build()
-    }
-    private val mapper = jacksonObjectMapper()
     private val logger = KotlinLogging.logger {}
-
-    /**
-     * 获取 WBI 签名
-     */
-    fun wbiSign(): String? {
-
-        val request = Request.Builder()
-        request.url(BiliApiUrls.WBI_INIT_URL)
-
-        return cacheManager.getOrFetch(BiliSdkCacheKey.WBI_SIGN) {
-            wbiInfo().fold(
-                onSuccess = { response ->
-                    response.data?.wbiImg?.let { wbiImg ->
-                        WbiUtil.wbiSign(wbiImg)
-                    }
-                },
-                onFailure = { null }
-            )
-        }
-    }
 
     /**
      * 获取用户关系数据：关注的数量，粉丝数量
      */
     fun fetchUserRelation(uId: BID): UserRelationResponse? {
         val url = BiliApiUrls.USER_RELATION_STAT_API
-        val queryString = buildQueryString(TreeMap<String, String>().apply {
+        val queryString = wbiSignService.buildQueryString(TreeMap<String, String>().apply {
             this["vmid"] = uId.toString()
-        })
+        }) ?: return null
 
-        val request = requestBuilder("$url?$queryString").build()
-        return execute(request, UserRelationResponse::class.java).getOrNull(logger)
+        val request = httpClient.requestBuilder("$url?$queryString").build()
+        return httpClient.execute(request, UserRelationResponse::class.java).getOrNull(logger)
     }
 
     /**
@@ -96,12 +55,12 @@ class BiliScraperClient(
      */
     fun fetchUserInfo(uId: BID): UserInfoResponse? {
         val url = BiliApiUrls.USER_INFO_API
-        val queryString = buildQueryString(TreeMap<String, String>().apply {
+        val queryString = wbiSignService.buildQueryString(TreeMap<String, String>().apply {
             this["mid"] = uId.toString()
-        })
+        }) ?: return null
 
-        val request = requestBuilder("$url?$queryString").build()
-        return execute(request, UserInfoResponse::class.java).getOrNull(logger)
+        val request = httpClient.requestBuilder("$url?$queryString").build()
+        return httpClient.execute(request, UserInfoResponse::class.java).getOrNull(logger)
     }
 
     /**
@@ -118,15 +77,16 @@ class BiliScraperClient(
         pageSize: Int = 30
     ): GuardPageResponse? {
         val url = BiliApiUrls.GUARD_LIST_API
-        val queryString = buildQueryString(TreeMap<String, String>().apply {
+        val queryString = wbiSignService.buildQueryString(TreeMap<String, String>().apply {
             this["ruid"] = uId.toString()
             this["roomid"] = roomId.toString()
             this["page"] = page.toString()
             this["page_size"] = pageSize.toString()
             this["typ"] = "5"
-        })
-        val request = requestBuilder("$url?$queryString").build()
-        return execute(request, GuardPageResponse::class.java).getOrNull(logger)
+        }) ?: return null
+
+        val request = httpClient.requestBuilder("$url?$queryString").build()
+        return httpClient.execute(request, GuardPageResponse::class.java).getOrNull(logger)
     }
 
     /**
@@ -134,8 +94,8 @@ class BiliScraperClient(
      */
     fun fetchRoomInfo(roomId: Long): LiveRoomInfoResponse? {
         val url = BiliApiUrls.ROOM_INIT_URL + "?room_id=$roomId"
-        val request = requestBuilder(url).build()
-        return execute(request, LiveRoomInfoResponse::class.java).getOrNull(logger)
+        val request = httpClient.requestBuilder(url).build()
+        return httpClient.execute(request, LiveRoomInfoResponse::class.java).getOrNull(logger)
     }
 
     /**
@@ -146,17 +106,19 @@ class BiliScraperClient(
             put("id", roomId.toString())
             put("type", "0")
         }
-        val queryString = buildQueryString(params) ?: return null
-        val request = requestBuilder(BiliApiUrls.DANMAKU_SERVER_CONF_URL + "?" + queryString)
-            .build()
+        val queryString = wbiSignService.buildQueryString(params) ?: return null
+        val request = httpClient.requestBuilder(BiliApiUrls.DANMAKU_SERVER_CONF_URL + "?" + queryString).build()
 
-        return execute(request, DanmuInfoResponse::class.java).getOrNull(logger)
+        return httpClient.execute(request, DanmuInfoResponse::class.java).getOrNull(logger)
     }
 
-
+    /**
+     * 构建 WebSocket 认证包
+     */
     fun buildAuthWs(token: String, roomId: Long): Result<ByteArray> = runCatching {
-        val buvid = persistentCookieJarManager.fetchCookies().firstOrNull { it.name == "buvid3" }
-            ?: throw AppRuntimeException("buvid3 cookie not found")
+        val cookies = httpClient.cookieJarManager.fetchCookies()
+        val buvid = cookies.firstOrNull { it.name == "buvid3" }
+            ?: throw IllegalStateException("buvid3 cookie not found")
         val text = """
              {"uid":${prop.currentBid},"roomid":$roomId,"protover":3,"buvid":"${buvid.value}","support_ack":true,"scene":"room","platform":"web","type":2,"key":"$token"}
         """.trimIndent()
@@ -169,7 +131,7 @@ class BiliScraperClient(
     fun creatDanmuWebsocket(roomId: Long): BiliDanmuWebSocketHandler? {
         val info = fetchDanmuServerInfo(roomId)?.data ?: return null
         val servers = info.hostList
-        val handler = BiliDanmuWebSocketHandler(client, servers, biliWsMsgBizHandler, roomId) {
+        val handler = BiliDanmuWebSocketHandler(httpClient.okHttpClient, servers, biliWsMsgBizHandler, roomId) {
             eventPublisher.publishEvent(DanmuWsFailedEvent(roomId))
         }
         handler.connect { retry ->
@@ -185,45 +147,4 @@ class BiliScraperClient(
         }
         return handler
     }
-
-    private fun requestBuilder(url: String) = Request.Builder()
-        .url(url)
-        .addHeader("User-Agent", ScraperConst.USER_AGENT)
-        .addHeader("Accept", "application/json")
-
-
-    private fun buildQueryString(map: TreeMap<String, String>): String? {
-        val sign = wbiSign() ?: return null
-        map["wts"] = Instant.now().epochSecond.toString()
-        val uri = map.entries
-            .joinToString("&") { (k, v) ->
-                "$k=${URLEncoder.encode(v, "utf-8")}"
-            }
-        val md5 = Md5Utils.encode(uri + sign).getOrNull(logger) ?: return null
-        return "$uri&w_rid=${md5}"
-    }
-
-    /**
-     * 获取 WBI 信息
-     */
-    fun wbiInfo(): Result<WbiUserInfoResponse> {
-        val request = Request.Builder()
-            .url(BiliApiUrls.WBI_INIT_URL)
-            .build()
-        return execute(request, WbiUserInfoResponse::class.java)
-    }
-
-    private fun <T : ScraperBaseResp> execute(request: Request, clazz: Class<T>): Result<T> =
-        runCatching {
-            client.newCall(request)
-                .execute().use { response ->
-                    if (!response.isSuccessful) {
-                        logger.error { "${request.url} 响应结果：\n${response.body.string()}" }
-                        throw AppRuntimeException("${request.url}请求失败")
-                    }
-
-                    val rs = mapper.readValue(response.body.string(), clazz)
-                    return@runCatching rs
-                }
-        }
 }

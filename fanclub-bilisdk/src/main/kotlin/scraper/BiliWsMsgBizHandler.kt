@@ -5,32 +5,32 @@
 
 package llh.fanclubvup.bilisdk.scraper
 
-import llh.fanclubvup.bilisdk.dm.cmd.*
+import io.github.oshai.kotlinlogging.KotlinLogging
+import llh.fanclubvup.bilisdk.dm.cmd.Command
 
+private val logger = KotlinLogging.logger {}
+
+/**
+ * B站 WebSocket 消息业务处理器接口
+ * 使用策略模式分发命令到对应的处理器
+ */
 interface BiliWsMsgBizHandler {
+    /**
+     * 处理命令消息
+     */
     fun handleMsg(cmd: Command, roomId: Long) {
-        when (cmd) {
-            is UserToastMsgV2Cmd -> handle(cmd, roomId)
-            is SuperChatCommand -> handle(cmd, roomId)
-            is SendGiftCommand -> handle(cmd, roomId)
-            is DanmuMsgCommand -> handle(cmd, roomId)
-            is LiveCommand -> handle(cmd, roomId)
-            is PreparingCommand -> handle(cmd, roomId)
-            is SuperChatMessageJpnCommand -> handle(cmd, roomId)
-            else -> {}
-        }
+        logger.warn { "未处理的命令类型: ${cmd::class.simpleName}, cmd=${cmd.cmd}" }
     }
+}
 
-    fun handle(cmd: UserToastMsgV2Cmd, roomId: Long) {}
-
-    fun handle(cmd: SuperChatCommand, roomId: Long) {}
-    fun handle(cmd: SuperChatMessageJpnCommand, roomId: Long) {}
-
-    fun handle(cmd: SendGiftCommand, roomId: Long) {}
-
-    fun handle(cmd: DanmuMsgCommand, roomId: Long) {}
-
-    fun handle(cmd: LiveCommand, roomId: Long) {}
-
-    fun handle(cmd: PreparingCommand, roomId: Long) {}
+/**
+ * 默认的 B站 WebSocket 消息业务处理器实现
+ * 使用 DanmuCommandDispatcher 进行命令分发
+ */
+class DefaultBiliWsMsgBizHandler(
+    private val dispatcher: DanmuCommandDispatcher
+) : BiliWsMsgBizHandler {
+    override fun handleMsg(cmd: Command, roomId: Long) {
+        dispatcher.dispatch(cmd, roomId)
+    }
 }
