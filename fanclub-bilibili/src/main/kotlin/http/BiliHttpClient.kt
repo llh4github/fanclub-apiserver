@@ -2,19 +2,43 @@ package llh.fanclubvup.bilibili.http
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilibili.constants.ApiConstants
+import llh.fanclubvup.bilibili.dto.BiliBaseResponse
 import llh.fanclubvup.bilibili.dto.DanmuInfoResponse
 import llh.fanclubvup.bilibili.dto.WbiInfoResponse
 import llh.fanclubvup.bilibili.wbi.buildQueryString
 import llh.fanclubvup.bilibili.wbi.wbiSign
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.logging.HttpLoggingInterceptor
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class BiliHttpClient {
+class BiliHttpClient(cookie: String? = null, enableLogging: Boolean = true) {
     private val logger = KotlinLogging.logger {}
-    private val client by lazy { OkHttpClient.Builder().callTimeout(10, TimeUnit.SECONDS).build() }
+    private val client by lazy {
+        val builder = OkHttpClient.Builder().callTimeout(10, TimeUnit.SECONDS)
+
+        // 添加日志拦截器
+        if (enableLogging) {
+            val loggingInterceptor = HttpLoggingInterceptor { message ->
+                logger.info { "[OkHttp] $message" }
+            }.apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            }
+            builder.addInterceptor(loggingInterceptor)
+        }
+
+        cookie?.let {
+            builder.addInterceptor { chain ->
+                val request = chain.request().newBuilder()
+                    .header("Cookie", it)
+                    .build()
+                chain.proceed(request)
+            }
+        }
+        builder.build()
+    }
     private val mapper = jacksonObjectMapper()
     private var wbiSignCache: String? = null
 
@@ -24,7 +48,14 @@ class BiliHttpClient {
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) return Result.failure(Exception("HTTP ${response.code}"))
                 val body = response.body.string() ?: ""
-                Result.success(mapper.readValue(body, clazz))
+                val result = mapper.readValue(body, clazz)
+
+                // 检查 B站 API 响应码
+                if (result is BiliBaseResponse && result.code != 0) {
+                    return Result.failure(IllegalStateException("B站API错误 [${result.code}]: ${result.message}"))
+                }
+
+                Result.success(result)
             }
         } catch (e: Exception) {
             Result.failure(e)
