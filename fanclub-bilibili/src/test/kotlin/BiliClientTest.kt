@@ -27,23 +27,29 @@ class BiliClientTest {
         // 设置日志级别为 debug
         System.setProperty("kotlin-logging.level", "DEBUG")
     }
-    
+
     private val logger = KotlinLogging.logger {}
 
     @Test
     fun testDanmuWebSocketConnection() = runBlocking {
-        
         println("\n测试弹幕 WebSocket 连接")
         println("=======================================")
 
+
+        val roomId = System.getenv("BILI_ROOM_ID")?.toLong() ?: -1L
+        val myUid = System.getenv("BILI_UID")?.toLong() ?: -1L
+        val uvid = System.getenv("BILI_UVID") ?: ""
+        val sessdata = System.getenv("BILI_SESSDATA") ?: ""
+
         // 创建 HTTP 客户端获取弹幕服务器信息（带 Cookie，启用详细日志）
         val cookie = """
+            SESSDATA=$sessdata
         """.trimIndent()
-        
+
         // 创建测试用的 BiliClientConfig 实现
         val config = object : BiliClientConfig {
-            override fun getUid(): BID = 3706943656954202L
-            override fun getBuvid(): String = ""
+            override fun getUid(): BID = myUid
+            override fun getBuvid(): String = uvid
             override fun getCookies(): List<SerializableCookie> {
                 // 将 cookie 字符串转换为 SerializableCookie
                 return cookie.split(";")
@@ -62,11 +68,12 @@ class BiliClientTest {
                         }
                     }
             }
+
             override fun refresh() {}
         }
-        
+
         val httpClient = BiliHttpClient(config, enableLogging = true)
-        val roomId = 23771189L
+
 
         // 获取弹幕服务器信息（带超时）
         val danmuInfoResult = withTimeoutOrNull(10000.milliseconds) {
@@ -140,7 +147,7 @@ class BiliClientTest {
             println("WebSocket 连接已启动，等待接收消息...")
 
             // 等待最多 10 秒或收到 5 条消息
-            val completed = latch.await(15, TimeUnit.SECONDS)
+            val completed = latch.await(25, TimeUnit.SECONDS)
 
             if (completed) {
                 if (messageCount > 0) {

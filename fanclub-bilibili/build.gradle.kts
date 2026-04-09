@@ -23,6 +23,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp-brotli")
     implementation("com.squareup.okhttp3:logging-interceptor")
 
+
     implementation("org.springframework.boot:spring-boot-starter")
     // JSON
     implementation("tools.jackson.module:jackson-module-kotlin")

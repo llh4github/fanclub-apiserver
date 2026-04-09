@@ -8,6 +8,8 @@ package llh.fanclubvup.bilibili.websocket
 import io.github.oshai.kotlinlogging.KotlinLogging
 import okio.Buffer
 import okio.ByteString
+import okio.ByteString.Companion.toByteString
+import org.brotli.dec.BrotliInputStream
 import java.io.ByteArrayOutputStream
 import java.util.zip.Inflater
 
@@ -31,22 +33,30 @@ fun parseHeader(data: ByteArray): PacketHeader? {
 }
 
 private fun decompressDeflate(data: ByteArray): Result<ByteArray> {
+    val logger = KotlinLogging.logger {}
     return try {
-        val inflater = Inflater()
+        // 使用 nowrap=true 来处理原始的 deflate 数据，跳过 zlib 头部
+        val inflater = Inflater(true)
         val outputStream = ByteArrayOutputStream()
         val buffer = ByteArray(4096)
         try {
             inflater.setInput(data)
-            while (!inflater.finished()) {
+            var totalCount = 0
+            while (!inflater.finished() && !inflater.needsInput()) {
                 val count = inflater.inflate(buffer)
-                if (count > 0) outputStream.write(buffer, 0, count)
+                if (count > 0) {
+                    outputStream.write(buffer, 0, count)
+                    totalCount += count
+                }
             }
+            logger.debug { "解压成功，原始大小: ${data.size} 字节，解压后大小: $totalCount 字节" }
             Result.success(outputStream.toByteArray())
         } finally {
             inflater.end()
             outputStream.close()
         }
     } catch (e: Exception) {
+        logger.error(e) { "解压失败，数据大小: ${data.size} 字节" }
         Result.failure(e)
     }
 }
@@ -65,7 +75,6 @@ fun parsePacket(packet: ByteString, roomId: Long): List<DanmuMessage> {
         val bodyStart = offset + header.headerSize.toInt()
         val bodyEnd = offset + header.packLen
         val body = packetBytes.sliceArray(bodyStart until bodyEnd)
-        logger.debug { "Packet-body: ${body.toString(Charsets.UTF_8)}" }
 
         when (WsOperation.fromValue(header.operation)) {
             WsOperation.HEARTBEAT_REPLY -> {
@@ -85,24 +94,56 @@ fun parsePacket(packet: ByteString, roomId: Long): List<DanmuMessage> {
             }
 
             WsOperation.SEND_MSG_REPLY -> {
-                when (ProtoVer.fromValue(header.ver)) {
+                val protoVer = ProtoVer.fromValue(header.ver)
+                when (protoVer) {
                     ProtoVer.DEFLATE -> {
                         decompressDeflate(body).onSuccess { decompressed ->
                             messages.addAll(parsePacket(ByteString.of(*decompressed), roomId))
+                        }.onFailure { e ->
+                            logger.error(e) { "DEFLATE 解压失败" }
                         }
                     }
 
                     ProtoVer.NORMAL -> {
                         if (body.isNotEmpty()) {
-                            messages.add(DanmuMessage("UNKNOWN", String(body, Charsets.UTF_8)))
+                            try {
+                                val json = String(body, Charsets.UTF_8)
+                                messages.add(DanmuMessage("UNKNOWN", json))
+                            } catch (e: Exception) {
+                                logger.error(e) { "解析普通消息失败" }
+                            }
                         }
                     }
 
-                    else -> {}
+                    ProtoVer.BROTLI -> {
+                        // Brotli 压缩，使用 BrotliInputStream 解压
+                        try {
+                            BrotliInputStream(body.inputStream())
+                                .use { brotliStream ->
+                                    val decompressed = brotliStream.readAllBytes()
+                                    logger.debug { "Brotli 解压成功，原始大小: ${body.size} 字节，解压后大小: ${decompressed.size} 字节" }
+                                    messages.addAll(parsePacket(decompressed.toByteString(), roomId))
+                                }
+                        } catch (e: Exception) {
+                            logger.error(e) { "Brotli 解压失败" }
+                        }
+                    }
+
+                    ProtoVer.HEARTBEAT -> {
+                        // 心跳消息，忽略
+                    }
+
+                    null -> {
+                        // 未知协议版本
+                        logger.warn { "未知协议版本: ${header.ver}" }
+                    }
                 }
             }
 
-            else -> {}
+            else -> {
+                // 其他操作类型
+                logger.debug { "未处理的操作类型: ${header.operation}" }
+            }
         }
         offset += header.packLen
     }

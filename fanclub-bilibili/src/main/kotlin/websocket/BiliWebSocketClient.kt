@@ -161,16 +161,21 @@ class BiliWebSocketClient(
                 try {
                     // 解析数据包，处理消息
                     val list = parsePacket(bytes, roomId)
-                    println("fuck "+ list.size)
                     list.forEach { msg ->
-                        logger.debug { "解析到消息: $msg" }
-                        // 使用 CommandProcessor 解析消息
-                        val command = CommandProcessor.parseCommand(msg.rawData)
-                        if (command != null) {
-                            logger.debug { "解析到命令: ${command.cmd}" }
-                            // 这里可以根据命令类型进行不同的处理
-                            // 目前仍然调用 onMessage 回调，保持兼容性
-                            onMessage(msg)
+                        logger.info { "解析到消息: $msg" }
+                        
+                        // 检查消息是否在3秒内已处理过
+                        if (!MessageDeduplicationCache.isDuplicate(msg.rawData)) {
+                            // 使用 CommandProcessor 解析消息
+                            val command = CommandProcessor.parseCommand(msg.rawData)
+                            if (command != null) {
+                                logger.info { "解析到命令: ${command.cmd}" }
+                                // 这里可以根据命令类型进行不同的处理
+                                // 目前仍然调用 onMessage 回调，保持兼容性
+                                onMessage(msg)
+                            }
+                        } else {
+                            logger.debug { "消息已处理过，跳过: ${msg.cmd}" }
                         }
                     }
                 } catch (e: Exception) {
