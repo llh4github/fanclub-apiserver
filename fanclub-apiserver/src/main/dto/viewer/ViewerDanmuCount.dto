@@ -13,7 +13,7 @@ ViewerDanmuCountPageView {
 
 input  ViewerDanmuCountAddInput {
     bid
-    rbid
+    roomId
     cnt
     cntDate
 }

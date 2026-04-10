@@ -72,18 +72,17 @@ class BiliDanmuStatistics(
 
     private fun handleUserToastMsgV2Cmd(cmd: UserToastMsgV2Cmd, roomId: Long) {
         val senderUid = cmd.data?.senderUinfo?.uid
-        val reciverUid = cmd.data?.receiverInfo?.uid
         val num = cmd.data?.payInfo?.num
         val guardLevel = cmd.data?.guardInfo?.guardLevel
         val price = cmd.data?.payInfo?.price
         val startTime = cmd.data?.guardInfo?.startTime
         val payflowId = cmd.data?.payInfo?.payflowId
 
-        if (ValidationUtil.isAllNotNull(senderUid, guardLevel, reciverUid, num, price, startTime, payflowId)) {
+        if (ValidationUtil.isAllNotNull(senderUid, guardLevel, num, price, startTime, payflowId)) {
             viewerGuardBuyRecordService.save(
                 ViewerGuardBuyRecordAddInput(
                     senderBid = senderUid!!,
-                    receiverBid = reciverUid!!,
+                    roomId = roomId,
                     guardType = GuardLevel.parse(guardLevel!!),
                     num = num!!,
                     price = price!!.toInt(),

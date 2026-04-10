@@ -24,9 +24,8 @@ interface ViewerGuardBuyRecord : BaseEntity {
     @get:Schema(title = "赠送者BID", example = "114514")
     val senderBid: BID
 
-    @Column(name = "receiver_bid")
-    @get:Schema(title = "接受者BID", example = "114514")
-    val receiverBid: BID
+    @get:Schema(title = "直播间号", example = "114514")
+    val roomId: Long
 
     @get:Schema(title = "购买数量", description = "购买数量", example = "114514")
     val num: Int

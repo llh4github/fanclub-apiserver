@@ -13,7 +13,7 @@ ViewerGuardBuyRecordPageView {
 
 input ViewerGuardBuyRecordAddInput {
     senderBid
-    receiverBid
+    roomId
     num
     guardType
     price

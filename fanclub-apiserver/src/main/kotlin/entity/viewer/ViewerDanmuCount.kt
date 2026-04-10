@@ -24,8 +24,8 @@ interface ViewerDanmuCount : BaseEntity {
     val bid: BID
 
     @Key(group = "bid-date")
-    @get:Schema(title = "接收者的B站UID", example = "114514")
-    val rbid:BID
+    @get:Schema(title = "直播间号", example = "114514")
+    val roomId: Long
 
     @get:Schema(title = "统计时间", example = "2023-07-01")
     @Key(group = "bid-date")
