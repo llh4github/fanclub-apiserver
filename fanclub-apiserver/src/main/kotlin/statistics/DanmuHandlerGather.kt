@@ -5,15 +5,23 @@
 
 package llh.fanclubvup.apiserver.statistics
 
-import llh.fanclubvup.apiserver.statistics.handlers.DanmuMsgCommandHandler
+import llh.fanclubvup.apiserver.statistics.handlers.*
 import llh.fanclubvup.bilibili.dm.DanmuCommandHandler
 import org.springframework.stereotype.Component
 
 @Component
 class DanmuHandlerGather(
     danmuMsgCommandHandler: DanmuMsgCommandHandler,
+    liveCommandHandler: LiveCommandHandler,
+    preparingCommandHandler: PreparingCommandHandler,
+    superChatCommandHandler: SuperChatCommandHandler,
+    superChatMessageJpnCommandHandler: SuperChatMessageJpnCommandHandler,
 ) {
     val handlers = listOf<DanmuCommandHandler<*>>(
         danmuMsgCommandHandler,
+        liveCommandHandler,
+        preparingCommandHandler,
+        superChatCommandHandler,
+        superChatMessageJpnCommandHandler,
     )
 }
