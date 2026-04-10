@@ -24,7 +24,7 @@ class BiliClient(
     private val roomId: Long,
     private val config: BiliClientConfig,
     private val httpClient: BiliHttpClient = BiliHttpClient(config),
-    private val onDanmuMessage: (DanmuMessage) -> Unit = {}
+    private val onDanmuMessage: (roomId: Long, msg: DanmuMessage) -> Unit
 ) : AutoCloseable {
     private val logger = KotlinLogging.logger {}
     private var wsClient: BiliWebSocketClient? = null
