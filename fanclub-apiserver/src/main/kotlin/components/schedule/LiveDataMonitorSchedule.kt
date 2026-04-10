@@ -11,11 +11,9 @@ import llh.fanclubvup.apiserver.entity.sys.dto.ScraperMonitorFeatureSpec
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveDurationService
 import llh.fanclubvup.apiserver.service.sys.ScraperCookieService
 import llh.fanclubvup.apiserver.service.sys.ScraperFeatureService
-import llh.fanclubvup.apiserver.statistics.BiliDanmuDataStats
+import llh.fanclubvup.apiserver.statistics.DanmuHandlerGather
 import llh.fanclubvup.bilibili.BiliClient
 import llh.fanclubvup.bilisdk.event.DanmuWsFailedEvent
-import llh.fanclubvup.bilisdk.scraper.BiliDanmuWebSocketHandler
-import llh.fanclubvup.bilisdk.scraper.BiliScraperClient
 import org.springframework.boot.context.event.ApplicationStartedEvent
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Scheduled
@@ -29,13 +27,12 @@ import java.util.concurrent.ConcurrentHashMap
 @Component
 class LiveDataMonitorSchedule(
     private val scraperFeatureService: ScraperFeatureService,
-    private val scraperClient: BiliScraperClient,
     private val liveDurationService: AnchorLiveDurationService,
     private val scraperCookieService: ScraperCookieService,
-    private val biliDanmuDataStats: BiliDanmuDataStats,
+    private val danmuHandlerGather: DanmuHandlerGather,
 ) {
     private val logger = KotlinLogging.logger {}
-    private val map = ConcurrentHashMap<Long, BiliDanmuWebSocketHandler>()
+
     private val roomClientMap = ConcurrentHashMap<Long, BiliClient>()
     private val countMap = ConcurrentHashMap<Long, Int>()
     private val maxRetry = 5
@@ -44,9 +41,6 @@ class LiveDataMonitorSchedule(
     fun startup(event: ApplicationStartedEvent) {
         queryEnabled().forEach { info ->
             startNewClient(info)
-            scraperClient.creatDanmuWebsocket(info.anchorInfo.roomId)?.let {
-                map[info.anchorInfo.roomId] = it
-            }
         }
         logger.info { "主播弹幕数据监控计划启动成功" }
     }
@@ -58,7 +52,7 @@ class LiveDataMonitorSchedule(
             return
         }
         val anchorRoomId = info.anchorInfo.roomId
-        val client = BiliClient(anchorRoomId, cookies, listOf())
+        val client = BiliClient(anchorRoomId, cookies, danmuHandlerGather.handlers)
         client.start()
         if (client.isValid()) {
             roomClientMap[anchorRoomId] = client
@@ -77,7 +71,7 @@ class LiveDataMonitorSchedule(
     fun retryWsConnectionEveryDay() {
         countMap.clear()
         logger.info { "清除计数表" }
-        val invalidRoomIds = map.filter { !it.value.isValid() }.keys
+        val invalidRoomIds = roomClientMap.filter { !it.value.isValid() }.keys
         retryWsConnection(invalidRoomIds.toList())
     }
 
@@ -99,11 +93,8 @@ class LiveDataMonitorSchedule(
             if (cnt >= maxRetry) {
                 logger.error { "${info.anchorInfo.roomId} 达最大重试次数，取消重试" }
             } else {
-                scraperClient.creatDanmuWebsocket(info.anchorInfo.roomId)?.let {
-                    map[info.anchorInfo.roomId] = it
-                    countMap[info.anchorInfo.roomId] = cnt + 1
-                }
                 startNewClient(info)
+                countMap[info.anchorInfo.roomId] = cnt + 1
             }
         }
     }
