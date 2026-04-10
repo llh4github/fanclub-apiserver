@@ -37,7 +37,7 @@ class BiliWebSocketClient(
     private val token: String,
     private val uid: BID = -1L,
     private val buvid: String = "",
-    private val onMessage: (DanmuMessage) -> Unit = {},
+    private val onMessage: (roomId: Long, msg: DanmuMessage) -> Unit,
     private val onConnectionFailed: () -> Unit = {}
 ) : AutoCloseable {
     private val logger = KotlinLogging.logger {}
@@ -163,7 +163,7 @@ class BiliWebSocketClient(
                     val list = parsePacket(bytes, roomId)
                     list.forEach { msg ->
                         logger.info { "解析到消息: $msg" }
-                        
+
                         // 检查消息是否在3秒内已处理过
                         if (!MessageDeduplicationCache.isDuplicate(msg.rawData)) {
                             // 使用 CommandProcessor 解析消息
@@ -172,7 +172,7 @@ class BiliWebSocketClient(
                                 logger.info { "解析到命令: ${command.cmd}" }
                                 // 这里可以根据命令类型进行不同的处理
                                 // 目前仍然调用 onMessage 回调，保持兼容性
-                                onMessage(msg)
+                                onMessage(roomId, msg)
                             }
                         } else {
                             logger.debug { "消息已处理过，跳过: ${msg.cmd}" }

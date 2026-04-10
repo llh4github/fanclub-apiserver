@@ -16,7 +16,6 @@ import llh.fanclubvup.bilisdk.security.WbiSignService
 import llh.fanclubvup.bilisdk.utils.WsMsgUtil
 import llh.fanclubvup.common.BID
 import llh.fanclubvup.common.getOrNull
-import okio.ByteString.Companion.encodeUtf8
 import okio.ByteString.Companion.toByteString
 import org.springframework.context.ApplicationEventPublisher
 import java.util.*
@@ -25,6 +24,7 @@ import java.util.*
  * B站爬虫客户端
  * 协调 HTTP 请求和 WebSocket 连接
  */
+@Deprecated("弃用")
 class BiliScraperClient(
     private val httpClient: BiliHttpClient,
     private val wbiSignService: WbiSignService,
@@ -122,6 +122,9 @@ class BiliScraperClient(
         val text = """
              {"uid":${prop.currentBid},"roomid":$roomId,"protover":3,"buvid":"${buvid.value}","support_ack":true,"scene":"room","platform":"web","type":2,"key":"$token"}
         """.trimIndent()
+//        val text = """
+//            {"uid":10071860,"roomid":26966466,"protover":3,"buvid":"016EE42D-96D5-A092-5F01-D311D0BBAFF772750infoc","support_ack":true,"scene":"room","platform":"web","type":2,"key":"VJsVaot5Bl6PWj1zKIvOeLS2mMoMZ-YwBUSPFOASdiBDyJaRwKiqpjPr94_LQhQhN3IMbcLZgg-UJdhRbyN4ASFTxfDNXyqYvsg44Oe-PFqzdUmf1p8bZ_62eBQXuTFgu8bCAsMdxGCcCFllPF2A3DU88U70aZcCObrReCUbBodAvbGEk46PQV9etg1Mv8-uNgzy-4PZIfJj8Uv93o8QOorjBNNbAKnTPBwSRtB4tx8uz3i7WRH2SjqzhiJFjPc0"}
+//        """.trimIndent()
         WsMsgUtil.makePacket(text, WsOperation.AUTH)
     }
 
@@ -135,15 +138,10 @@ class BiliScraperClient(
             eventPublisher.publishEvent(DanmuWsFailedEvent(roomId))
         }
         handler.connect { retry ->
-            if (retry % 2 == 0) {
-                val token = info.token ?: return@connect null
-                val packet = buildAuthWs(token, roomId).getOrNull(logger) ?: return@connect null
-                logger.debug { "使用接口组装授权字符串" }
-                packet.toByteString()
-            } else {
-                logger.debug { "使用数据库中的授权字符串" }
-                authFetcher.fetch(roomId)?.encodeUtf8()
-            }
+            val token = info.token ?: return@connect null
+            val packet = buildAuthWs(token, roomId).getOrNull(logger) ?: return@connect null
+            logger.debug { "使用接口组装授权字符串" }
+            packet.toByteString()
         }
         return handler
     }

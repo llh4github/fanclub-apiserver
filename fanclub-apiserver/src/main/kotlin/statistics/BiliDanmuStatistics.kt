@@ -171,7 +171,7 @@ class BiliDanmuStatistics(
 
     private fun handlePreparingCommand(cmd: PreparingCommand, roomId: Long) {
         val endTime = cmd.sendTime
-        if (roomId == null || endTime == null) {
+        if (endTime == null) {
             logger.error { "直播准备中命令关键参数缺乏:\n$cmd" }
             return
         }
@@ -186,7 +186,7 @@ class BiliDanmuStatistics(
         val liveKey = cmd.liveKey
         val liveTime = cmd.liveTime
         logger.info { "开播数据:\n$cmd" }
-        if (liveKey == null || roomId == null) {
+        if (liveKey == null) {
             logger.error { "直播开始命令关键参数缺乏:\n$cmd" }
             return
         }
