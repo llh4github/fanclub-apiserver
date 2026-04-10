@@ -1,6 +1,7 @@
 # AI提示词
 .trae
 .prompt
+prompt/
 
 # Gradle相关
 .gradle/
