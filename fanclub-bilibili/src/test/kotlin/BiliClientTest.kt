@@ -125,9 +125,9 @@ class BiliClientTest {
             token = token,
             uid = config.uid,
             buvid = config.buvid,
-            onMessage = { roomId, msg ->
+            onMessage = { msg ->
                 messageCount++
-                logger.info { "$roomId 收到消息 #${messageCount}: $msg" }
+                logger.info { "收到消息 #${messageCount}: $msg" }
                 if (messageCount >= 10) {
                     latch.countDown()
                 }

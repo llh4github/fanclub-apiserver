@@ -24,7 +24,7 @@ class BiliClient(
     private val roomId: Long,
     private val config: BiliClientConfig,
     private val httpClient: BiliHttpClient = BiliHttpClient(config),
-    private val onDanmuMessage: (roomId: Long, msg: DanmuMessage) -> Unit
+    private val onDanmuMessage: (DanmuMessage) -> Unit = {}
 ) : AutoCloseable {
     private val logger = KotlinLogging.logger {}
     private var wsClient: BiliWebSocketClient? = null
@@ -35,13 +35,13 @@ class BiliClient(
      * 2. 检查信息完整性
      * 3. 建立 WebSocket 连接
      */
-    fun start(): Boolean {
+    fun start() {
         logger.info { "启动 B站客户端，房间ID: $roomId" }
         // 获取弹幕服务器信息，这是建立 WebSocket 连接的前提
         val danmuInfoResult = httpClient.fetchDanmuServerInfo(roomId)
         if (danmuInfoResult.isFailure) {
             logger.error(danmuInfoResult.exceptionOrNull()) { "获取弹幕服务器信息失败" }
-            return false
+            return
         }
 
         val danmuInfo = danmuInfoResult.getOrThrow()
@@ -51,7 +51,7 @@ class BiliClient(
         // 检查弹幕服务器信息是否完整，缺少主机列表或 token 都无法建立连接
         if (hostList.isNullOrEmpty() || token.isNullOrEmpty()) {
             logger.error { "弹幕服务器信息不完整" }
-            return false
+            return
         }
 
         // 创建 WebSocket 客户端并启动连接
@@ -65,13 +65,7 @@ class BiliClient(
             onDanmuMessage
         )
         wsClient?.start()
-        return true
     }
-
-    /**
-     * 有效性检查
-     */
-    fun isValid() = wsClient != null
 
     /**
      * 关闭 B站客户端

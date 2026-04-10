@@ -31,7 +31,7 @@ object CommandProcessor {
     /**
      * 命令类型映射，使用 Map 替代线性查找，O(1) 时间复杂度
      */
-    private val commandTypeMap = CmdTypeMapEnums.entries.associateBy { it.cmd }
+    private val commandTypeMap = CmdTypeMapEnums.commandTypeMap
 
     /**
      * 解析命令
