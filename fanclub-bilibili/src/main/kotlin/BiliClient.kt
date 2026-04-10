@@ -60,8 +60,8 @@ class BiliClient(
             hostList,
             roomId,
             token,
-            config.getUid(),
-            config.getBuvid(),
+            config.uid,
+            config.buvid,
             onDanmuMessage
         )
         wsClient?.start()

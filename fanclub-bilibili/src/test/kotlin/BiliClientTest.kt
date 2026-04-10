@@ -12,7 +12,6 @@ import llh.fanclubvup.bilibili.dto.SerializableCookie
 import llh.fanclubvup.bilibili.http.BiliHttpClient
 import llh.fanclubvup.bilibili.props.BiliClientConfig
 import llh.fanclubvup.bilibili.websocket.BiliWebSocketClient
-import llh.fanclubvup.common.BID
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -46,31 +45,29 @@ class BiliClientTest {
             SESSDATA=$sessdata
         """.trimIndent()
 
-        // 创建测试用的 BiliClientConfig 实现
-        val config = object : BiliClientConfig {
-            override fun getUid(): BID = myUid
-            override fun getBuvid(): String = uvid
-            override fun getCookies(): List<SerializableCookie> {
-                // 将 cookie 字符串转换为 SerializableCookie
-                return cookie.split(";")
-                    .map { it.trim() }
-                    .filter { it.isNotEmpty() }
-                    .mapNotNull {
-                        val parts = it.split("=", limit = 2)
-                        if (parts.size == 2) {
-                            SerializableCookie(
-                                name = parts[0],
-                                value = parts[1],
-                                domain = "bilibili.com"
-                            )
-                        } else {
-                            null
-                        }
-                    }
+        // 将 cookie 字符串转换为 SerializableCookie
+        val cookies = cookie.split(";")
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .mapNotNull {
+                val parts = it.split("=", limit = 2)
+                if (parts.size == 2) {
+                    SerializableCookie(
+                        name = parts[0],
+                        value = parts[1],
+                        domain = "bilibili.com"
+                    )
+                } else {
+                    null
+                }
             }
 
-            override fun refresh() {}
-        }
+        // 创建测试用的 BiliClientConfigFetcher 实例
+        val config = BiliClientConfig(
+            uid = myUid,
+            buvid = uvid,
+            cookies = cookies
+        )
 
         val httpClient = BiliHttpClient(config, enableLogging = true)
 
@@ -126,8 +123,8 @@ class BiliClientTest {
             hostList = hostList,
             roomId = roomId,
             token = token,
-            uid = config.getUid(),
-            buvid = config.getBuvid(),
+            uid = config.uid,
+            buvid = config.buvid,
             onMessage = { msg ->
                 messageCount++
                 logger.info { "收到消息 #${messageCount}: $msg" }

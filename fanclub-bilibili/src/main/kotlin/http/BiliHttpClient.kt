@@ -51,7 +51,7 @@ class BiliHttpClient(config: BiliClientConfig? = null, enableLogging: Boolean = 
 
         // 添加 cookie 拦截器，用于身份认证
         config?.let {
-            val cookieHeader = it.getCookies().joinToString(";") { cookie -> "${cookie.name}=${cookie.value}" }
+            val cookieHeader = it.cookies.joinToString(";") { cookie -> "${cookie.name}=${cookie.value}" }
             if (cookieHeader.isNotEmpty()) {
                 builder.addInterceptor { chain ->
                     val request = chain.request().newBuilder()
