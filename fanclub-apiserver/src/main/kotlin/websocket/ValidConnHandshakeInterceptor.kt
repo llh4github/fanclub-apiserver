@@ -22,10 +22,10 @@ class ValidConnHandshakeInterceptor(
 
     private val logger = KotlinLogging.logger {}
 
-    fun checkUID(uid: Long?): Boolean {
-        if (uid == null) return false
+    fun checkRoomId(roomId: Long?): Boolean {
+        if (roomId == null) return false
         return scraperFeatureService.queryMonitorEnabled().firstOrNull {
-            it.anchorInfo.biliId == uid
+            it.anchorInfo.roomId == roomId
         } != null
     }
 
@@ -36,16 +36,16 @@ class ValidConnHandshakeInterceptor(
         attributes: MutableMap<String, Any>
     ): Boolean {
         if (request is ServletServerHttpRequest) {
-            // 从查询参数中获取 uid
-            val uid = request.servletRequest.getParameter("uid")?.toLongOrNull()
-            if (uid == null || !checkUID(uid)) {
-                logger.warn { "uid=$uid 无效，拒绝 WS 连接" }
+            // 从查询参数中获取
+            val roomId = request.servletRequest.getParameter("roomId")?.toLongOrNull()
+            if (roomId == null || !checkRoomId(roomId)) {
+                logger.warn { "roomId=$roomId 无效，拒绝 WS 连接" }
                 // 设置 HTTP 状态码为
                 response.setStatusCode(HttpStatus.UNAUTHORIZED)
                 return false // 拒绝握手，主动断开连接
             }
-            // 将 uid 存储到 session 属性中
-            attributes["uid"] = uid
+            // 将 roomId 存储到 session 属性中
+            attributes["roomId"] = roomId
             return true
         }
         return true
@@ -58,8 +58,8 @@ class ValidConnHandshakeInterceptor(
         exception: Exception?
     ) {
         if (request is ServletServerHttpRequest) {
-            val uid = request.servletRequest.getParameter("uid")
-            logger.info { "WS 连接成功：uid=$uid" }
+            val roomId = request.servletRequest.getParameter("roomId")
+            logger.info { "WS 连接成功：uid=$roomId" }
         }
         // 握手后处理，可以留空
     }

@@ -53,7 +53,7 @@ class DanmuMsgCommandHandler(
                 val msg = DanmuWsMsg(
                     StrUtil.maskMiddle(sender.name),
                     content,
-                    sender.ruid,
+                    roomId,
                     sender.level
                 )
                 danmuWebsocketHandler.sendDanmu(msg)
@@ -61,7 +61,7 @@ class DanmuMsgCommandHandler(
 
             // 统计弹幕发送量
             executors.execute {
-                val key = StatisticsCacheKey.danmuCount(sender.ruid, now)
+                val key = StatisticsCacheKey.danmuCount(roomId, now)
                 redisTemplate.execute(
                     statisticsDanmu,
                     listOf(key, "${time.hour}-${time.minute}"),
