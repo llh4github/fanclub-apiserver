@@ -8,6 +8,8 @@ package llh.fanclubvup.bilibili
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
+import llh.fanclubvup.bilibili.dm.DanmuCommandHandler
+import llh.fanclubvup.bilibili.dm.cmd.Command
 import llh.fanclubvup.bilibili.dto.SerializableCookie
 import llh.fanclubvup.bilibili.http.BiliHttpClient
 import llh.fanclubvup.bilibili.props.BiliClientConfig
@@ -15,6 +17,7 @@ import llh.fanclubvup.bilibili.websocket.BiliWebSocketClient
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import kotlin.reflect.KClass
 import kotlin.time.Duration.Companion.milliseconds
 
 
@@ -118,6 +121,24 @@ class BiliClientTest {
         val latch = CountDownLatch(1)
         var messageCount = 0
 
+        // 创建简单的命令处理器用于测试
+        val testHandler = object : DanmuCommandHandler<Command> {
+            private val testLogger = KotlinLogging.logger {}
+
+            override fun handle(cmd: Command, roomId: Long) {
+                messageCount++
+                testLogger.info { "收到消息 #${messageCount}: ${cmd.cmd}" }
+                if (messageCount >= 10) {
+                    latch.countDown()
+                }
+            }
+
+            override fun supportedCommand(): KClass<Command> {
+                // 返回 Command::class 作为通配符，处理所有命令
+                return Command::class
+            }
+        }
+
         // 创建 WebSocket 客户端
         val wsClient = BiliWebSocketClient(
             hostList = hostList,
@@ -125,13 +146,7 @@ class BiliClientTest {
             token = token,
             uid = config.uid,
             buvid = config.buvid,
-            onMessage = { roomId, msg ->
-                messageCount++
-                logger.info { "收到消息 #${messageCount}: $msg" }
-                if (messageCount >= 10) {
-                    latch.countDown()
-                }
-            },
+            handlers = listOf(testHandler),
             onConnectionFailed = {
                 logger.error { "WebSocket 连接失败且无法重连" }
                 latch.countDown()

@@ -6,25 +6,48 @@
 package llh.fanclubvup.bilibili
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import llh.fanclubvup.bilibili.dm.DanmuCommandHandler
 import llh.fanclubvup.bilibili.http.BiliHttpClient
 import llh.fanclubvup.bilibili.props.BiliClientConfig
 import llh.fanclubvup.bilibili.websocket.BiliWebSocketClient
-import llh.fanclubvup.bilibili.websocket.DanmuMessage
 
 /**
  * B站客户端
  * 负责管理与 B站服务器的连接，包括获取弹幕服务器信息和建立 WebSocket 连接
  * 
+ * 采用命令分发器模式处理弹幕消息，支持复杂业务逻辑的解耦和扩展。
+ * 通过注册多个 DanmuCommandHandler，可以将不同类型的弹幕命令分发到不同的处理器。
+ * 
+ * 架构说明：
+ * 1. BiliClient 负责高层连接管理（获取弹幕服务器信息、启动 WebSocket）
+ * 2. BiliWebSocketClient 负责底层 WebSocket 通信和命令分发
+ * 3. DanmuCommandHandler 处理已解析的强类型 Command 对象
+ * 
  * @param roomId 房间 ID
  * @param config 客户端配置，包含 uid、buvid 和 cookies 等信息
+ * @param handlers 弹幕命令处理器列表，用于处理不同类型的命令
  * @param httpClient HTTP 客户端，用于获取弹幕服务器信息
- * @param onDanmuMessage 弹幕消息回调函数
+ * 
+ * 使用示例：
+ * ```kotlin
+ * val handlers = listOf(
+ *     object : DanmuCommandHandler<DanmuMsgCommand> {
+ *         override fun handle(cmd: DanmuMsgCommand, roomId: Long) {
+ *             // 直接访问 cmd.info 等字段，无需手动解析 JSON
+ *             println("收到弹幕: ${cmd.info}")
+ *         }
+ *         override fun supportedCommand() = DanmuMsgCommand::class
+ *     }
+ * )
+ * val client = BiliClient(roomId = 123456, config = config, handlers = handlers)
+ * client.start()
+ * ```
  */
 class BiliClient(
     private val roomId: Long,
     private val config: BiliClientConfig,
-    private val httpClient: BiliHttpClient = BiliHttpClient(config),
-    private val onDanmuMessage: (roomId: Long, msg: DanmuMessage) -> Unit
+    private val handlers: List<DanmuCommandHandler<*>>,
+    private val httpClient: BiliHttpClient = BiliHttpClient(config)
 ) : AutoCloseable {
     private val logger = KotlinLogging.logger {}
     private var wsClient: BiliWebSocketClient? = null
@@ -55,17 +78,19 @@ class BiliClient(
         }
 
         // 创建 WebSocket 客户端并启动连接
-        // 使用从配置中获取的 uid 和 buvid，确保认证信息正确
+        // handlers 会传递给 BiliWebSocketClient，在那里进行命令分发
         wsClient = BiliWebSocketClient(
-            hostList,
-            roomId,
-            token,
-            config.uid,
-            config.buvid,
-            onDanmuMessage
+            hostList = hostList,
+            roomId = roomId,
+            token = token,
+            uid = config.uid,
+            buvid = config.buvid,
+            handlers = handlers
         )
         wsClient?.start()
     }
+
+    fun isValid() = wsClient != null
 
     /**
      * 关闭 B站客户端

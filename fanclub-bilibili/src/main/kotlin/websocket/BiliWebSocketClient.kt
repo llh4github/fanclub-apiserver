@@ -8,6 +8,8 @@ package llh.fanclubvup.bilibili.websocket
 import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilibili.constants.ApiConstants
 import llh.fanclubvup.bilibili.dm.CommandProcessor
+import llh.fanclubvup.bilibili.dm.DanmuCommandDispatcher
+import llh.fanclubvup.bilibili.dm.DanmuCommandHandler
 import llh.fanclubvup.bilibili.dto.DanmuHost
 import llh.fanclubvup.bilibili.utils.JsonUtils
 import llh.fanclubvup.common.BID
@@ -23,12 +25,18 @@ import java.util.concurrent.atomic.AtomicInteger
  * B站 WebSocket 客户端
  * 用于与 B站 弹幕服务器建立 WebSocket 连接，接收弹幕消息
  * 
+ * 采用命令分发器模式处理弹幕消息：
+ * 1. 接收原始 WebSocket 数据包
+ * 2. 解析为 DanmuMessage
+ * 3. 使用 CommandProcessor 解析为强类型的 Command 对象
+ * 4. 通过 DanmuCommandDispatcher 分发到对应的处理器
+ * 
  * @param hostList 弹幕服务器主机列表
  * @param roomId 房间 ID
  * @param token 认证令牌
  * @param uid 用户 ID
  * @param buvid 设备 ID
- * @param onMessage 消息回调函数
+ * @param handlers 弹幕命令处理器列表，用于处理不同类型的命令
  * @param onConnectionFailed 连接失败回调函数
  */
 class BiliWebSocketClient(
@@ -37,7 +45,7 @@ class BiliWebSocketClient(
     private val token: String,
     private val uid: BID = -1L,
     private val buvid: String = "",
-    private val onMessage: (roomId: Long, msg: DanmuMessage) -> Unit,
+    handlers: List<DanmuCommandHandler<*>>,
     private val onConnectionFailed: () -> Unit = {}
 ) : AutoCloseable {
     private val logger = KotlinLogging.logger {}
@@ -80,6 +88,12 @@ class BiliWebSocketClient(
      * 使用项目统一的 JsonUtils.mapper，确保配置一致
      */
     private val mapper = JsonUtils.mapper
+
+    /**
+     * 弹幕命令分发器
+     * 根据命令类型将已解析的 Command 对象分发到对应的处理器
+     */
+    private val dispatcher = DanmuCommandDispatcher(handlers)
 
     /**
      * 连接到 B站 弹幕服务器
@@ -162,17 +176,16 @@ class BiliWebSocketClient(
                     // 解析数据包，处理消息
                     val list = parsePacket(bytes, roomId)
                     list.forEach { msg ->
-                        logger.info { "解析到消息: $msg" }
+                        logger.debug { "解析到消息: ${msg.cmd}" }
 
                         // 检查消息是否在3秒内已处理过
                         if (!MessageDeduplicationCache.isDuplicate(msg.rawData)) {
-                            // 使用 CommandProcessor 解析消息
+                            // 使用 CommandProcessor 解析消息为强类型 Command 对象
                             val command = CommandProcessor.parseCommand(msg.rawData)
                             if (command != null) {
-                                logger.info { "解析到命令: ${command.cmd}" }
-                                // 这里可以根据命令类型进行不同的处理
-                                // 目前仍然调用 onMessage 回调，保持兼容性
-                                onMessage(roomId, msg)
+                                logger.debug { "解析到命令: ${command.cmd}" }
+                                // 通过分发器将命令分发到对应的处理器
+                                dispatcher.dispatch(command, roomId)
                             }
                         } else {
                             logger.debug { "消息已处理过，跳过: ${msg.cmd}" }

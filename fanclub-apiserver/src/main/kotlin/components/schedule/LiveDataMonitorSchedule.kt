@@ -58,10 +58,9 @@ class LiveDataMonitorSchedule(
             return
         }
         val anchorRoomId = info.anchorInfo.roomId
-        val client = BiliClient(anchorRoomId, cookies) { roomId, msg ->
-            biliDanmuDataStats.handle(roomId, msg)
-        }
-        if (client.start()) {
+        val client = BiliClient(anchorRoomId, cookies, listOf())
+        client.start()
+        if (client.isValid()) {
             roomClientMap[anchorRoomId] = client
         } else {
             logger.error { "roomId $anchorRoomId 弹幕WS连接失败" }
