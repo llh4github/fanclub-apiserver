@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit
  * @param config 客户端配置，包含 cookies 等信息
  * @param enableLogging 是否启用日志
  */
-class BiliHttpClient(config: BiliClientConfig? = null, enableLogging: Boolean = true) {
+class BiliHttpClient(config: BiliClientConfig? = null, enableLogging: Boolean = false) {
     private val logger = KotlinLogging.logger {}
     
     /**
