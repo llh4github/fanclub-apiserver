@@ -125,7 +125,7 @@ class BiliClientTest {
             token = token,
             uid = config.uid,
             buvid = config.buvid,
-            onMessage = { msg ->
+            onMessage = { roomId, msg ->
                 messageCount++
                 logger.info { "收到消息 #${messageCount}: $msg" }
                 if (messageCount >= 10) {
