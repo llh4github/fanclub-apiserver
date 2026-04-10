@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotEmpty
 import llh.fanclubvup.apiserver.entity.BaseEntity
 import llh.fanclubvup.apiserver.utils.CreateGroup
+import llh.fanclubvup.common.BID
 import okhttp3.Cookie
 import org.babyfish.jimmer.sql.Entity
 import org.babyfish.jimmer.sql.Table
@@ -17,6 +18,10 @@ import org.hibernate.validator.constraints.Length
 @Entity
 @Table(name = "sys_scraper_cookie")
 interface ScraperCookie : BaseEntity {
+
+    @get:Schema(title = "cookie值所属用户", description = "cookie值所属用户ID", example = "114514")
+    val uid: BID
+
     @get:NotEmpty(groups = [CreateGroup::class], message = "Cookie 名称不能为空")
     @get:Length(
         max = 50,
