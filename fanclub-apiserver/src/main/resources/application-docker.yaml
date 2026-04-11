@@ -26,8 +26,14 @@ spring:
       api-key: ${ARK_API_KEY}
       chat:
         options:
-          model: doubao-seed-2-0-pro-260215
+          # 只有这个模型支持结构化输出
+          model: doubao-seed-1-6-251015
         completions-path: /chat/completions
+    chat:
+      client:
+        observations:
+          log-completion: true
+          log-prompt: true
 
 jimmer:
   language: kotlin
@@ -39,7 +45,9 @@ jimmer:
 logging:
   level:
     llh: debug
+#    org.springframework.ai.chat.client.advisor: debug
 #    org.springframework.ai: DEBUG
+#    org.springframework.web.client: DEBUG
     org.springframework.web: DEBUG
 
 springdoc:
