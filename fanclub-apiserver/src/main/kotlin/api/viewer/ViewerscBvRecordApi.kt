@@ -36,7 +36,7 @@ class ViewerScBvRecordApi(
     @PublicAccessUrl
     @Operation(summary = "SC点播BV号数量统计")
     @PostMapping("/count")
-    fun a(@RequestBody @Validated spec: ViewerScBvCountSpec) =
+    fun bvCount(@RequestBody @Validated spec: ViewerScBvCountSpec) =
         JsonWrapper.ok(
             service.bvCount(spec)
         )
