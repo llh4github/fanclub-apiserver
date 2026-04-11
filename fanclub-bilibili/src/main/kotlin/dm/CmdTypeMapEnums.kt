@@ -44,9 +44,15 @@ enum class CmdTypeMapEnums(val cmd: String, val clazz: KClass<out Command>) {
     ONLINE_RANK_COUNT("ONLINE_RANK_COUNT", OnlineRankCountCommand::class),
 
     /**
+     * 房间实时消息更新
+     */
+    ROOM_REAL_TIME_MESSAGE_UPDATE("ROOM_REAL_TIME_MESSAGE_UPDATE", RoomRealTimeMessageUpdateCommand::class),
+
+    /**
      * 直播准备
      */
     PREPARING("PREPARING", PreparingCommand::class),
+
     /**
      * 用户开通大航海 V2
      */
