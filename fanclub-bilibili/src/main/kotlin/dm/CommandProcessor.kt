@@ -21,6 +21,7 @@ object CommandProcessor {
      */
     private val shouldIgnoreCommands = setOf(
         "ENTRY_EFFECT", // 进场通知
+        "USER_TOAST_MSG", // 用户开通大航海，现在用v2版
         "WIDGET_BANNER", "WATCHED_CHANGE", "NOTICE_MSG",
         "RANK_CHANGED_V2", "DM_INTERACTION", "INTERACT_WORD_V2",
         "LIVE_PANEL_CHANGE_CONTENT", "LIKE_INFO_V3_CLICK",
