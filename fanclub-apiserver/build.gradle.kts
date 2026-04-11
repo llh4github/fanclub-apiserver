@@ -5,6 +5,7 @@
 
 import java.time.Instant
 
+val springAiVersion by extra("2.0.0-M4")
 plugins {
     kotlin("jvm")
     kotlin("plugin.spring")
@@ -26,14 +27,18 @@ configurations {
 }
 
 dependencies {
+    ksp(libs.jimmer.ksp)
+    ksp(project(":fanclub-ksp"))
+
+    implementation(libs.jsoup)
     implementation(libs.oshai)
     implementation(libs.classgraph)
     implementation(libs.springdoc.ui)
     implementation(libs.yitter.idgenerator)
-    implementation(project(":fanclub-bilisdk"))
+    implementation(project(":fanclub-bilibili"))
+//    implementation(project(":fanclub-bilisdk"))
     implementation(project(":fanclub-common"))
     implementation(project(":fanclub-ksp"))
-    ksp(project(":fanclub-ksp"))
     implementation(libs.bundles.jjwt)
 
     implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -48,7 +53,6 @@ dependencies {
     implementation(libs.ehcahe)
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
-    ksp(libs.jimmer.ksp)
     implementation(libs.jimmer.springboot)
     implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation("org.flywaydb:flyway-core")
@@ -64,6 +68,11 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     runtimeOnly("org.springframework.boot:spring-boot-docker-compose")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.ai:spring-ai-bom:$springAiVersion")
+    }
 }
 // 配置 KSP (如果有)
 ksp {

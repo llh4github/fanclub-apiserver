@@ -15,6 +15,7 @@ import llh.fanclubvup.apiserver.service.BaseDatabaseServiceImpl
 import llh.fanclubvup.apiserver.service.anchor.AnchorFollowerNumService
 import llh.fanclubvup.common.BID
 import org.babyfish.jimmer.sql.kt.KSqlClient
+import org.babyfish.jimmer.sql.kt.ast.expression.desc
 import org.babyfish.jimmer.sql.kt.ast.expression.eq
 import org.babyfish.jimmer.sql.kt.ast.expression.lt
 import org.springframework.cache.annotation.Cacheable
@@ -47,6 +48,7 @@ class AnchorFollowerNumServiceImpl(
             Duration.ofHours(24)
         ) {
             createQuery {
+                orderBy(table.cntDate.desc())
                 where(table.biliId.eq(biliId))
                 where(table.cntDate.lt(cntDate))
                 select(table.fetch(AnchorFollowerDateNum::class))

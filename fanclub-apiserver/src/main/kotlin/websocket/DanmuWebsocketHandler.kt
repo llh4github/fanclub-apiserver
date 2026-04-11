@@ -20,37 +20,37 @@ class DanmuWebsocketHandler : TextWebSocketHandler() {
 
     private val logger = KotlinLogging.logger {}
     override fun afterConnectionEstablished(session: WebSocketSession) {
-        // 从 session 属性中获取 uid (已在拦截器中设置)
-        val uid = session.attributes["uid"]?.toString()?.toLong()
-        if (uid != null) {
-            logger.info { "WebSocket 连接建立，uid=$uid, sessionId=${session.id}" }
+        // 从 session 属性中获取 roomId (已在拦截器中设置)
+        val roomId = session.attributes["roomId"]?.toString()?.toLong()
+        if (roomId != null) {
+            logger.info { "WebSocket 连接建立，roomId=$roomId, sessionId=${session.id}" }
             sessions.add(session)
         } else {
-            logger.warn { "WebSocket 连接缺少 uid 参数，sessionId=${session.id}" }
+            logger.warn { "WebSocket 连接缺少 roomId 参数，sessionId=${session.id}" }
         }
     }
 
     fun sendDanmu(msg: DanmuWsMsg) {
-        val targetId = msg.targetUID
+        val targetId = msg.roomId
         val json = """
             {"level":${msg.level},"content":"${msg.content}"}
         """.trimIndent()
         val packet = TextMessage(json)
         sessions.forEach { session ->
-            if (session.attributes["uid"] != targetId) {
+            if (session.attributes["roomId"] != targetId) {
                 return@forEach
             }
             try {
                 session.sendMessage(packet)
             } catch (e: Exception) {
-                logger.error(e) { "发送弹幕消息失败，uid=${session.attributes["uid"]}, sessionId=${session.id}" }
+                logger.error(e) { "发送弹幕消息失败，uid=${session.attributes["roomId"]}, sessionId=${session.id}" }
             }
         }
     }
 
     override fun afterConnectionClosed(session: WebSocketSession, status: CloseStatus) {
-        val uid = session.attributes["uid"]
-        logger.info { "WebSocket 连接关闭，uid=$uid, sessionId=${session.id}, status=$status" }
+        val roomId = session.attributes["roomId"]
+        logger.info { "WebSocket 连接关闭，roomId=$roomId, sessionId=${session.id}, status=$status" }
         sessions.remove(session)
     }
 

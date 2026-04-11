@@ -5,7 +5,7 @@
 
 package llh.fanclubvup.apiserver.components
 
-import llh.fanclubvup.apiserver.consts.CacheKeyPrefix
+import llh.fanclubvup.common.consts.CacheKeyPrefix
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

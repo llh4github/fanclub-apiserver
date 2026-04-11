@@ -1,0 +1,12 @@
+export llh.fanclubvup.apiserver.entity.sys.ScraperWsAuth
+    -> package llh.fanclubvup.apiserver.entity.sys.dto
+
+@io.swagger.v3.oas.annotations.media.Schema(title = "数据分页查询请求体")
+specification ScraperWsAuthQuerySpec {
+    pageParam: llh.fanclubvup.apiserver.dto.PageQueryRequest
+}
+
+@io.swagger.v3.oas.annotations.media.Schema(title = "分页查询结果数据")
+ScraperWsAuthPageView {
+    #allScalars
+}

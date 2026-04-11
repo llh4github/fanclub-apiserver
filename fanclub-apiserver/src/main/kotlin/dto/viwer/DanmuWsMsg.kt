@@ -5,12 +5,18 @@
 
 package llh.fanclubvup.apiserver.dto.viwer
 
-import llh.fanclubvup.common.BID
 
-
+/**
+ * 弹幕消息
+ *
+ * @param sender 发送者
+ * @param content 内容
+ * @param roomId 房间ID
+ * @param level 等级
+ */
 data class DanmuWsMsg(
     val sender: String,
     val content: String,
-    val targetUID: BID,
+    val roomId: Long,
     val level: Int,
 )

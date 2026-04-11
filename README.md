@@ -57,7 +57,7 @@ fanclub-vup/
 
 ### 构建工具
 
-- **Gradle**: 9.3.1
+- **Gradle**: 9.4.1
 - **KSP**: 2.3.5 (Kotlin Symbol Processing)
 
 ## 🗄️ 外部服务依赖

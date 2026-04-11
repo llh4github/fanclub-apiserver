@@ -6,7 +6,7 @@
 package llh.fanclubvup.apiserver
 
 import io.github.classgraph.ClassGraph
-import llh.fanclubvup.bilisdk.dto.SerializableCookie
+import llh.fanclubvup.bilibili.dto.SerializableCookie
 import org.springframework.aot.hint.MemberCategory
 import org.springframework.aot.hint.RuntimeHints
 import org.springframework.aot.hint.RuntimeHintsRegistrar

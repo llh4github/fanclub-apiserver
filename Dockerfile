@@ -1,5 +1,5 @@
 # 构建阶段
-FROM gradle:9.3.1-jdk25-graal-noble AS builder
+FROM gradle:9.4.1-jdk25-graal-noble AS builder
 WORKDIR /app
 COPY .. .
 
