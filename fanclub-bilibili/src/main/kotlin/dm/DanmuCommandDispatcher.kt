@@ -76,7 +76,7 @@ class DanmuCommandDispatcher(
                 logger.error(e) { "处理命令失败: cmd=${cmd.cmd}, roomId=$roomId" }
             }
         } else {
-            logger.warn { "未找到命令处理器: ${cmd::class.simpleName} (cmd=${cmd.cmd})" }
+            logger.debug { "未找到命令处理器: ${cmd::class.simpleName} (cmd=${cmd.cmd})" }
         }
     }
 }
