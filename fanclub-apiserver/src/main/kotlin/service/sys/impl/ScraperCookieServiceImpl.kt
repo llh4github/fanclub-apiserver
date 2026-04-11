@@ -52,6 +52,7 @@ class ScraperCookieServiceImpl(
             return null
         }
 
+        logger.info { "使用 $uid 的cookies数据" }
         val cookies = list.map { SerializableCookie(it.name, it.value, it.domain) }.toList()
         return BiliClientConfig(uid, buvid, cookies)
     }
