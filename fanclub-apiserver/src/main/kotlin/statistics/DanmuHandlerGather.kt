@@ -16,6 +16,7 @@ class DanmuHandlerGather(
     preparingCommandHandler: PreparingCommandHandler,
     superChatCommandHandler: SuperChatCommandHandler,
     superChatMessageJpnCommandHandler: SuperChatMessageJpnCommandHandler,
+    userToastMsgV2CommandHandler: UserToastMsgV2CommandHandler,
 ) {
     val handlers = listOf<DanmuCommandHandler<*>>(
         danmuMsgCommandHandler,
@@ -23,5 +24,6 @@ class DanmuHandlerGather(
         preparingCommandHandler,
         superChatCommandHandler,
         superChatMessageJpnCommandHandler,
+        userToastMsgV2CommandHandler,
     )
 }
