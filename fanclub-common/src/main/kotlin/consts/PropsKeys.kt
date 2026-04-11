@@ -10,4 +10,9 @@ object PropsKeys {
     const val BILI_SDK_PROP_KEY = "${APP_PROP_KEY}.bili.live"
     const val BILI_SCRAPER_PROP_KEY = "${APP_PROP_KEY}.bili.scraper"
     const val BILI_CLIENT_PROP_KEY = "${APP_PROP_KEY}.bili.client"
+
+    /**
+     * LIKO B站带有日程安排的动态链接
+     */
+    const val BILI_DYN_SCHEDULER_LIKO = "${APP_PROP_KEY}.bili.dyn.scheduler.liko"
 }

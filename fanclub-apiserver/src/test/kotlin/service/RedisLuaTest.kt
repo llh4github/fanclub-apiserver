@@ -46,4 +46,12 @@ class RedisLuaTest {
         val deleted = redisTemplate.execute(deleteByPattern, keys, "")
         assertEquals(size + 1, deleted.toInt())
     }
+
+    @Test
+    fun test_set() {
+        val a = redisTemplate.opsForSet().isMember("test-set", "123", "456")
+        println(a)
+        val b = redisTemplate.opsForSet().isMember("test-set", "123", "456")
+        println(b)
+    }
 }

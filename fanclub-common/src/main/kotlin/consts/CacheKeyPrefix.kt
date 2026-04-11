@@ -13,6 +13,7 @@ object CacheKeyPrefix {
 
     const val SERVICE_CACHE_KEY = "${APP_NAME}-service-layer:"
 
+    const val DYN_IMG_SET_LIKO = "${APP_NAME}:dyn-img-set:liko"
     /**
      * 弹幕统计缓存 key
      */

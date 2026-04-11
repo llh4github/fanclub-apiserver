@@ -58,4 +58,26 @@ object LocalDateTimeUtil {
     fun dayOfEnd(date: LocalDateTime): LocalDateTime {
         return date.withHour(23).withMinute(59).withSecond(59).withNano(999999999)
     }
+
+    /**
+     * 获取指定日期所在周的周一和周日
+     *
+     * @param date 输入日期
+     * @return Pair<周一零点, 周日结束时间>，两个 LocalDateTime 对象
+     */
+    fun weekRange(date: LocalDate): Pair<LocalDateTime, LocalDateTime> {
+        val monday = LocalDateTime.of(date.with(DayOfWeek.MONDAY), ZERO_TIME)
+        val sunday = LocalDateTime.of(date.with(DayOfWeek.SUNDAY), END_TIME)
+        return Pair(monday, sunday)
+    }
+
+    /**
+     * 获取指定日期所在周的周一和周日
+     *
+     * @param date 输入日期时间
+     * @return Pair<周一零点, 周日结束时间>，两个 LocalDateTime 对象
+     */
+    fun weekRange(date: LocalDateTime): Pair<LocalDateTime, LocalDateTime> {
+        return weekRange(date.toLocalDate())
+    }
 }
