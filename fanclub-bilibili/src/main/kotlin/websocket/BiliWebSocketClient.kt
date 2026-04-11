@@ -46,7 +46,7 @@ class BiliWebSocketClient(
     private val uid: BID = -1L,
     private val buvid: String = "",
     handlers: List<DanmuCommandHandler<*>>,
-    private val onConnectionFailed: () -> Unit = {}
+    private val onConnectionFailed: (roomId: Long) -> Unit = {}
 ) : AutoCloseable {
     private val logger = KotlinLogging.logger {}
 
@@ -153,7 +153,7 @@ class BiliWebSocketClient(
         if (currentRetry > maxRetryCount) {
             // 重连次数超过限制，调用失败回调
             close()
-            onConnectionFailed()
+            onConnectionFailed(roomId)
             return
         }
         // 延迟 2 秒后重连

@@ -13,8 +13,9 @@ import llh.fanclubvup.apiserver.service.sys.ScraperCookieService
 import llh.fanclubvup.apiserver.service.sys.ScraperFeatureService
 import llh.fanclubvup.apiserver.statistics.DanmuHandlerGather
 import llh.fanclubvup.bilibili.BiliClient
-import llh.fanclubvup.bilisdk.event.DanmuWsFailedEvent
+import llh.fanclubvup.bilibili.events.DanmuWsFailedEvent
 import org.springframework.boot.context.event.ApplicationStartedEvent
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -30,6 +31,7 @@ class LiveDataMonitorSchedule(
     private val liveDurationService: AnchorLiveDurationService,
     private val scraperCookieService: ScraperCookieService,
     private val danmuHandlerGather: DanmuHandlerGather,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -52,7 +54,9 @@ class LiveDataMonitorSchedule(
             return
         }
         val anchorRoomId = info.anchorInfo.roomId
-        val client = BiliClient(anchorRoomId, cookies, danmuHandlerGather.handlers)
+        val client = BiliClient(anchorRoomId, cookies, danmuHandlerGather.handlers) { roomId ->
+            eventPublisher.publishEvent(DanmuWsFailedEvent(roomId))
+        }
         client.start()
         if (client.isValid()) {
             roomClientMap[anchorRoomId] = client

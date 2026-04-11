@@ -27,6 +27,7 @@ import llh.fanclubvup.bilibili.websocket.BiliWebSocketClient
  * @param config 客户端配置，包含 uid、buvid 和 cookies 等信息
  * @param handlers 弹幕命令处理器列表，用于处理不同类型的命令
  * @param httpClient HTTP 客户端，用于获取弹幕服务器信息
+ * @param onConnectionFailed 连接失败回调，用于处理连接失败的情况
  * 
  * 使用示例：
  * ```kotlin
@@ -47,7 +48,8 @@ class BiliClient(
     private val roomId: Long,
     private val config: BiliClientConfig,
     private val handlers: List<DanmuCommandHandler<*>>,
-    private val httpClient: BiliHttpClient = BiliHttpClient(config)
+    private val httpClient: BiliHttpClient = BiliHttpClient(config),
+    private val onConnectionFailed: (roomId: Long) -> Unit = {}
 ) : AutoCloseable {
     private val logger = KotlinLogging.logger {}
     private var wsClient: BiliWebSocketClient? = null
@@ -85,7 +87,8 @@ class BiliClient(
             token = token,
             uid = config.uid,
             buvid = config.buvid,
-            handlers = handlers
+            handlers = handlers,
+            onConnectionFailed = onConnectionFailed
         )
         wsClient?.start()
     }

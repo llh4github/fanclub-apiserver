@@ -36,7 +36,7 @@ dependencies {
     implementation(libs.springdoc.ui)
     implementation(libs.yitter.idgenerator)
     implementation(project(":fanclub-bilibili"))
-    implementation(project(":fanclub-bilisdk"))
+//    implementation(project(":fanclub-bilisdk"))
     implementation(project(":fanclub-common"))
     implementation(project(":fanclub-ksp"))
     implementation(libs.bundles.jjwt)

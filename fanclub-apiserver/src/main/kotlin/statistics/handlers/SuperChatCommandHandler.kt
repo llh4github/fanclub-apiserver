@@ -10,7 +10,7 @@ import llh.fanclubvup.apiserver.entity.viewer.dto.ViewerScBvAddInput
 import llh.fanclubvup.apiserver.service.viewer.ViewerScBvRecordService
 import llh.fanclubvup.bilibili.dm.DanmuCommandHandler
 import llh.fanclubvup.bilibili.dm.cmd.SuperChatCommand
-import llh.fanclubvup.bilisdk.utils.BvUtil
+import llh.fanclubvup.bilibili.utils.BvUtil
 import llh.fanclubvup.common.utils.LocalDateTimeUtil
 import llh.fanclubvup.ksp.generated.ViewerScBvRecordServiceCacheHelper
 import org.springframework.stereotype.Component

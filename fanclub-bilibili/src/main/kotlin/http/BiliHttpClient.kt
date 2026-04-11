@@ -9,6 +9,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.bilibili.constants.ApiConstants
 import llh.fanclubvup.bilibili.dto.BiliBaseResponse
 import llh.fanclubvup.bilibili.dto.DanmuInfoResponse
+import llh.fanclubvup.bilibili.dto.UserRelationResponse
 import llh.fanclubvup.bilibili.dto.WbiInfoResponse
 import llh.fanclubvup.bilibili.exception.BiliApiException
 import llh.fanclubvup.bilibili.exception.BiliException
@@ -16,6 +17,7 @@ import llh.fanclubvup.bilibili.props.BiliClientConfig
 import llh.fanclubvup.bilibili.utils.JsonUtils
 import llh.fanclubvup.bilibili.wbi.buildQueryString
 import llh.fanclubvup.bilibili.wbi.wbiSign
+import llh.fanclubvup.common.BID
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
@@ -142,4 +144,22 @@ class BiliHttpClient(config: BiliClientConfig? = null, enableLogging: Boolean = 
         val url = "${ApiConstants.DANMAKU_SERVER_CONF_URL}?$queryString"
         return executeGet(url, DanmuInfoResponse::class.java)
     }
+
+    /**
+     * 获取用户关系数据：关注的数量，粉丝数量
+     * 
+     * @param uId B站用户UID
+     * @return 用户关系数据
+     */
+    fun fetchUserRelation(uId: BID): Result<UserRelationResponse?> {
+        // 获取 WBI 签名
+        val sign = getWbiSign().getOrElse { return Result.failure(it) }
+        // 构建请求参数
+        val params = TreeMap<String, String>().apply { put("vmid", uId.toString()) }
+        // 构建查询字符串
+        val queryString = buildQueryString(params, sign)
+        val url = "${ApiConstants.USER_RELATION_STAT_API}?$queryString"
+        return executeGet(url, UserRelationResponse::class.java)
+    }
+
 }
