@@ -39,9 +39,17 @@ enum class CmdTypeMapEnums(val cmd: String, val clazz: KClass<out Command>) {
     LIVE("LIVE", LiveCommand::class),
 
     /**
+     * 同接数
+     */
+    ONLINE_RANK_COUNT("ONLINE_RANK_COUNT", OnlineRankCountCommand::class),
+
+    /**
      * 直播准备
      */
     PREPARING("PREPARING", PreparingCommand::class),
+    /**
+     * 用户开通大航海 V2
+     */
     UserToastMsgV2("USER_TOAST_MSG_V2", UserToastMsgV2Command::class)
     ;
 
