@@ -41,6 +41,8 @@ dependencies {
     implementation(project(":fanclub-ksp"))
     implementation(libs.bundles.jjwt)
 
+    implementation("org.springframework.ai:spring-ai-starter-model-openai")
+
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
