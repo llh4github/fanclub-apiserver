@@ -20,6 +20,14 @@ spring:
       file: compose.yaml
       enabled: true
       lifecycle-management: ${DOCKER_LIFECYCLE:start_only}
+  ai:
+    openai:
+      base-url: https://ark.cn-beijing.volces.com/api/v3
+      api-key: ${ARK_API_KEY}
+      chat:
+        options:
+          model: doubao-seed-2-0-pro-260215
+        completions-path: /chat/completions
 
 jimmer:
   language: kotlin
@@ -31,6 +39,7 @@ jimmer:
 logging:
   level:
     llh: debug
+#    org.springframework.ai: DEBUG
     org.springframework.web: DEBUG
 
 springdoc:
