@@ -5,12 +5,14 @@
 
 package llh.fanclubvup.bilibili.dm.cmd
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
  * 礼物消息命令
  * 用于解析 "SEND_GIFT" 类型的命令
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class SendGiftCommand(
     /**
      * 命令类型

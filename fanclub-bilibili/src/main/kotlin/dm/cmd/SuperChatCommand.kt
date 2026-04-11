@@ -5,12 +5,14 @@
 
 package llh.fanclubvup.bilibili.dm.cmd
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
  * 超级留言命令
  * 用于解析 "SUPER_CHAT_MESSAGE" 类型的命令
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class SuperChatCommand(
     /**
      * 命令类型

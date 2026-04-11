@@ -5,12 +5,14 @@
 
 package llh.fanclubvup.bilibili.dm.cmd
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
  * 舰长购买命令
  * 用于解析 "GUARD_BUY" 类型的命令
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class GuardBuyCommand(
     /**
      * 命令类型

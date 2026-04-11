@@ -15,7 +15,7 @@ import llh.fanclubvup.bilibili.utils.JsonUtils
  */
 object CommandProcessor {
     private val logger = KotlinLogging.logger {}
-    
+
     /**
      * 应当忽略的命令类型
      */
@@ -25,7 +25,7 @@ object CommandProcessor {
         "LIVE_PANEL_CHANGE_CONTENT", "LIKE_INFO_V3_CLICK",
         "LIKE_INFO_V3_UPDATE", "INTERACT_WORD", "ONLINE_RANK_V3",
         "TRADING_SCORE", "COMMON_NOTICE_DANMAKU", "STOP_LIVE_ROOM_LIST",
-        "RANK_CHANGED", "POPULAR_RANK_CHANGED"
+        "RANK_CHANGED", "POPULAR_RANK_CHANGED", "_HEARTBEAT"
     )
 
     /**
@@ -51,7 +51,7 @@ object CommandProcessor {
 
             val cmdType = commandTypeMap[cmd]
             if (cmdType == null) {
-                logger.warn { "找不到对应的命令类型: $cmd" }
+                logger.warn { "找不到对应的命令类型: $cmd,json:\n$json" }
                 return null
             }
 

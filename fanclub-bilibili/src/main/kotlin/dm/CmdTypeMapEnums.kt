@@ -41,7 +41,8 @@ enum class CmdTypeMapEnums(val cmd: String, val clazz: KClass<out Command>) {
     /**
      * 直播准备
      */
-    PREPARING("PREPARING", PreparingCommand::class)
+    PREPARING("PREPARING", PreparingCommand::class),
+    UserToastMsgV2("USER_TOAST_MSG_V2", UserToastMsgV2Command::class)
     ;
 
     companion object {

@@ -5,10 +5,13 @@
 
 package llh.fanclubvup.bilibili.dm.cmd
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+
 /**
  * 弹幕消息命令
  * 用于解析 "DANMU_MSG" 类型的命令
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class DanmuMsgCommand(
     /**
      * 命令类型
