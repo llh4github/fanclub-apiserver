@@ -13,23 +13,28 @@ plugins {
 description = "fanclub-bilibili"
 
 dependencies {
-    implementation(project(":fanclub-common"))
+    compileOnly(project(":fanclub-common"))
+    testImplementation(project(":fanclub-common"))
 
     implementation(libs.ehcahe)
 
     // HTTP Client & WebSocket (okhttp-brotli 已包含 Brotli 解码支持)
     implementation(platform(libs.okhttp.bom))
-    implementation("com.squareup.okhttp3:okhttp")
+    compileOnly("com.squareup.okhttp3:okhttp")
+    testImplementation("com.squareup.okhttp3:okhttp")
     implementation("com.squareup.okhttp3:okhttp-brotli")
     implementation("com.squareup.okhttp3:logging-interceptor")
 
 
-    implementation("org.springframework.boot:spring-boot-starter")
+    compileOnly("org.springframework.boot:spring-boot-starter")
+    testImplementation("org.springframework.boot:spring-boot-starter")
     // JSON
-    implementation("tools.jackson.module:jackson-module-kotlin")
+    compileOnly("tools.jackson.module:jackson-module-kotlin")
+    testImplementation("tools.jackson.module:jackson-module-kotlin")
 
     // Logging
-    implementation(libs.oshai)
+    compileOnly(libs.oshai)
+    testImplementation(libs.oshai)
     testImplementation(libs.slf4j.simple)
 
     // Test
