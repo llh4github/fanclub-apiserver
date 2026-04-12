@@ -29,6 +29,11 @@ enum class CmdTypeMapEnums(val cmd: String, val clazz: KClass<out Command>) {
     SUPER_CHAT_MESSAGE("SUPER_CHAT_MESSAGE", SuperChatCommand::class),
 
     /**
+     * 留言JPN
+     */
+    SUPER_CHAT_MESSAGE_JPN("SUPER_CHAT_MESSAGE_JPN", SuperChatMessageJpnCommand::class),
+
+    /**
      * 舰长购买
      */
     GUARD_BUY("GUARD_BUY", GuardBuyCommand::class),
