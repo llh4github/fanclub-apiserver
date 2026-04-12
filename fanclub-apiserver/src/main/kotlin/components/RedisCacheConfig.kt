@@ -5,6 +5,7 @@
 
 package llh.fanclubvup.apiserver.components
 
+import llh.fanclubvup.apiserver.utils.JsonUtils
 import llh.fanclubvup.common.consts.CacheKeyPrefix
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
@@ -18,7 +19,6 @@ import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializ
 import org.springframework.data.redis.serializer.RedisSerializationContext
 import org.springframework.data.redis.serializer.StringRedisSerializer
 import org.springframework.scripting.support.ResourceScriptSource
-import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.time.Duration
 
 
@@ -26,7 +26,7 @@ import java.time.Duration
 @Configuration
 class RedisCacheConfig {
 
-    private val mapper = jacksonObjectMapper()
+    private val mapper = JsonUtils.mapper
 
     @Bean
     fun cacheManager(factory: RedisConnectionFactory): RedisCacheManager {

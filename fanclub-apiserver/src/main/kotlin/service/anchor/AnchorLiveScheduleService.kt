@@ -7,6 +7,8 @@ package llh.fanclubvup.apiserver.service.anchor
 
 import llh.fanclubvup.apiserver.entity.anchor.AnchorLiveSchedule
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveScheduleAddInput
+import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveScheduleItemView
+import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveWeekScheduleSpec
 import llh.fanclubvup.apiserver.service.BaseDatabaseService
 import llh.fanclubvup.common.BID
 import java.time.LocalDate
@@ -19,4 +21,9 @@ interface AnchorLiveScheduleService : BaseDatabaseService<AnchorLiveSchedule> {
      * 判断指定房间的指定周是否有日程
      */
     fun hasSchedule(bId: BID, targetWeek: LocalDate): Boolean
+
+    /**
+     * 查询指定周的日程
+     */
+    fun queryWeekSchedule(spec: AnchorLiveWeekScheduleSpec): List<AnchorLiveScheduleItemView>
 }

@@ -8,12 +8,16 @@ package llh.fanclubvup.apiserver.service.anchor.impl
 import llh.fanclubvup.apiserver.entity.anchor.AnchorLiveSchedule
 import llh.fanclubvup.apiserver.entity.anchor.bid
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveScheduleAddInput
+import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveScheduleItemView
+import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveWeekScheduleSpec
 import llh.fanclubvup.apiserver.entity.anchor.id
 import llh.fanclubvup.apiserver.entity.anchor.startTime
 import llh.fanclubvup.apiserver.service.BaseDatabaseServiceImpl
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveScheduleService
 import llh.fanclubvup.common.BID
 import llh.fanclubvup.common.utils.LocalDateTimeUtil
+import llh.fanclubvup.ksp.annon.CacheNameGen
+import llh.fanclubvup.ksp.generated.AnchorLiveScheduleServiceCacheHelper
 import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.babyfish.jimmer.sql.kt.ast.expression.between
@@ -26,10 +30,26 @@ class AnchorLiveScheduleServiceImpl(
     sqlClient: KSqlClient,
 ) : AnchorLiveScheduleService,
     BaseDatabaseServiceImpl<AnchorLiveSchedule>(AnchorLiveSchedule::class, sqlClient) {
+    @CacheNameGen
+    override fun queryWeekSchedule(spec: AnchorLiveWeekScheduleSpec): List<AnchorLiveScheduleItemView> {
+        val key =
+            "${AnchorLiveScheduleServiceCacheHelper.QUERY_WEEK_SCHEDULE_CACHE_PREFIX}:${spec.bid}:${spec.week}"
+        return cacheData(
+            key,
+            AnchorLiveScheduleServiceCacheHelper.QueryWeekScheduleTypeRef,
+        ) {
+            val range = LocalDateTimeUtil.weekRange(spec.week)
+            createQuery {
+                where(table.bid.eq(spec.bid))
+                where(table.startTime.between(range.first, range.second))
+                select(table.fetch(AnchorLiveScheduleItemView::class))
+            }.execute()
+        } ?: emptyList()
+    }
 
     override fun saveList(input: List<AnchorLiveScheduleAddInput>): Int {
         return sqlClient.transaction {
-            val rs = sqlClient.saveInputs(input){
+            val rs = sqlClient.saveInputs(input) {
                 setMode(SaveMode.INSERT_ONLY)
             }
             rs.totalAffectedRowCount

@@ -14,6 +14,7 @@ import llh.fanclubvup.bilibili.constants.ApiConstants
 import llh.fanclubvup.common.consts.CacheKeyPrefix
 import llh.fanclubvup.common.consts.DatetimeConstant
 import llh.fanclubvup.common.consts.PropsKeys.BILI_DYN_SCHEDULER_LIKO
+import llh.fanclubvup.ksp.generated.AnchorLiveScheduleServiceCacheHelper
 import org.jsoup.Jsoup
 import org.springframework.ai.chat.messages.UserMessage
 import org.springframework.ai.chat.prompt.Prompt
@@ -22,8 +23,11 @@ import org.springframework.ai.converter.BeanOutputConverter
 import org.springframework.ai.openai.OpenAiChatModel
 import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.ai.openai.api.ResponseFormat
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.StringRedisTemplate
+import org.springframework.data.redis.core.script.DefaultRedisScript
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import org.springframework.util.MimeTypeUtils
@@ -42,6 +46,10 @@ class AnchorLiveScheduleTask(
     private val chatModel: OpenAiChatModel,
 ) {
     private val logger = KotlinLogging.logger { }
+
+    @Autowired
+    @Qualifier("deleteByPattern")
+    private lateinit var deleteByPattern: DefaultRedisScript<Long>
 
     /**
      * 解析日程数据属于BID
@@ -78,6 +86,11 @@ class AnchorLiveScheduleTask(
         }
 
         parseAndSaveSchedule()
+
+        val key =
+            "${AnchorLiveScheduleServiceCacheHelper.QUERY_WEEK_SCHEDULE_CACHE_PREFIX}:${belongBid}:*"
+        val deleted = redisTemplate.execute(deleteByPattern, listOf(key), "")
+        logger.info { "删除缓存 $deleted 条数据, key: $key" }
     }
 
     /**
