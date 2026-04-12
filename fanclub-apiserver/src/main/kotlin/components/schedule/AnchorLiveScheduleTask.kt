@@ -65,11 +65,12 @@ class AnchorLiveScheduleTask(
     分析图片中的日程信息，提取结构化数据。
     要求：
     1. 如果图片中没有日程信息，则忽略
-    2. 提取每个日程的：项目名称、开始时间、结束时间
-    3. 时间格式：`${DatetimeConstant.DATE_TIME_FORMAT_COMPACT}`
-    4. 如果没有结束时间，则设为开始时间后2小时
-    5. 忽略"休"、"旅途"等没有具体时间的项目
-    6. 所有图片都没有日程信息，则返回`[]`
+    2. 日程安排为${LocalDate.now().year}年的日程安排
+    3. 提取每个日程的：项目名称、开始时间、结束时间
+    4. 时间格式：`${DatetimeConstant.DATE_TIME_FORMAT_COMPACT}`
+    5. 如果没有结束时间，则设为开始时间后2小时
+    6. 忽略"休"、"旅途"等没有具体时间的项目
+    7. 所有图片都没有日程信息，则返回`[]`
     """.trimIndent()
 
     @Scheduled(cron = "0 0 6 * * ?")

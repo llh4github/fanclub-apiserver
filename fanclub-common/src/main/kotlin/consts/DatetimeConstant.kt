@@ -15,9 +15,9 @@ object DatetimeConstant {
     const val DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss"
 
     /**
-     * 日期时间格式: yyyyMMddHH:mm:ss
+     * 紧凑日期时间格式
      */
-    const val DATE_TIME_FORMAT_COMPACT = "yyyyMMddHH:mm:ss"
+    const val DATE_TIME_FORMAT_COMPACT = "yyyyMMddHHmmss"
 
     val DATE_TIME_FORMATTER_COMPACT: DateTimeFormatter =
         DateTimeFormatter.ofPattern(DATE_TIME_FORMAT_COMPACT).withZone(ZoneId.systemDefault())

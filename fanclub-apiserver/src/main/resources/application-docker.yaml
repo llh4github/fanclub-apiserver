@@ -58,6 +58,8 @@ springdoc:
 
 # Bilibili Live SDK 配置
 fanclub:
+  web:
+    domain: "*"
   bili:
     dyn:
       scheduler:
