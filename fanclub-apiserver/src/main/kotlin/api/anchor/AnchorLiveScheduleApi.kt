@@ -10,7 +10,9 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import llh.fanclubvup.apiserver.dto.JsonWrapper
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveSchedulePageView
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveScheduleQuerySpec
+import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveWeekScheduleSpec
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveScheduleService
+import llh.fanclubvup.ksp.annon.PublicAccessUrl
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -30,5 +32,11 @@ class AnchorLiveScheduleApi(
             service.pageQuery(AnchorLiveSchedulePageView::class, queryParam, queryParam.pageParam)
         )
 
+    @PublicAccessUrl
+    @Operation(summary = "查询周日程")
+    @PostMapping("/query-week")
+    fun queryWeekSchedule(@RequestBody spec: AnchorLiveWeekScheduleSpec) = JsonWrapper.ok(
+        service.queryWeekSchedule(spec)
+    )
 
 }
