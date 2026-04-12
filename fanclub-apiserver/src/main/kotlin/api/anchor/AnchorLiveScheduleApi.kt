@@ -33,7 +33,7 @@ class AnchorLiveScheduleApi(
         )
 
     @PublicAccessUrl
-    @Operation(summary = "查询本周日程")
+    @Operation(summary = "查询周日程")
     @PostMapping("/query-week")
     fun queryWeekSchedule(@RequestBody spec: AnchorLiveWeekScheduleSpec) = JsonWrapper.ok(
         service.queryWeekSchedule(spec)
