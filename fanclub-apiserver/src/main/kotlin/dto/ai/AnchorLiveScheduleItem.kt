@@ -20,10 +20,10 @@ data class AnchorLiveScheduleItem(
     @JsonProperty(required = true, value = "topic")
     val topic: String,
     @JsonProperty(required = true, value = "startTime")
-    @JsonFormat(pattern = DatetimeConstant.DATE_TIME_FORMAT, timezone = "GMT+8")
+    @JsonFormat(pattern = DatetimeConstant.DATE_TIME_FORMAT_COMPACT, timezone = "GMT+8")
     val startTime: LocalDateTime,
     @JsonProperty(required = true, value = "endTime")
-    @JsonFormat(pattern = DatetimeConstant.DATE_TIME_FORMAT, timezone = "GMT+8")
+    @JsonFormat(pattern = DatetimeConstant.DATE_TIME_FORMAT_COMPACT, timezone = "GMT+8")
     val endTime: LocalDateTime
 )
 

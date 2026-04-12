@@ -14,6 +14,7 @@ import llh.fanclubvup.apiserver.service.BaseDatabaseServiceImpl
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveScheduleService
 import llh.fanclubvup.common.BID
 import llh.fanclubvup.common.utils.LocalDateTimeUtil
+import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.babyfish.jimmer.sql.kt.ast.expression.between
 import org.babyfish.jimmer.sql.kt.ast.expression.eq
@@ -28,7 +29,9 @@ class AnchorLiveScheduleServiceImpl(
 
     override fun saveList(input: List<AnchorLiveScheduleAddInput>): Int {
         return sqlClient.transaction {
-            val rs = sqlClient.entities.saveInputs(input)
+            val rs = sqlClient.saveInputs(input){
+                setMode(SaveMode.INSERT_ONLY)
+            }
             rs.totalAffectedRowCount
         }
     }

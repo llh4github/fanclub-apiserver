@@ -59,5 +59,8 @@ springdoc:
 # Bilibili Live SDK 配置
 fanclub:
   bili:
+    dyn:
+      scheduler:
+        liko: https://www.bilibili.com/opus/1159880489834643463
     scraper:
       current-bid: 1111

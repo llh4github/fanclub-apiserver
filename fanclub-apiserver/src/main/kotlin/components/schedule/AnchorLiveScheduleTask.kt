@@ -12,6 +12,7 @@ import llh.fanclubvup.apiserver.service.anchor.AnchorLiveScheduleService
 import llh.fanclubvup.apiserver.utils.JsonUtils
 import llh.fanclubvup.bilibili.constants.ApiConstants
 import llh.fanclubvup.common.consts.CacheKeyPrefix
+import llh.fanclubvup.common.consts.DatetimeConstant
 import llh.fanclubvup.common.consts.PropsKeys.BILI_DYN_SCHEDULER_LIKO
 import org.jsoup.Jsoup
 import org.springframework.ai.chat.messages.UserMessage
@@ -47,15 +48,17 @@ class AnchorLiveScheduleTask(
      */
     val belongBid = 1536601294L
 
-    @Value($$"${$$BILI_DYN_SCHEDULER_LIKO:''}")
+    @Value($$"${$$BILI_DYN_SCHEDULER_LIKO:}")
     private lateinit var dynUrl: String
+
+    val outputConverter = BeanOutputConverter(AnchorLiveScheduleItemTypeRef, JsonUtils.mapper)
 
     val promptStr = """
     分析图片中的日程信息，提取结构化数据。
     要求：
     1. 如果图片中没有日程信息，则忽略
     2. 提取每个日程的：项目名称、开始时间、结束时间
-    3. 时间格式：`yyyy-MM-dd HH:mm:ss`
+    3. 时间格式：`${DatetimeConstant.DATE_TIME_FORMAT_COMPACT}`
     4. 如果没有结束时间，则设为开始时间后2小时
     5. 忽略"休"、"旅途"等没有具体时间的项目
     6. 所有图片都没有日程信息，则返回`[]`
@@ -67,13 +70,13 @@ class AnchorLiveScheduleTask(
             logger.warn { "B站动态链接为空, 请检查配置项: $BILI_DYN_SCHEDULER_LIKO" }
             return
         }
-            
+
         val has = service.hasSchedule(belongBid, LocalDate.now())
         if (has) {
             logger.info { "已有本周日程数据，跳过执行" }
             return
         }
-            
+
         parseAndSaveSchedule()
     }
 
@@ -134,15 +137,13 @@ class AnchorLiveScheduleTask(
      */
     private fun parseAndSaveWithAI(imgUrls: List<String>) {
         val medias = imgUrls.map { Media(MimeTypeUtils.IMAGE_PNG, URI.create(it)) }
-        val mapper = JsonUtils.mapper
-        val outputConverter = BeanOutputConverter(AnchorLiveScheduleItemTypeRef, mapper)
         val jsonSchema = outputConverter.jsonSchema
-        
+
         val userMessage = UserMessage.builder()
             .text(promptStr)
             .media(*medias.toTypedArray())
             .build()
-        
+
         val response = chatModel.call(
             Prompt(
                 userMessage,
@@ -153,6 +154,7 @@ class AnchorLiveScheduleTask(
         )
 
         response.result?.output?.text?.let { jsonText ->
+            logger.debug { "fetch data:\n$jsonText" }
             val scheduleItems = outputConverter.convert(jsonText)
             val addInputs = scheduleItems.map { item ->
                 AnchorLiveScheduleAddInput(
@@ -162,7 +164,7 @@ class AnchorLiveScheduleTask(
                     topic = item.topic,
                 )
             }
-            
+
             val savedCount = service.saveList(addInputs)
             logger.info { "AI解析出 ${scheduleItems.size} 条日程数据，成功保存 $savedCount 条" }
         }
