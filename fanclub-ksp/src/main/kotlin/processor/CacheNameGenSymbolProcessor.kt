@@ -61,10 +61,9 @@ class CacheNameGenSymbolProcessor(
                                 var typeString = returnType.toString()
                                 // 移除 INVARIANT 关键字
                                 typeString = typeString.replace("INVARIANT ", "")
-                                // 确保使用全限定名
-                                if (typeString.contains("AnchorLiveRecordLiveStatus")) {
-                                    typeString = typeString.replace("AnchorLiveRecordLiveStatus", "llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordLiveStatus")
-                                }
+                                // 移除全限定名，只保留简单类名，因为我们会通过导入语句处理
+                                typeString = typeString.replace("llh.fanclubvup.apiserver.entity.anchor.dto.", "")
+                                typeString = typeString.replace("llh.fanclubvup.bilibili.props.", "")
                                 logger.warn("无法解析返回类型，使用原始类型字符串: $typeString")
                                 typeString
                             }
@@ -150,13 +149,51 @@ class CacheNameGenSymbolProcessor(
                 // 检查返回类型是否是基本类型或字符串类型
                 val isBasicType = method.returnType in listOf("Int", "Long", "Double", "Float", "Boolean", "String", "Unit")
                 
+                // 处理导入语句
+                val imports = mutableSetOf<String>()
+                imports.add("import kotlin.String")
+                if (!isBasicType) {
+                    imports.add("import tools.jackson.core.type.TypeReference")
+                    // 处理类型导入
+                    val typeToImport = mutableSetOf<String>()
+                    
+                    // 处理泛型类型
+                    if (method.returnType.contains("<")) {
+                        // 提取泛型参数
+                        val genericParamMatch = Regex("<(.*?)>").find(method.returnType)
+                        if (genericParamMatch != null) {
+                            val genericParam = genericParamMatch.groupValues[1]
+                            // 处理常见类型的导入
+                            if (genericParam.contains("AnchorLiveRecordLiveStatus")) {
+                                typeToImport.add("llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordLiveStatus")
+                            }
+                            if (genericParam.contains("AnchorLiveScheduleItemView")) {
+                                typeToImport.add("llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveScheduleItemView")
+                            }
+                        }
+                    }
+                    
+                    // 处理非泛型类型
+                    if (method.returnType.contains("BiliClientConfig")) {
+                        typeToImport.add("llh.fanclubvup.bilibili.props.BiliClientConfig")
+                    }
+                    
+                    // 添加导入语句
+                    typeToImport.forEach { type ->
+                        imports.add("import $type")
+                    }
+                }
+                
+                // 处理返回类型，确保使用简单类名
+                var processedReturnType = method.returnType
+                // 移除全限定名前缀
+                processedReturnType = processedReturnType.replace("llh.fanclubvup.apiserver.entity.anchor.dto.", "")
+                processedReturnType = processedReturnType.replace("llh.fanclubvup.bilibili.props.", "")
+                
                 // 将生成的代码添加到文件中
                 val fileContent = buildString {
                     append("package llh.fanclubvup.ksp.generated\n\n")
-                    append("import kotlin.String\n")
-                    if (!isBasicType) {
-                        append("import tools.jackson.core.type.TypeReference\n")
-                    }
+                    imports.forEach { append("$it\n") }
                     append("\n")
                     append("/**\n")
                     append(" * $serviceName 的缓存名称生成器\n")
@@ -185,7 +222,7 @@ class CacheNameGenSymbolProcessor(
                         append("  /**\n")
                         append("   * ${method.methodName} 方法的 TypeReference 生成器\n")
                         append("   */\n")
-                        append("  public object $nestedObjectName : TypeReference<${method.returnType}>() {\n")
+                        append("  public object $nestedObjectName : TypeReference<$processedReturnType>() {\n")
                         append("  }\n")
                     }
                     
