@@ -24,6 +24,8 @@ object CommandProcessor {
         "USER_TOAST_MSG", // 用户开通大航海，现在用v2版
         "ROOM_SKIN_MSG",
         "COMBO_SEND", // 批量送礼物
+        "VOICE_JOIN_ROOM_COUNT_INFO",
+        "VOICE_JOIN_LIST",
         "WIDGET_GIFT_STAR_PROCESS",
         "WIDGET_GIFT_STAR_PROCESS_V2",
         "MESSAGEBOX_USER_MEDAL_CHANGE",
