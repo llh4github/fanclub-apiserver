@@ -1,8 +1,12 @@
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
 package llh.fanclubvup.apiserver.entity.anchor
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Pattern
-import llh.fanclubvup.apiserver.consts.enums.SongLang
 import llh.fanclubvup.apiserver.entity.BaseEntity
 import llh.fanclubvup.apiserver.utils.CreateUpdateGroup
 import llh.fanclubvup.common.BID
@@ -29,9 +33,6 @@ interface AnchorSong : BaseEntity {
     @get:Range(min = 0, max = 1_0000, groups = [CreateUpdateGroup::class])
     @get:Schema(title = "歌曲价格(元)", description = "歌曲价格", example = "114514")
     val price: Int
-
-    @get:Schema(title = "歌曲语言", description = "歌曲语言", example = "Chinese")
-    val lang: SongLang
 
     @get:Pattern(
         regexp = "^BV[A-Za-z0-9]{10}$",
