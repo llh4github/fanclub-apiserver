@@ -11,6 +11,7 @@ import llh.fanclubvup.apiserver.dto.JsonWrapper
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorSongPageView
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorSongQuerySpec
 import llh.fanclubvup.apiserver.service.anchor.AnchorSongService
+import llh.fanclubvup.ksp.annon.PublicAccessUrl
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -24,6 +25,7 @@ class AnchorSongApi(
     fun getById(@RequestParam("id") id: Long) =
         JsonWrapper.ok(service.getById(id))
 
+    @PublicAccessUrl
     @PostMapping("/page")
     @Operation(summary = "分页查询")
     fun pageQuery(@RequestBody queryParam: AnchorSongQuerySpec) =
