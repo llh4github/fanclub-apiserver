@@ -24,4 +24,9 @@ object CacheKeyPrefix {
      * 验证码缓存 key
      */
     const val CAPTCHA_KEY = "${APP_NAME}-captcha:"
+
+    /**
+     * 加密数据缓存 key
+     */
+    const val CRYPTO_KEY = "${APP_NAME}-crypto:"
 }
