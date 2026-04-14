@@ -36,13 +36,13 @@ dependencies {
     implementation(libs.springdoc.ui)
     implementation(libs.yitter.idgenerator)
     implementation(project(":fanclub-bilibili"))
-//    implementation(project(":fanclub-bilisdk"))
     implementation(project(":fanclub-common"))
     implementation(project(":fanclub-ksp"))
     implementation(libs.bundles.jjwt)
 
     implementation("org.springframework.ai:spring-ai-starter-model-openai")
 
+    implementation(libs.easy.captcha)
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
