@@ -48,3 +48,12 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+// 禁用 bootJar，使用普通 jar 打包（库模块）
+tasks.bootJar {
+    enabled = false
+}
+
+tasks.jar {
+    enabled = true
+}
