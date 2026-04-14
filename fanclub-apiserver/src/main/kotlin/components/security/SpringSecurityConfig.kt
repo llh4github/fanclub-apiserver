@@ -62,11 +62,13 @@ class SpringSecurityConfig(
                 authenticationEntryPoint = { request, response, e ->
                     logger.debug(e) { "用户未登录或认证凭证信息错误: ${request.requestURI}" }
                     response.status = 200
+                    response.contentType = "application/json"
                     response.writer.write(errResp("用户未登录或认证凭证信息错误", "401"))
                 }
                 accessDeniedHandler = { request, response, e ->
                     logger.debug(e) { "用户无权访问: ${request.requestURI}" }
                     response.status = 200
+                    response.contentType = "application/json"
                     response.writer.write(errResp("用户无权访问", "403"))
                 }
             }
