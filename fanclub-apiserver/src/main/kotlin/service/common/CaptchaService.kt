@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
 package llh.fanclubvup.apiserver.service.common
 
 import com.pig4cloud.captcha.SpecCaptcha
@@ -24,11 +29,11 @@ class CaptchaService(
         ttl: Duration = Duration.ofMinutes(5)
     ): CaptchaData {
         val len = if (len < 4) 4 else len
-        val specCaptcha = SpecCaptcha(130, 48, len)
-        val key = IdGenerator.nextIdStr()
+        val specCaptcha = SpecCaptcha(130, 42, len)
+        val key = IdGenerator.nextShortId()
         val answer = specCaptcha.text()
         redisTemplate.opsForValue().set("${CacheKeyPrefix.CAPTCHA_KEY}$key", answer, ttl)
-        return CaptchaData(key, specCaptcha.toBase64())
+        return CaptchaData(key, specCaptcha.toBase64(), len)
     }
 
     /**

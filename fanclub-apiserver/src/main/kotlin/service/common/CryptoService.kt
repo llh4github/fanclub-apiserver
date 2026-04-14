@@ -1,5 +1,13 @@
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
 package llh.fanclubvup.apiserver.service.common
 
+import io.github.oshai.kotlinlogging.KotlinLogging
+import llh.fanclubvup.apiserver.dto.crypto.KeyExchangeResponse
+import llh.fanclubvup.apiserver.utils.IdGenerator
 import llh.fanclubvup.common.consts.CacheKeyPrefix
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service
@@ -23,6 +31,7 @@ import kotlin.io.encoding.Base64
 class CryptoService(
     private val redisTemplate: StringRedisTemplate
 ) {
+    private val logger = KotlinLogging.logger {}
 
     companion object {
         private const val ALGORITHM = "AES"
@@ -202,15 +211,34 @@ class CryptoService(
      * @return AES 密钥或 null
      */
     fun decryptAesKey(encryptedAesKeyBase64: String, sessionId: String): SecretKey? {
-        val privateKey = getRsaPrivateKey(sessionId) ?: return null
+        val privateKey = getRsaPrivateKey(sessionId) ?: run {
+            logger.warn { "未找到会话 [$sessionId] 的 RSA 私钥" }
+            return null
+        }
 
-        val cipher = Cipher.getInstance(RSA_TRANSFORMATION)
-        cipher.init(Cipher.DECRYPT_MODE, privateKey)
+        return try {
+            val cipher = Cipher.getInstance(RSA_TRANSFORMATION)
+            cipher.init(Cipher.DECRYPT_MODE, privateKey)
 
-        val encryptedAesKey = Base64.decode(encryptedAesKeyBase64)
-        val aesKeyBytes = cipher.doFinal(encryptedAesKey)
+            val encryptedAesKey = Base64.decode(encryptedAesKeyBase64)
+            logger.debug { 
+                "开始解密 AES 密钥 - 会话ID: $sessionId, " +
+                "加密数据长度: ${encryptedAesKey.size}字节, " +
+                "加密算法: $RSA_TRANSFORMATION"
+            }
+            
+            val aesKeyBytes = cipher.doFinal(encryptedAesKey)
+            logger.debug { "AES 密钥解密成功，密钥长度: ${aesKeyBytes.size}字节" }
 
-        return restoreAesKey(aesKeyBytes)
+            restoreAesKey(aesKeyBytes)
+        } catch (e: Exception) {
+            logger.error(e) { 
+                "RSA 解密失败 - 会话ID: $sessionId, " +
+                "可能原因: 1)前端使用了错误的公钥 2)加密算法不匹配 3)数据被篡改\n" +
+                "期望算法: $RSA_TRANSFORMATION"
+            }
+            null
+        }
     }
 
     // ==================== 会话密钥管理 ====================
@@ -252,8 +280,16 @@ class CryptoService(
      * @param sessionId 会话ID
      * @return RSA 公钥（Base64）
      */
-    fun initiateKeyExchange(sessionId: String): String {
+    private fun initiateKeyExchange(sessionId: String): String {
         return generateAndStoreRsaKeys(sessionId)
+    }
+
+    fun initiateKeyExchange(): KeyExchangeResponse {
+        val sessionId = IdGenerator.nextShortId()
+        return KeyExchangeResponse(
+            cryptoSid = sessionId,
+            publicKey = initiateKeyExchange(sessionId)
+        )
     }
 
     /**

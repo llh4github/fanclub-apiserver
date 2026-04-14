@@ -1,10 +1,14 @@
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
 package llh.fanclubvup.apiserver.api.common
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import llh.fanclubvup.apiserver.dto.JsonWrapper
 import llh.fanclubvup.apiserver.dto.crypto.KeyExchangeCompleteRequest
-import llh.fanclubvup.apiserver.dto.crypto.KeyExchangeRequest
 import llh.fanclubvup.apiserver.dto.crypto.KeyExchangeResponse
 import llh.fanclubvup.apiserver.service.common.CryptoService
 import llh.fanclubvup.ksp.annon.PublicAccessUrl
@@ -23,12 +27,9 @@ class CryptoApi(
     @PublicAccessUrl
     @Operation(summary = "初始化密钥交换", description = "获取 RSA 公钥用于加密 AES 密钥(24小时内有效)")
     @PostMapping("/key-exchange/init")
-    fun initKeyExchange(
-        @RequestBody @Validated request: KeyExchangeRequest
-    ): JsonWrapper<KeyExchangeResponse> {
-        val publicKey = cryptoService.initiateKeyExchange(request.sessionId)
+    fun initKeyExchange(): JsonWrapper<KeyExchangeResponse> {
         return JsonWrapper.ok(
-            KeyExchangeResponse(publicKey = publicKey)
+            cryptoService.initiateKeyExchange()
         )
     }
 
@@ -39,7 +40,7 @@ class CryptoApi(
         @RequestBody @Validated request: KeyExchangeCompleteRequest
     ): JsonWrapper<Boolean> {
         val success = cryptoService.completeKeyExchange(
-            request.sessionId,
+            request.cryptoSid,
             request.encryptedAesKey
         )
         return JsonWrapper.ok(success)
