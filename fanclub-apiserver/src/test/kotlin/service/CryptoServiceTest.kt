@@ -63,5 +63,69 @@ class CryptoServiceTest {
         println("加密后: $encrypted")
         println("解密后: $decrypted")
 
+        // 5. 验证加密数据长度关系
+        testEncryptionLength()
+    }
+
+    /**
+     * 测试 AES-GCM 加密数据长度关系
+     * 公式: 加密后长度 = IV(12) + 密文(=明文长度) + GCM标签(16) = 明文长度 + 28
+     */
+    @Test
+    fun testEncryptionLength() {
+        val sessionId = "test-length"
+        service.initiateKeyExchange(sessionId)
+
+        // 生成并设置 AES 密钥
+        val aesKey = service.generateAesKey()
+        val encryptedAesKey = encryptWithRsaPublicKey(
+            aesKey.encoded,
+            service.initiateKeyExchange(sessionId)
+        )
+        service.completeKeyExchange(sessionId, encryptedAesKey)
+
+        // 测试不同长度的明文
+        val testCases = listOf(
+            "" to 0,
+            "A" to 1,
+            "Hello" to 5,
+            "Hello, World!" to 13,
+            "你好世界" to 12, // UTF-8: 每个中文3字节
+            "A".repeat(100) to 100
+        )
+
+        println("\n📏 AES-GCM 加密长度测试:")
+        println("公式: 加密后长度 = 明文长度 + 28 (IV:12 + GCM标签:16)")
+        println("-".repeat(60))
+
+        for ((text, expectedLength) in testCases) {
+            val plaintextBytes = text.toByteArray(Charsets.UTF_8)
+            val actualPlaintextLength = plaintextBytes.size
+
+            // 直接调用 encrypt 方法获取原始字节数组
+            val encryptedBytes = service.encrypt(plaintextBytes, aesKey)
+            val encryptedLength = encryptedBytes.size
+
+            // Base64 编码后的长度（实际传输时的长度）
+            val base64Length = kotlin.io.encoding.Base64.encode(encryptedBytes).length
+
+            val overhead = encryptedLength - actualPlaintextLength
+
+            println(
+                "明文: ${actualPlaintextLength}字节 | " +
+                        "加密后: ${encryptedLength}字节 | " +
+                        "开销: ${overhead}字节 | " +
+                        "Base64: ${base64Length}字节 | " +
+                        "内容: '${text.take(20)}${if (text.length > 20) "..." else ""}'"
+            )
+
+            assert(overhead == 28) {
+                "加密开销应该是28字节，实际是: $overhead"
+            }
+        }
+
+        println("-".repeat(60))
+        println("✅ 所有长度测试通过！")
+
     }
 }

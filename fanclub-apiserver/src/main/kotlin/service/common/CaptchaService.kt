@@ -25,7 +25,7 @@ class CaptchaService(
     ): CaptchaData {
         val len = if (len < 4) 4 else len
         val specCaptcha = SpecCaptcha(130, 48, len)
-        val key = IdGenerator.nextId()
+        val key = IdGenerator.nextIdStr()
         val answer = specCaptcha.text()
         redisTemplate.opsForValue().set("${CacheKeyPrefix.CAPTCHA_KEY}$key", answer, ttl)
         return CaptchaData(key, specCaptcha.toBase64())
@@ -35,9 +35,9 @@ class CaptchaService(
      * 验证验证码
      * @param key 验证码 key
      * @param answer 验证码答案
-     * @return Boolean
+     * @return true 验证成功
      */
-    fun validCaptcha(key: Long, answer: String): Boolean {
+    fun validCaptcha(key: String, answer: String): Boolean {
         val realAnswer = redisTemplate.opsForValue().get("${CacheKeyPrefix.CAPTCHA_KEY}$key") ?: return false
         return realAnswer == answer
     }
