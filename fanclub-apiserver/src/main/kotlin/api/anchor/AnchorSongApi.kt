@@ -30,7 +30,11 @@ class AnchorSongApi(
     @Operation(summary = "分页查询")
     fun pageQuery(@RequestBody queryParam: AnchorSongQuerySpec) =
         JsonWrapper.ok(
-            service.pageQuery(AnchorSongPageView::class, queryParam, queryParam.pageParam)
+            service.pageQuery(
+                AnchorSongPageView::class,
+                queryParam,
+                queryParam.pageParam,
+            )
         )
 
 }
