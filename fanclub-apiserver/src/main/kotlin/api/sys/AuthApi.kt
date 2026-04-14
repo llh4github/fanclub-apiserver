@@ -11,6 +11,7 @@ import llh.fanclubvup.apiserver.dto.JsonWrapper
 import llh.fanclubvup.apiserver.dto.sys.LoginReq
 import llh.fanclubvup.apiserver.dto.sys.LoginTokenResp
 import llh.fanclubvup.apiserver.service.common.CaptchaService
+import llh.fanclubvup.apiserver.service.common.CryptoService
 import llh.fanclubvup.apiserver.service.sys.UserService
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.PostMapping
@@ -22,8 +23,9 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/auth")
 class AuthApi(
-    val userService: UserService,
-    val captchaService: CaptchaService,
+    private val userService: UserService,
+    private val captchaService: CaptchaService,
+    private val cryptoService: CryptoService,
 ) {
     @Operation(summary = "用户登录")
     @PostMapping("/login")
@@ -31,7 +33,11 @@ class AuthApi(
         if (!captchaService.validCaptcha(req.captchaKey, req.captcha)) {
             return JsonWrapper.fail("9999", "验证码错误或已过期")
         }
-        return JsonWrapper.ok(userService.login(req))
+        val password = cryptoService.decryptWithSessionKey(req.password, req.cryptoSid)
+            ?: return JsonWrapper.fail("9999", "密码错误")
+        val reqDecrypt = req.copy(password = password)
+
+        return JsonWrapper.ok(userService.login(reqDecrypt))
     }
 
     @Operation(summary = "用户登出")

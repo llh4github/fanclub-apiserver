@@ -7,11 +7,11 @@ package llh.fanclubvup.apiserver.components.properties
 
 import llh.fanclubvup.common.consts.PropsKeys
 import org.springframework.boot.context.properties.ConfigurationProperties
-import kotlin.time.Duration
-import kotlin.time.toJavaDuration
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.util.Date
+import java.util.*
+import kotlin.time.Duration
+import kotlin.time.toJavaDuration
 
 @ConfigurationProperties(prefix = PropsKeys.APP_PROP_KEY + ".jwt")
 data class JwtProperty(
@@ -25,7 +25,7 @@ data class JwtProperty(
     /**
      * 免认证接口
      */
-    val annoUrls: List<String> = listOf("/auth/login", "/v3/api-docs"),
+    val annoUrls: List<String> = listOf("/auth/login", "/v3/api-docs", "/error"),
 
     /**
      * 令牌头key
