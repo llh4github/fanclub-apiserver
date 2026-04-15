@@ -30,6 +30,15 @@ RUN --mount=type=cache,target=/home/gradle/.gradle/caches \
 FROM debian:bookworm-slim
 WORKDIR /app
 
+# 安装 AWT 所需依赖
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    fontconfig \
+    libfreetype6 \
+    libxext6 \
+    libxrender1 \
+    fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
+
 ARG APP_VERSION
 ARG GIT_COMMIT_ID
 
