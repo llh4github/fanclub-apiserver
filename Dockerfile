@@ -27,17 +27,22 @@ RUN --mount=type=cache,target=/home/gradle/.gradle/caches \
     gradle :fanclub-apiserver:nativeCompile -x test --no-daemon --parallel
 
 # 运行阶段
-FROM debian:bookworm-slim
+FROM redhat/ubi9-minimal:9.7
 WORKDIR /app
 
-# 安装 AWT 所需依赖
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# 安装 AWT 所需依赖（使用 microdnf 包管理器）
+RUN microdnf update -y && \
+    microdnf install -y \
     fontconfig \
-    libfreetype6 \
-    libxext6 \
-    libxrender1 \
-    fonts-dejavu-core \
-    && rm -rf /var/lib/apt/lists/*
+    freetype \
+    libX11 \
+    libXext \
+    libXrender \
+    libXi \
+    libXtst \
+    mesa-libGL \
+    dejavu-sans-fonts \
+    && microdnf clean all
 
 ARG APP_VERSION
 ARG GIT_COMMIT_ID

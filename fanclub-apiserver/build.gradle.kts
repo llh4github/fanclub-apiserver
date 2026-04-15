@@ -84,22 +84,35 @@ ksp {
 graalvmNative {
     binaries {
         named("main") {
+            // AWT/Swing 支持配置
             buildArgs.add("--initialize-at-build-time=java.awt.Toolkit,java.awt.GraphicsEnvironment")
             buildArgs.add("--allow-incomplete-classpath")
-            // 性能和兼容性优化
+
+            // 网络和安全性
             buildArgs.add("--enable-url-protocols=http,https")
             buildArgs.add("--enable-all-security-services")
+
+            // 禁用回退，强制暴露问题
             buildArgs.add("--no-fallback")
+
+            // 详细日志和调试
             buildArgs.addAll(
-                "--report-unsupported-elements-at-runtime",  // 报告不支持的运行时元素
-                "--no-fallback",  // 禁用回退模式，强制暴露问题
-                "--verbose",  // 输出详细日志
-                "-H:TraceClassInitialization=true",// 跟踪类初始化
-                "-H:+ReportExceptionStackTraces",  // 报告异常堆栈
-                "-H:+ReportUnsupportedElementsAtRuntime",  // 报告不支持的运行时元素
-                "-H:+PrintClassInitialization",  // 打印类初始化信息
-                "-H:+AddAllCharsets"  // 包含所有字符集
+                "--report-unsupported-elements-at-runtime",
+                "--verbose",
+                "-H:TraceClassInitialization=true",
+                "-H:+ReportExceptionStackTraces",
+                "-H:+PrintClassInitialization",
+                "-H:+AddAllCharsets"
             )
+
+            // AWT 相关类初始化配置
+            buildArgs.addAll(
+                "--initialize-at-run-time=java.awt.image.ColorModel",
+                "--initialize-at-run-time=java.awt.image.BufferedImage",
+                "--initialize-at-run-time=sun.java2d.Disposer",
+                "--initialize-at-run-time=sun.awt.X11GraphicsEnvironment"
+            )
+            
             resources.autodetect()
         }
     }

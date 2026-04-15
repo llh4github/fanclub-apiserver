@@ -12,7 +12,24 @@
       },
       {
         "pattern": "\\QMETA-INF/jimmer/entities\\E"
+      },
+      {
+        "pattern": ".*\\.properties"
+      },
+      {
+        "pattern": ".*\\.ttf"
+      },
+      {
+        "pattern": ".*\\.otf"
       }
     ]
-  }
+  },
+  "bundles": [
+    {
+      "name": "sun.awt.resources.awt",
+      "locales": [
+        ""
+      ]
+    }
+  ]
 }
