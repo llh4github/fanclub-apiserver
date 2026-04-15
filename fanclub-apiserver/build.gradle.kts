@@ -84,7 +84,8 @@ ksp {
 graalvmNative {
     binaries {
         named("main") {
-
+            buildArgs.add("--initialize-at-build-time=java.awt.Toolkit,java.awt.GraphicsEnvironment")
+            buildArgs.add("--allow-incomplete-classpath")
             // 性能和兼容性优化
             buildArgs.add("--enable-url-protocols=http,https")
             buildArgs.add("--enable-all-security-services")
@@ -99,6 +100,7 @@ graalvmNative {
                 "-H:+PrintClassInitialization",  // 打印类初始化信息
                 "-H:+AddAllCharsets"  // 包含所有字符集
             )
+            resources.autodetect()
         }
     }
 }
