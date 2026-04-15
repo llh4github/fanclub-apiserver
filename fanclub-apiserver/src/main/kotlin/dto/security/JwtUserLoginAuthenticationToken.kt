@@ -18,6 +18,9 @@ class JwtUserLoginAuthenticationToken(
     val details: WebAuthenticationDetails? = null,
 ) : AbstractAuthenticationToken(listOf(SimpleGrantedAuthority("ROLE_$role"))) {
 
+    init {
+        isAuthenticated = true
+    }
     val roleType by lazy { RoleEnums.parse(role) }
 
     override fun getCredentials(): Any {

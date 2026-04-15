@@ -11,10 +11,10 @@ import io.jsonwebtoken.impl.DefaultClaims
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
 import llh.fanclubvup.apiserver.components.properties.JwtProperty
+import llh.fanclubvup.apiserver.consts.enums.JwtType
 import llh.fanclubvup.apiserver.dto.JwtInfo
 import llh.fanclubvup.apiserver.dto.security.JwtUserLoginAuthenticationToken
 import llh.fanclubvup.apiserver.entity.sys.dto.UserAccount
-import llh.fanclubvup.apiserver.consts.enums.JwtType
 import llh.fanclubvup.apiserver.utils.IdGenerator
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.security.web.authentication.WebAuthenticationDetails
@@ -50,10 +50,10 @@ class JwtService(
     ): JwtUserLoginAuthenticationToken? {
         val claims = validAndClaims(jwt) ?: return null
         return JwtUserLoginAuthenticationToken(
-            userId = claims.get(userIDKey, Long::class.java),
+            userId = claims.get(userIDKey, Long::class.javaObjectType),
             uname = claims.subject,
             role = claims[roleKey].toString(),
-            anchorId = claims.get(anchorIdKey, Long::class.java),
+            anchorId = claims.get(anchorIdKey, Long::class.javaObjectType),
             details = details
         )
     }
@@ -132,7 +132,7 @@ class JwtService(
         block().takeIf { it.isNotEmpty() }.let {
             builder.claims(it)
         }
-        builder.claim(userIDKey, userId.toString())
+        builder.claim(userIDKey, userId)
         builder.header().add("typ", type.name)
         val jwt = builder.compact()
         val key = "${jwtProperty.cacheKeyPrefix}:$subject:$jwtId"
