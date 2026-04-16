@@ -45,4 +45,4 @@ create unique index anchor_song_bid_name_uindex
     on anchor_song (bid, name);
 
 alter table anchor_follower_num
-    rename column follower_num to bid;
+    rename column bili_id to bid;
