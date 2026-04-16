@@ -17,7 +17,7 @@ class AnchorDataScopeFilter {
     @Bean
     fun bidDataScope() = object : KFilter<AnchorBidAware> {
         override fun filter(args: KFilterArgs<AnchorBidAware>) {
-            if (SecurityContextUtil.isAnchor()) {
+            if (SecurityContextUtil.isLogin() && SecurityContextUtil.isAnchor()) {
                 args.apply {
                     where(table.bid eq SecurityContextUtil.bidOrThrow())
                 }
@@ -29,7 +29,7 @@ class AnchorDataScopeFilter {
     fun roomIdDataScope() = object : KFilter<AnchorRoomIdAware> {
         override fun filter(args: KFilterArgs<AnchorRoomIdAware>) {
 
-            if (SecurityContextUtil.isAnchor()) {
+            if (SecurityContextUtil.isLogin() && SecurityContextUtil.isAnchor()) {
                 args.apply {
                     where(table.roomId eq SecurityContextUtil.roomIdOrThrow())
                 }

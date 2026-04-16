@@ -67,6 +67,15 @@ object SecurityContextUtil {
     }
 
 
+    fun isLogin(): Boolean {
+        try {
+            authenticationToken()
+            return true
+        } catch (_: Exception) {
+            return false
+        }
+    }
+
     fun authenticationToken(): JwtUserLoginAuthenticationToken {
         val authentication = SecurityContextHolder.getContext().authentication as JwtUserLoginAuthenticationToken?
         if (authentication == null) {
