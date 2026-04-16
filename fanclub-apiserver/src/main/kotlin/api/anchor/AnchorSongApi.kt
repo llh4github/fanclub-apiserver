@@ -37,11 +37,16 @@ class AnchorSongApi(
     fun pageQuery(
         @RequestBody queryParam: AnchorSongQuerySpec
     ): JsonWrapper<PageResponse<AnchorSongPageView>> {
+        val query = if (SecurityContextUtil.isAnchor()) {
+            queryParam.copy(bid = SecurityContextUtil.bidOrThrow())
+        } else {
+            queryParam
+        }
         return JsonWrapper.ok(
             service.pageQuery(
                 AnchorSongPageView::class,
-                queryParam,
-                queryParam.pageParam,
+                query,
+                query.pageParam,
             )
         )
     }
