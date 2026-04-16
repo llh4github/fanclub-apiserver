@@ -11,8 +11,11 @@ import llh.fanclubvup.apiserver.consts.enums.JwtType
 import llh.fanclubvup.apiserver.dto.security.SecurityUserDetails
 import llh.fanclubvup.apiserver.dto.sys.LoginReq
 import llh.fanclubvup.apiserver.dto.sys.LoginTokenResp
+import llh.fanclubvup.apiserver.dto.sys.UpdatePasswordReq
 import llh.fanclubvup.apiserver.entity.sys.User
 import llh.fanclubvup.apiserver.entity.sys.dto.UserAccount
+import llh.fanclubvup.apiserver.entity.sys.id
+import llh.fanclubvup.apiserver.entity.sys.password
 import llh.fanclubvup.apiserver.entity.sys.username
 import llh.fanclubvup.apiserver.service.BaseDatabaseServiceImpl
 import llh.fanclubvup.apiserver.service.common.JwtService
@@ -21,7 +24,8 @@ import llh.fanclubvup.apiserver.utils.SecurityContextUtil
 import llh.fanclubvup.common.excptions.AppRuntimeException
 import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.babyfish.jimmer.sql.kt.ast.expression.eq
-import org.springframework.data.redis.core.script.RedisScript
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.redis.core.script.DefaultRedisScript
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -38,6 +42,9 @@ class UserServiceImpl(
     BaseDatabaseServiceImpl<User>(User::class, sqlClient) {
 
     private val logger = KotlinLogging.logger { }
+
+    @Autowired
+    private lateinit var deleteByPattern: DefaultRedisScript<Long>
 
     override fun loadUserByUsername(username: String): UserDetails {
         return createQuery(sqlClient) {
@@ -68,17 +75,20 @@ class UserServiceImpl(
         )
     }
 
-    override fun logout() {
-        // 确保正确读取Lua脚本文件
-        val scriptContent = this::class.java.getResourceAsStream("/lua/delete_by_pattern.lua")
-            ?.bufferedReader()
-            ?.readText()
-            ?: throw AppRuntimeException("Cannot load Lua script")
+    override fun updatePassword(req: UpdatePasswordReq): Boolean {
+        val newPwd = passwordEncoder.encode(req.password) ?: throw AppRuntimeException("加密失败")
+        val rs = createUpdate {
+            set(table.password, newPwd)
+            where(table.id eq req.id)
+        }.execute()
+        logout()
+        return true
+    }
 
+    override fun logout() {
         val subject = SecurityContextUtil.currentUsername()
         val key = "${jwtProperty.cacheKeyPrefix}:$subject:*"
-        val redisScript = RedisScript.of(scriptContent, Long::class.java)
-        val deleted = redisTemplate.execute(redisScript, listOf(""), listOf(key))
+        val deleted = redisTemplate.execute(deleteByPattern, listOf(key), "")
         logger.info { "对于 $key , 删除了 $deleted 个token" }
         SecurityContextUtil.clearAuthentication()
     }

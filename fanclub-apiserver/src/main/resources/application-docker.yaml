@@ -12,7 +12,7 @@ spring:
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
   flyway:
-    enabled: true
+    enabled: false
     locations: classpath:db/pgsql
 
   docker:
@@ -20,6 +20,20 @@ spring:
       file: compose.yaml
       enabled: true
       lifecycle-management: ${DOCKER_LIFECYCLE:start_only}
+  ai:
+    openai:
+      base-url: https://ark.cn-beijing.volces.com/api/v3
+      api-key: ${ARK_API_KEY}
+      chat:
+        options:
+          # 只有这个模型支持结构化输出
+          model: doubao-seed-1-6-251015
+        completions-path: /chat/completions
+    chat:
+      client:
+        observations:
+          log-completion: true
+          log-prompt: true
 
 jimmer:
   language: kotlin
@@ -31,6 +45,9 @@ jimmer:
 logging:
   level:
     llh: debug
+#    org.springframework.ai.chat.client.advisor: debug
+#    org.springframework.ai: DEBUG
+#    org.springframework.web.client: DEBUG
     org.springframework.web: DEBUG
 
 springdoc:
@@ -41,6 +58,11 @@ springdoc:
 
 # Bilibili Live SDK 配置
 fanclub:
+  web:
+    domain: "*"
   bili:
+    dyn:
+      scheduler:
+        liko: https://www.bilibili.com/opus/1159880489834643463
     scraper:
       current-bid: 1111

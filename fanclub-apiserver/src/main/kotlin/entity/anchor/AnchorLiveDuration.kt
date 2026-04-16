@@ -6,6 +6,7 @@
 package llh.fanclubvup.apiserver.entity.anchor
 
 import io.swagger.v3.oas.annotations.media.Schema
+import llh.fanclubvup.apiserver.entity.AnchorRoomIdAware
 import llh.fanclubvup.apiserver.entity.BaseEntity
 import org.babyfish.jimmer.sql.*
 import java.time.LocalDate
@@ -14,12 +15,8 @@ import java.time.LocalDate
 @Schema(title = "主播每日直播时长统计")
 @Table(name = "anchor_live_duration")
 @KeyUniqueConstraint
-interface AnchorLiveDuration : BaseEntity {
+interface AnchorLiveDuration : BaseEntity, AnchorRoomIdAware {
 
-    @Key(group = "live_stat_date_uk")
-    @Column(name = "room_id")
-    @get:Schema(title = "直播间ID", description = "直播间ID", example = "114514")
-    val roomId: Long
 
     @Key(group = "live_stat_date_uk")
     @Column(name = "stat_date")

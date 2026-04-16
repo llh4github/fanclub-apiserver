@@ -31,7 +31,7 @@ class SuperChatCommandHandler(
             BvUtil.extractBVFromString(cmd.data?.message)?.let { bv ->
                 val data = cmd.data
                 val id = data?.id
-                val sendTime = data?.sendTime
+                val sendTime = cmd.sendTime
                 val bid = data?.uid
 
                 if (id != null && sendTime != null && bid != null) {

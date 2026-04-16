@@ -154,8 +154,8 @@ abstract class BaseDatabaseServiceImpl<E : BaseEntity>(
             if (existBySpec != null) {
                 val exist = createQuery {
                     where(existBySpec)
-                    select(constant(1))
-                }.limit(1).execute().isNotEmpty()
+                    select(table)
+                }.exists()
                 if (exist) {
                     throw DbOperateException.DataExists(message = duplicateTip)
                 }
@@ -188,11 +188,19 @@ abstract class BaseDatabaseServiceImpl<E : BaseEntity>(
             if (existBySpec != null) {
                 val exist = createQuery {
                     where(existBySpec)
-                    select(constant(1))
-                }.limit(1).execute().isNotEmpty()
+                    select(table)
+                }.exists()
                 if (exist) {
                     throw DbOperateException.DataExists(message = duplicateTip)
                 }
+            }
+
+            val exist = createQuery {
+                where(table.getId<Long>() eq entity.id)
+                select(table)
+            }.exists()
+            if (!exist) {
+                throw DbOperateException.DataNotExists(message = "数据不存在")
             }
 
             val rs = sqlClient.save(entity) {

@@ -9,8 +9,10 @@ import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.asTypeName
 import com.squareup.kotlinpoet.ksp.toTypeName
 import llh.fanclubvup.ksp.annon.CacheNameGen
 
@@ -61,10 +63,9 @@ class CacheNameGenSymbolProcessor(
                                 var typeString = returnType.toString()
                                 // 移除 INVARIANT 关键字
                                 typeString = typeString.replace("INVARIANT ", "")
-                                // 确保使用全限定名
-                                if (typeString.contains("AnchorLiveRecordLiveStatus")) {
-                                    typeString = typeString.replace("AnchorLiveRecordLiveStatus", "llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordLiveStatus")
-                                }
+                                // 移除全限定名，只保留简单类名，因为我们会通过导入语句处理
+                                typeString = typeString.replace("llh.fanclubvup.apiserver.entity.anchor.dto.", "")
+                                typeString = typeString.replace("llh.fanclubvup.bilibili.props.", "")
                                 logger.warn("无法解析返回类型，使用原始类型字符串: $typeString")
                                 typeString
                             }
@@ -124,51 +125,25 @@ class CacheNameGenSymbolProcessor(
      */
     private fun generateCacheNameMethods(methodsByClass: Map<String, List<MethodInfo>>) {
         methodsByClass.forEach { (serviceName, methods) ->
-            // 创建对象构建器
-            val objectBuilder = TypeSpec.objectBuilder("${serviceName}CacheHelper")
-                .addKdoc("$serviceName 的缓存名称生成器\n\n此对象在编译时由 KSP 自动生成，提供缓存名称生成方法。")
-
-            // 为每个方法生成缓存前缀常量和返回值对应的嵌套子object
-            methods.forEach { method ->
-                // 生成缓存前缀常量（使用 const val 和大写蛇形命名）
-                val constantName = "${method.methodName.replaceFirstChar { it.uppercase() }.replace(Regex("([a-z0-9])([A-Z])"), "$1_$2").uppercase()}_CACHE_PREFIX"
-                val constantValue = buildString {
-                    if (method.prefix.isNotEmpty()) {
-                        append("${method.prefix}:")
-                    }
-                    append("$serviceName:${method.methodName}")
-                }
+            // 收集所有需要的导入
+            val imports = mutableSetOf<String>()
+            imports.add("import kotlin.String")
+            
+            // 构建文件内容
+            val fileContent = buildString {
+                append("package llh.fanclubvup.ksp.generated\n\n")
                 
-                objectBuilder.addProperty(
-                    PropertySpec.builder(constantName, String::class)
-                        .addKdoc("${method.methodName} 方法的缓存前缀")
-                        .initializer("\"$constantValue\"")
-                        .addModifiers(KModifier.CONST)
-                        .build()
-                )
+                // 为所有方法生成内容
+                append("/**\n")
+                append(" * $serviceName 的缓存名称生成器\n")
+                append(" *\n")
+                append(" * 此对象在编译时由 KSP 自动生成，提供缓存名称生成方法。\n")
+                append(" */\n")
+                append("public object ${serviceName}CacheHelper {\n")
                 
-                // 检查返回类型是否是基本类型或字符串类型
-                val isBasicType = method.returnType in listOf("Int", "Long", "Double", "Float", "Boolean", "String", "Unit")
-                
-                // 将生成的代码添加到文件中
-                val fileContent = buildString {
-                    append("package llh.fanclubvup.ksp.generated\n\n")
-                    append("import kotlin.String\n")
-                    if (!isBasicType) {
-                        append("import tools.jackson.core.type.TypeReference\n")
-                    }
-                    append("\n")
-                    append("/**\n")
-                    append(" * $serviceName 的缓存名称生成器\n")
-                    append(" *\n")
-                    append(" * 此对象在编译时由 KSP 自动生成，提供缓存名称生成方法。\n")
-                    append(" */\n")
-                    append("public object ${serviceName}CacheHelper {\n")
-                    
-                    // 添加缓存前缀常量
-                    append("  /**\n")
-                    append("   * ${method.methodName} 方法的缓存前缀\n")
-                    append("   */\n")
+                // 为每个方法生成缓存前缀常量和 TypeReference
+                methods.forEach { method ->
+                    // 生成缓存前缀常量（使用 const val 和大写蛇形命名）
                     val constantName = "${method.methodName.replaceFirstChar { it.uppercase() }.replace(Regex("([a-z0-9])([A-Z])"), "$1_$2").uppercase()}_CACHE_PREFIX"
                     val constantValue = buildString {
                         if (method.prefix.isNotEmpty()) {
@@ -176,33 +151,79 @@ class CacheNameGenSymbolProcessor(
                         }
                         append("$serviceName:${method.methodName}")
                     }
+                    
+                    append("\n")
+                    append("  /**\n")
+                    append("   * ${method.methodName} 方法的缓存前缀\n")
+                    append("   */\n")
                     append("  public const val $constantName: String = \"$constantValue\"\n")
                     
-                    // 为非基本类型生成 TypeReference 实现子类
+                    // 检查返回类型是否是基本类型或字符串类型
+                    val isBasicType = method.returnType in listOf("Int", "Long", "Double", "Float", "Boolean", "String", "Unit")
+                    
                     if (!isBasicType) {
+                        // 添加 TypeReference 导入
+                        imports.add("import tools.jackson.core.type.TypeReference")
+                        
+                        // 处理类型导入
+                        // 处理泛型类型
+                        if (method.returnType.contains("<")) {
+                            // 提取泛型参数
+                            val genericParamMatch = Regex("<(.*?)>").find(method.returnType)
+                            if (genericParamMatch != null) {
+                                val genericParam = genericParamMatch.groupValues[1]
+                                // 处理常见类型的导入
+                                if (genericParam.contains("AnchorLiveRecordLiveStatus")) {
+                                    imports.add("import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordLiveStatus")
+                                }
+                                if (genericParam.contains("AnchorLiveScheduleItemView")) {
+                                    imports.add("import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveScheduleItemView")
+                                }
+                                if (genericParam.contains("AnchorLiveTimeRecord")) {
+                                    imports.add("import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveTimeRecord")
+                                }
+                            }
+                        }
+                        
+                        // 处理非泛型类型
+                        if (method.returnType.contains("BiliClientConfig")) {
+                            imports.add("import llh.fanclubvup.bilibili.props.BiliClientConfig")
+                        }
+                        
+                        // 处理返回类型，确保使用简单类名
+                        var processedReturnType = method.returnType
+                        // 移除全限定名前缀
+                        processedReturnType = processedReturnType.replace("llh.fanclubvup.apiserver.entity.anchor.dto.", "")
+                        processedReturnType = processedReturnType.replace("llh.fanclubvup.bilibili.props.", "")
+                        
+                        // 为非基本类型生成 TypeReference 实现子类
                         append("\n")
                         val nestedObjectName = "${method.methodName.replaceFirstChar { it.uppercase() }}TypeRef"
                         append("  /**\n")
                         append("   * ${method.methodName} 方法的 TypeReference 生成器\n")
                         append("   */\n")
-                        append("  public object $nestedObjectName : TypeReference<${method.returnType}>() {\n")
+                        append("  public object $nestedObjectName : TypeReference<$processedReturnType>() {\n")
                         append("  }\n")
                     }
-                    
-                    append("}\n")
                 }
                 
-                // 直接写入文件
-                val file = codeGenerator.createNewFile(
-                    Dependencies(false),
-                    "llh.fanclubvup.ksp.generated",
-                    "${serviceName}CacheNames"
-                )
-                file.write(fileContent.toByteArray())
-                file.close()
-                
-                logger.info("已生成 ${serviceName}CacheNames.kt 文件，包含 ${methods.size} 个方法")
+                append("}\n")
             }
+            
+            // 插入导入语句
+            val importsString = imports.joinToString("\n")
+            val finalContent = "package llh.fanclubvup.ksp.generated\n\n" + importsString + "\n\n" + fileContent.substringAfter("\n\n")
+            
+            // 直接写入文件
+            val file = codeGenerator.createNewFile(
+                Dependencies(false),
+                "llh.fanclubvup.ksp.generated",
+                "${serviceName}CacheNames"
+            )
+            file.write(finalContent.toByteArray())
+            file.close()
+            
+            logger.info("已生成 ${serviceName}CacheNames.kt 文件，包含 ${methods.size} 个方法")
         }
     }
     

@@ -12,6 +12,7 @@ import llh.fanclubvup.apiserver.dto.JsonWrapper
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordLiveStatus
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordPageView
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordQuerySpec
+import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordQueryWeekSpec
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
 import llh.fanclubvup.ksp.annon.PublicAccessUrl
 import org.springframework.web.bind.annotation.*
@@ -58,5 +59,12 @@ class AnchorLiveRecordApi(
             service.fetchEndLiveRecord(roomId, last)
         )
     }
+
+    @PublicAccessUrl
+    @PostMapping("/week-live-record")
+    @Operation(summary = "查询周直播记录")
+    fun fetchWeekLiveRecord(@RequestBody spec: AnchorLiveRecordQueryWeekSpec) = JsonWrapper.ok(
+        service.fetchWeekLiveRecord(spec)
+    )
 
 }

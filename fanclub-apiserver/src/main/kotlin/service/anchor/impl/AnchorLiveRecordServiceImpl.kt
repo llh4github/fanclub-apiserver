@@ -10,9 +10,16 @@ import llh.fanclubvup.apiserver.consts.enums.LiveRecordStatus
 import llh.fanclubvup.apiserver.entity.anchor.*
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordEndLiveInput
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordLiveStatus
+import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordQueryWeekSpec
+import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveTimeRecord
 import llh.fanclubvup.apiserver.service.BaseDatabaseServiceImpl
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
 import llh.fanclubvup.common.consts.CacheKeyPrefix
+import llh.fanclubvup.common.utils.LocalDateTimeUtil
+import llh.fanclubvup.ksp.annon.CacheNameGen
+import llh.fanclubvup.ksp.generated.AnchorLiveRecordServiceCacheHelper
+import llh.fanclubvup.ksp.generated.AnchorLiveRecordServiceCacheHelper.FETCH_END_LIVE_RECORD_CACHE_PREFIX
+import llh.fanclubvup.ksp.generated.AnchorLiveRecordServiceCacheHelper.FETCH_WEEK_LIVE_RECORD_CACHE_PREFIX
 import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.babyfish.jimmer.sql.kt.ast.expression.*
 import org.springframework.beans.factory.annotation.Autowired
@@ -109,13 +116,15 @@ class AnchorLiveRecordServiceImpl(
         } ?: AnchorLiveRecordLiveStatus(null, LiveRecordStatus.UNKNOWN)
     }
 
+    @CacheNameGen
     override fun fetchEndLiveRecord(
         roomId: Long,
         last: Int
     ): List<AnchorLiveRecordLiveStatus> {
+        val key = "$FETCH_END_LIVE_RECORD_CACHE_PREFIX:$roomId:$last"
         return cacheData(
-            "AnchorLiveRecordService:fetchEndLiveRecord:$roomId:$last",
-            object : TypeReference<List<AnchorLiveRecordLiveStatus>>() {}
+            key,
+            AnchorLiveRecordServiceCacheHelper.FetchEndLiveRecordTypeRef,
         ) {
             createQuery {
                 orderBy(table.liveTime.desc())
@@ -123,6 +132,23 @@ class AnchorLiveRecordServiceImpl(
                 where(table.liveStatus eq LiveRecordStatus.END_LIVING)
                 select(table.fetch(AnchorLiveRecordLiveStatus::class))
             }.limit(last).execute()
+        } ?: emptyList()
+    }
+
+    @CacheNameGen
+    override fun fetchWeekLiveRecord(spec: AnchorLiveRecordQueryWeekSpec): List<AnchorLiveTimeRecord> {
+        val key = "$FETCH_WEEK_LIVE_RECORD_CACHE_PREFIX:${spec.roomId}:${spec.week}"
+        return cacheData(
+            key,
+            AnchorLiveRecordServiceCacheHelper.FetchWeekLiveRecordTypeRef
+        ) {
+            val range = LocalDateTimeUtil.weekRange(spec.week)
+            createQuery {
+                where(table.liveTime.between(range.first, range.second))
+                where(table.roomId eq spec.roomId)
+                where(table.liveStatus.eq(LiveRecordStatus.END_LIVING))
+                select(table.fetch(AnchorLiveTimeRecord::class))
+            }.execute()
         } ?: emptyList()
     }
 }

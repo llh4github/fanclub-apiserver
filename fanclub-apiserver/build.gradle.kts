@@ -36,11 +36,13 @@ dependencies {
     implementation(libs.springdoc.ui)
     implementation(libs.yitter.idgenerator)
     implementation(project(":fanclub-bilibili"))
-//    implementation(project(":fanclub-bilisdk"))
     implementation(project(":fanclub-common"))
     implementation(project(":fanclub-ksp"))
     implementation(libs.bundles.jjwt)
 
+    implementation("org.springframework.ai:spring-ai-starter-model-openai")
+
+    implementation(libs.easy.captcha)
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
@@ -82,21 +84,43 @@ ksp {
 graalvmNative {
     binaries {
         named("main") {
+            // AWT/Swing 支持配置
+            buildArgs.add("--initialize-at-build-time=java.awt.Toolkit,java.awt.GraphicsEnvironment")
+            buildArgs.add("--allow-incomplete-classpath")
 
-            // 性能和兼容性优化
+            // 网络和安全性
             buildArgs.add("--enable-url-protocols=http,https")
             buildArgs.add("--enable-all-security-services")
-            buildArgs.add("--no-fallback")
+
+            // 详细日志和调试
             buildArgs.addAll(
-                "--report-unsupported-elements-at-runtime",  // 报告不支持的运行时元素
-                "--no-fallback",  // 禁用回退模式，强制暴露问题
-                "--verbose",  // 输出详细日志
-                "-H:TraceClassInitialization=true",// 跟踪类初始化
-                "-H:+ReportExceptionStackTraces",  // 报告异常堆栈
-                "-H:+ReportUnsupportedElementsAtRuntime",  // 报告不支持的运行时元素
-                "-H:+PrintClassInitialization",  // 打印类初始化信息
-                "-H:+AddAllCharsets"  // 包含所有字符集
+                "--report-unsupported-elements-at-runtime",
+                "-H:+ReportExceptionStackTraces",
+                "-H:+AddAllCharsets"
             )
+
+            // AWT 相关类初始化配置
+            buildArgs.addAll(
+                "--initialize-at-run-time=java.awt.image.ColorModel",
+                "--initialize-at-run-time=java.awt.image.BufferedImage",
+                "--initialize-at-run-time=sun.java2d.Disposer",
+                "--initialize-at-run-time=sun.awt.X11GraphicsEnvironment",
+                "--initialize-at-run-time=java.awt.Font",
+                "--initialize-at-run-time=java.awt.Graphics2D",
+                "--initialize-at-run-time=java.awt.RenderingHints",
+                "--initialize-at-run-time=java.awt.geom.AffineTransform",
+                "--initialize-at-run-time=java.awt.image.DataBufferInt",
+                "--initialize-at-run-time=java.awt.image.Raster",
+                "--initialize-at-run-time=java.awt.image.WritableRaster"
+            )
+
+            // 验证码库相关配置
+            buildArgs.addAll(
+                "--initialize-at-run-time=com.pig4cloud.captcha.SpecCaptcha",
+                "--initialize-at-run-time=com.pig4cloud.captcha.base.Captcha"
+            )
+            
+            resources.autodetect()
         }
     }
 }

@@ -34,3 +34,9 @@ AnchorLiveTimeRecord {
     liveTime?
     endLiveTime
 }
+
+specification AnchorLiveRecordQueryWeekSpec {
+    @io.swagger.v3.oas.annotations.media.Schema(title = "当前周的任意一天")
+    week: java.time.LocalDate
+    roomId
+}

@@ -6,7 +6,7 @@
 package llh.fanclubvup.apiserver.service.anchor.impl
 
 import llh.fanclubvup.apiserver.entity.anchor.AnchorFollowerNum
-import llh.fanclubvup.apiserver.entity.anchor.biliId
+import llh.fanclubvup.apiserver.entity.anchor.bid
 import llh.fanclubvup.apiserver.entity.anchor.cntDate
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorFollowerDateNum
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorFollowerDateNumQuerySpec
@@ -49,7 +49,7 @@ class AnchorFollowerNumServiceImpl(
         ) {
             createQuery {
                 orderBy(table.cntDate.desc())
-                where(table.biliId.eq(biliId))
+                where(table.bid.eq(biliId))
                 where(table.cntDate.lt(cntDate))
                 select(table.fetch(AnchorFollowerDateNum::class))
             }.execute()

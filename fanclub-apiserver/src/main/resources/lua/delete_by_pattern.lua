@@ -39,41 +39,33 @@ for i = 1, #KEYS do
     local pattern = KEYS[i]
     
     -- 跳过不安全的模式：空模式或 "*"
-    if not pattern or pattern == "" or pattern == "*" then
-        -- 直接跳过，继续处理下一个模式
-        goto continue
-    end
-    
-    -- 重置游标，开始扫描当前模式
-    cursor = 0
-    
-    -- 循环扫描，直到游标回到 0(扫描完成)
-    repeat
-        -- 使用 SCAN 命令迭代 key
-        -- 参数：当前游标、MATCH 模式、COUNT 每次返回的数量
-        -- pcall 用于捕获可能的错误
-        local ok, res = pcall(redis.call, 'SCAN', cursor, 'MATCH', pattern, 'COUNT', 1000)
-        if not ok then
-            -- 如果扫描出错，跳过当前模式，继续处理下一个
-            goto continue
-        end
+    if pattern and pattern ~= "" and pattern ~= "*" then
+        -- 重置游标，开始扫描当前模式
+        cursor = 0
+        
+        -- 循环扫描，直到游标回到 0(扫描完成)
+        repeat
+            -- 使用 SCAN 命令迭代 key
+            -- 参数：当前游标、MATCH 模式、COUNT 每次返回的数量
+            -- pcall 用于捕获可能的错误
+            local ok, res = pcall(redis.call, 'SCAN', cursor, 'MATCH', pattern, 'COUNT', 1000)
+            if ok then
+                -- 更新游标为下一次迭代的起始位置
+                cursor = tonumber(res[1])
+                -- 获取本次扫描到的 key 列表
+                local keys = res[2]
 
-        -- 更新游标为下一次迭代的起始位置
-        cursor = tonumber(res[1])
-        -- 获取本次扫描到的 key 列表
-        local keys = res[2]
-
-        -- 如果有扫描到的 key，则逐个删除
-        if keys then
-            for j = 1, #keys do
-                -- 使用 UNLINK 异步删除 key，不会阻塞 Redis 主线程
-                redis.call('UNLINK', keys[j])
-                total_count = total_count + 1
+                -- 如果有扫描到的 key，则逐个删除
+                if keys then
+                    for j = 1, #keys do
+                        -- 使用 UNLINK 异步删除 key，不会阻塞 Redis 主线程
+                        redis.call('UNLINK', keys[j])
+                        total_count = total_count + 1
+                    end
+                end
             end
-        end
-    until cursor == 0
-    
-    ::continue::
+        until cursor == 0
+    end
 end
 
 -- 返回删除的 key 总数（可能为 0，表示没有删除任何 key）

@@ -43,6 +43,6 @@ class AnchorFollowerNumApi(
     @PostMapping("/query-history")
     @Operation(summary = "查询历史数量")
     fun queryHistoryNum(@RequestBody @Validated spec: AnchorFollowerDateNumQuerySpec) = JsonWrapper.ok(
-        service.queryHistoryNum(spec.biliId, spec.cntDate)
+        service.queryHistoryNum(spec.bid, spec.cntDate)
     )
 }
