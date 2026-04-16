@@ -17,10 +17,6 @@ import java.time.LocalDate
 @KeyUniqueConstraint
 interface AnchorLiveDuration : BaseEntity, AnchorRoomIdAware {
 
-    @Key(group = "live_stat_date_uk")
-    @Column(name = "room_id")
-    @get:Schema(title = "直播间ID", description = "直播间ID", example = "114514")
-    override val roomId: Long
 
     @Key(group = "live_stat_date_uk")
     @Column(name = "stat_date")

@@ -22,10 +22,6 @@ import java.time.LocalDateTime
 @Schema(title = "主播直播记录")
 interface AnchorLiveRecord : BaseEntity, AnchorRoomIdAware {
 
-    @Key(group = "room_live_record_uk")
-    @Column(name = "room_id")
-    @get:Schema(title = "直播间ID", description = "直播间ID", example = "114514")
-    override val roomId: Long
 
     @Key(group = "room_live_record_uk")
     @Column(name = "live_key")

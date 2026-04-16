@@ -12,7 +12,6 @@ import llh.fanclubvup.apiserver.entity.AnchorBidAware
 import llh.fanclubvup.apiserver.entity.BaseEntity
 import llh.fanclubvup.apiserver.entity.CreatorAware
 import llh.fanclubvup.apiserver.utils.CreateUpdateGroup
-import llh.fanclubvup.common.BID
 import org.babyfish.jimmer.sql.Entity
 import org.babyfish.jimmer.sql.Key
 import org.babyfish.jimmer.sql.Table
@@ -24,8 +23,6 @@ import org.hibernate.validator.constraints.Range
 @Table(name = "anchor_song")
 interface AnchorSong : BaseEntity, CreatorAware, AnchorBidAware {
 
-    @Key(group = "bid_name_uniq")
-    override val bid: BID
 
     @Key(group = "bid_name_uniq")
     @get:NotBlank(groups = [CreateUpdateGroup::class], message = "数据主键不能为空")

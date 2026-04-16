@@ -70,7 +70,7 @@ class AnchorFollowerNumSchedule(
                     // 更新缓存
                     // see AnchorFollowerNumServiceImpl.queryNum
                     val key = CacheKeyPrefix.SERVICE_CACHE_KEY + "AnchorFollowerNumService:queryNum:" +
-                            input.biliId + ":" + now
+                            input.bid + ":" + now
                     redisTemplate.opsForValue().set(key, input.followerNum.toString(), expire)
                     logger.info { "已更新主播 $uId 粉丝数：${data.follower}" }
                 },
