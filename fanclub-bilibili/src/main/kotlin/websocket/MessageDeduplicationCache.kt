@@ -44,9 +44,7 @@ object MessageDeduplicationCache {
      * @return true 表示消息已处理过，false 表示消息未处理过
      */
     fun isDuplicate(message: String): Boolean {
-        // 使用消息内容的哈希码作为缓存键
-        val key = message.hashCode().toString()
         // 如果缓存中已存在，则表示消息已处理过
-        return cache.putIfAbsent(key, true) != null
+        return cache.putIfAbsent(message, true) != null
     }
 }
