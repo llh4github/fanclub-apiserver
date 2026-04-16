@@ -30,7 +30,8 @@ class JwtService(
 ) {
     private val logger = KotlinLogging.logger {}
     private val userIDKey = "userID"
-    private val anchorIdKey = "anchor"
+    private val anchorIdKey = "bid"
+    private val roomIdKey = "roomId"
     private val roleKey = "role"
 
     /**
@@ -53,17 +54,19 @@ class JwtService(
             userId = claims.get(userIDKey, Long::class.javaObjectType),
             uname = claims.subject,
             role = claims[roleKey].toString(),
-            anchorId = claims.get(anchorIdKey, Long::class.javaObjectType),
+            bid = claims.get(anchorIdKey, Long::class.javaObjectType),
+            roomId = claims.get(roomIdKey, Long::class.javaObjectType),
             details = details
         )
     }
 
     fun createToken(ua: UserAccount, type: JwtType = JwtType.ACCESS): Result<JwtInfo> {
         return createExpireToken(ua.id, ua.username, type) {
-            mapOf(
-                roleKey to ua.role,
-                anchorIdKey to (ua.anchor?.biliId ?: -1L)
-            )
+            buildMap {
+                put(roleKey, ua.role)
+                ua.anchor?.biliId?.let { put(anchorIdKey, it) }
+                ua.anchor?.roomId?.let { put(roomIdKey, it) }
+            }
         }
     }
 
@@ -121,7 +124,7 @@ class JwtService(
         } else {
             jwtProperty.tokenExpireTime.refresh
         }
-        val jwtId = IdGenerator.nextIdStr()
+        val jwtId = IdGenerator.nextShortId()
         val builder = Jwts.builder()
             .id(jwtId)
             .subject(subject)

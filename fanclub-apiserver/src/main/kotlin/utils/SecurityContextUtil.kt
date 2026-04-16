@@ -26,6 +26,10 @@ object SecurityContextUtil {
         return RoleEnums.ANCHOR == authenticationToken().roleType
     }
 
+    fun isAdmin(): Boolean {
+        return RoleEnums.ADMIN == authenticationToken().roleType
+    }
+
     fun currentRole(): RoleEnums {
         return authenticationToken().roleType
     }
@@ -33,8 +37,15 @@ object SecurityContextUtil {
     /**
      * 获取当前用户anchorId
      */
-    fun anchorId(): BID? {
-        return authenticationToken().anchorId
+    fun bid(): BID? {
+        return authenticationToken().bid
+    }
+
+    /**
+     * 获取当前用户房间ID
+     */
+    fun roomId(): Long? {
+        return authenticationToken().roomId
     }
 
     fun currentUsername(): String {
