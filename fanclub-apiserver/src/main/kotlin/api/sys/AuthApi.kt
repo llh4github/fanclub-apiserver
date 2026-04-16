@@ -33,7 +33,7 @@ class AuthApi(
         if (!captchaService.validCaptcha(req.captchaKey, req.captcha)) {
             return JsonWrapper.fail("9999", "验证码错误或已过期")
         }
-        val password = cryptoService.decryptWithSessionKey(req.password, req.cryptoSid)
+        val password = cryptoService.decryptWithSessionKey(req.cryptoSid, req.password)
             ?: return JsonWrapper.fail("9999", "密码错误")
         val reqDecrypt = req.copy(password = password)
 
