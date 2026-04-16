@@ -53,6 +53,11 @@ object SecurityContextUtil {
         return authenticationToken().roomId
     }
 
+    fun roomIdOrThrow(): Long {
+        return authenticationToken().roomId
+            ?: throw AnchorOperateException.absenceAnchorInfo(message = "未绑定主播房间信息")
+    }
+
     fun currentUsername(): String {
         return authenticationToken().uname
     }
