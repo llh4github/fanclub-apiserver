@@ -34,7 +34,7 @@ class AuthApi(
             return JsonWrapper.fail("9999", "验证码错误或已过期")
         }
         val password = cryptoService.decryptWithSessionKey(req.cryptoSid, req.password)
-            ?: return JsonWrapper.fail("9999", "密码错误")
+            ?: return JsonWrapper.fail("9999", "数据解密失败")
         val reqDecrypt = req.copy(password = password)
 
         return JsonWrapper.ok(userService.login(reqDecrypt))
