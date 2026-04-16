@@ -43,6 +43,7 @@ alter table anchor_song
 
 create unique index anchor_song_bid_name_uindex
     on anchor_song (bid, name);
-
+create index anchor_song_updated_time_index
+    on anchor_song (updated_time desc);
 alter table anchor_follower_num
     rename column bili_id to bid;
