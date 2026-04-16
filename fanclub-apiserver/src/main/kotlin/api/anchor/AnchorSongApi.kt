@@ -53,20 +53,22 @@ class AnchorSongApi(
         @RequestBody @Validated
         input: AnchorSongUpdateInput
     ): JsonWrapper<Void> {
-
+        val tips = "歌曲名已存在"
         if (SecurityContextUtil.isAnchor()) {
             val bid = SecurityContextUtil.bidOrThrow()
             val saveInput = input.copy(bid = bid)
             service.updateById(
                 saveInput,
-                existBySpec = AnchorSongUniqueForUpdateSpec(input.id, bid, input.name)
+                existBySpec = AnchorSongUniqueForUpdateSpec(input.id, bid, input.name),
+                duplicateTip = tips
             )
             return JsonWrapper.ok()
         }
         if (SecurityContextUtil.isAdmin()) {
             service.updateById(
                 input,
-                existBySpec = AnchorSongUniqueForUpdateSpec(input.id, input.bid, input.name)
+                existBySpec = AnchorSongUniqueForUpdateSpec(input.id, input.bid, input.name),
+                duplicateTip = tips
             )
             return JsonWrapper.ok()
         }
