@@ -9,7 +9,11 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import llh.fanclubvup.apiserver.dto.crypto.KeyExchangeResponse
 import llh.fanclubvup.apiserver.utils.IdGenerator
 import llh.fanclubvup.common.consts.CacheKeyPrefix
+import llh.fanclubvup.common.excptions.AppRuntimeException
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.redis.core.StringRedisTemplate
+import org.springframework.data.redis.core.script.DefaultRedisScript
 import org.springframework.stereotype.Service
 import java.security.KeyPairGenerator
 import java.security.PrivateKey
@@ -48,6 +52,10 @@ class CryptoService(
         private const val RSA_PRIVATE_KEY_PREFIX = CacheKeyPrefix.CRYPTO_KEY + "rsa:private:"
         private val DEFAULT_TTL = Duration.ofHours(25)
     }
+
+    @Autowired
+    @Qualifier("deleteByPattern")
+    private lateinit var deleteByPattern: DefaultRedisScript<Long>
 
     /**
      * 生成随机 AES 密钥
@@ -221,21 +229,21 @@ class CryptoService(
             cipher.init(Cipher.DECRYPT_MODE, privateKey)
 
             val encryptedAesKey = Base64.decode(encryptedAesKeyBase64)
-            logger.debug { 
+            logger.debug {
                 "开始解密 AES 密钥 - 会话ID: $sessionId, " +
-                "加密数据长度: ${encryptedAesKey.size}字节, " +
-                "加密算法: $RSA_TRANSFORMATION"
+                        "加密数据长度: ${encryptedAesKey.size}字节, " +
+                        "加密算法: $RSA_TRANSFORMATION"
             }
-            
+
             val aesKeyBytes = cipher.doFinal(encryptedAesKey)
             logger.debug { "AES 密钥解密成功，密钥长度: ${aesKeyBytes.size}字节" }
 
             restoreAesKey(aesKeyBytes)
         } catch (e: Exception) {
-            logger.error(e) { 
+            logger.error(e) {
                 "RSA 解密失败 - 会话ID: $sessionId, " +
-                "可能原因: 1)前端使用了错误的公钥 2)加密算法不匹配 3)数据被篡改\n" +
-                "期望算法: $RSA_TRANSFORMATION"
+                        "可能原因: 1)前端使用了错误的公钥 2)加密算法不匹配 3)数据被篡改\n" +
+                        "期望算法: $RSA_TRANSFORMATION"
             }
             null
         }
@@ -270,9 +278,14 @@ class CryptoService(
      * @param sessionId 会话ID
      */
     fun deleteSessionKey(sessionId: String) {
-        redisTemplate.delete("${SESSION_KEY_PREFIX}$sessionId")
-        redisTemplate.delete("${RSA_PUBLIC_KEY_PREFIX}$sessionId")
-        redisTemplate.delete("${RSA_PRIVATE_KEY_PREFIX}$sessionId")
+        redisTemplate.execute(
+            deleteByPattern,
+            listOf(
+                "${SESSION_KEY_PREFIX}$sessionId",
+                "${RSA_PUBLIC_KEY_PREFIX}$sessionId",
+                "${RSA_PRIVATE_KEY_PREFIX}$sessionId",
+            ), ""
+        )
     }
 
     /**
@@ -299,7 +312,10 @@ class CryptoService(
      * @return 是否成功
      */
     fun completeKeyExchange(sessionId: String, encryptedAesKeyBase64: String): Boolean {
-        val aesKey = decryptAesKey(encryptedAesKeyBase64, sessionId) ?: return false
+        val aesKey = decryptAesKey(encryptedAesKeyBase64, sessionId) ?: run {
+            deleteSessionKey(sessionId)
+            throw AppRuntimeException("AES 密钥解密失败")
+        }
         saveSessionKey(sessionId, aesKey)
         return true
     }

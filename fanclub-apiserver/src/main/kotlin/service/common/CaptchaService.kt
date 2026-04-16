@@ -44,6 +44,6 @@ class CaptchaService(
      */
     fun validCaptcha(key: String, answer: String): Boolean {
         val realAnswer = redisTemplate.opsForValue().get("${CacheKeyPrefix.CAPTCHA_KEY}$key") ?: return false
-        return realAnswer == answer
+        return realAnswer.equals(answer, true)
     }
 }
