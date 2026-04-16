@@ -7,8 +7,8 @@ package llh.fanclubvup.apiserver.entity.anchor
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
+import llh.fanclubvup.apiserver.entity.AnchorBidAware
 import llh.fanclubvup.apiserver.entity.BaseEntity
-import llh.fanclubvup.common.BID
 import llh.fanclubvup.common.consts.DatetimeConstant
 import org.babyfish.jimmer.sql.Entity
 import org.babyfish.jimmer.sql.Table
@@ -17,9 +17,7 @@ import java.time.LocalDateTime
 @Entity
 @Schema(title = "主播直播日程安排")
 @Table(name = "anchor_live_schedule")
-interface AnchorLiveSchedule : BaseEntity {
-    @get:Schema(title = "B站ID", description = "通常称为UID", example = "114514")
-    val bid: BID
+interface AnchorLiveSchedule : BaseEntity, AnchorBidAware {
 
     @get:Schema(title = "直播主题", description = "直播主题", example = "今天是周日")
     val topic: String

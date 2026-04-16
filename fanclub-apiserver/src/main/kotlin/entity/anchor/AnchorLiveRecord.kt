@@ -8,6 +8,7 @@ package llh.fanclubvup.apiserver.entity.anchor
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import llh.fanclubvup.apiserver.consts.enums.LiveRecordStatus
+import llh.fanclubvup.apiserver.entity.AnchorRoomIdAware
 import llh.fanclubvup.apiserver.entity.BaseEntity
 import llh.fanclubvup.common.consts.DatetimeConstant
 import org.babyfish.jimmer.sql.Column
@@ -19,12 +20,12 @@ import java.time.LocalDateTime
 @Entity
 @Table(name = "anchor_live_record")
 @Schema(title = "主播直播记录")
-interface AnchorLiveRecord : BaseEntity {
+interface AnchorLiveRecord : BaseEntity, AnchorRoomIdAware {
 
     @Key(group = "room_live_record_uk")
     @Column(name = "room_id")
     @get:Schema(title = "直播间ID", description = "直播间ID", example = "114514")
-    val roomId: Long
+    override val roomId: Long
 
     @Key(group = "room_live_record_uk")
     @Column(name = "live_key")
