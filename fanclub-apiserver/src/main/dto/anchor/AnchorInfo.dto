@@ -11,6 +11,10 @@ AnchorInfo {
 specification AnchorInfoQuerySpec {
     pageParam: llh.fanclubvup.apiserver.dto.PageQueryRequest
 }
+specification AnchorIdExistSpec {
+    biliId
+    roomId
+}
 
 @io.swagger.v3.oas.annotations.media.Schema(title = "主播分页查询结果数据")
 AnchorInfoPageView {

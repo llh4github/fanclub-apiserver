@@ -280,7 +280,7 @@ class CryptoService(
      * @param sessionId 会话ID
      * @return RSA 公钥（Base64）
      */
-    private fun initiateKeyExchange(sessionId: String): String {
+    fun initiateKeyExchange(sessionId: String): String {
         return generateAndStoreRsaKeys(sessionId)
     }
 

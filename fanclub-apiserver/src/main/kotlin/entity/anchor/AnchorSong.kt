@@ -6,8 +6,10 @@
 package llh.fanclubvup.apiserver.entity.anchor
 
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
 import llh.fanclubvup.apiserver.entity.BaseEntity
+import llh.fanclubvup.apiserver.entity.CreatorAware
 import llh.fanclubvup.apiserver.utils.CreateUpdateGroup
 import llh.fanclubvup.common.BID
 import org.babyfish.jimmer.sql.Entity
@@ -19,13 +21,14 @@ import org.hibernate.validator.constraints.Range
 @Entity
 @Schema(title = "主播歌曲")
 @Table(name = "anchor_song")
-interface AnchorSong : BaseEntity {
+interface AnchorSong : BaseEntity, CreatorAware {
 
     @Key(group = "bid_name_uniq")
     @get:Schema(title = "主播BID", description = "B站ID", example = "114514")
     val bid: BID
 
     @Key(group = "bid_name_uniq")
+    @get:NotBlank(groups = [CreateUpdateGroup::class], message = "数据主键不能为空")
     @get:Length(max = 255, groups = [CreateUpdateGroup::class])
     @get:Schema(title = "歌曲名", description = "歌曲名称", example = "Tom")
     val name: String

@@ -3,6 +3,7 @@ export llh.fanclubvup.apiserver.entity.anchor.AnchorSong
 
 @io.swagger.v3.oas.annotations.media.Schema(title = "数据分页查询请求体")
 specification AnchorSongQuerySpec {
+    bid!
     like(name)
     pageParam: llh.fanclubvup.apiserver.dto.PageQueryRequest
 }
@@ -10,4 +11,29 @@ specification AnchorSongQuerySpec {
 @io.swagger.v3.oas.annotations.media.Schema(title = "主播歌曲分页查询结果数据")
 AnchorSongPageView {
     #allScalars
+}
+
+specification AnchorSongUniqueSpec {
+    bid!
+    name!
+}
+specification AnchorSongUniqueForUpdateSpec {
+    ne(id) as selfId
+    bid!
+    name!
+}
+
+input AnchorSongAddInput {
+    bid
+    name
+    price?
+    bv?
+}
+
+input AnchorSongUpdateInput {
+    id!
+    bid
+    name
+    price?
+    bv?
 }

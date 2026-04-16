@@ -6,6 +6,7 @@
 package llh.fanclubvup.apiserver.dto.security
 
 import llh.fanclubvup.apiserver.consts.enums.RoleEnums
+import llh.fanclubvup.common.BID
 import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.web.authentication.WebAuthenticationDetails
@@ -14,13 +15,15 @@ class JwtUserLoginAuthenticationToken(
     val userId: Long,
     val uname: String,
     val role: String,
-    val anchorId: Long? = null, // TODO 根据开放接口测试情况传什么
+    val bid: BID? = null,
+    val roomId: Long? = null,
     val details: WebAuthenticationDetails? = null,
 ) : AbstractAuthenticationToken(listOf(SimpleGrantedAuthority("ROLE_$role"))) {
 
     init {
         isAuthenticated = true
     }
+
     val roleType by lazy { RoleEnums.parse(role) }
 
     override fun getCredentials(): Any {

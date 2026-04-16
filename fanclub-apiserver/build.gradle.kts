@@ -92,16 +92,10 @@ graalvmNative {
             buildArgs.add("--enable-url-protocols=http,https")
             buildArgs.add("--enable-all-security-services")
 
-            // 禁用回退，强制暴露问题
-            buildArgs.add("--no-fallback")
-
             // 详细日志和调试
             buildArgs.addAll(
                 "--report-unsupported-elements-at-runtime",
-                "--verbose",
-                "-H:TraceClassInitialization=true",
                 "-H:+ReportExceptionStackTraces",
-                "-H:+PrintClassInitialization",
                 "-H:+AddAllCharsets"
             )
 
@@ -110,7 +104,20 @@ graalvmNative {
                 "--initialize-at-run-time=java.awt.image.ColorModel",
                 "--initialize-at-run-time=java.awt.image.BufferedImage",
                 "--initialize-at-run-time=sun.java2d.Disposer",
-                "--initialize-at-run-time=sun.awt.X11GraphicsEnvironment"
+                "--initialize-at-run-time=sun.awt.X11GraphicsEnvironment",
+                "--initialize-at-run-time=java.awt.Font",
+                "--initialize-at-run-time=java.awt.Graphics2D",
+                "--initialize-at-run-time=java.awt.RenderingHints",
+                "--initialize-at-run-time=java.awt.geom.AffineTransform",
+                "--initialize-at-run-time=java.awt.image.DataBufferInt",
+                "--initialize-at-run-time=java.awt.image.Raster",
+                "--initialize-at-run-time=java.awt.image.WritableRaster"
+            )
+
+            // 验证码库相关配置
+            buildArgs.addAll(
+                "--initialize-at-run-time=com.pig4cloud.captcha.SpecCaptcha",
+                "--initialize-at-run-time=com.pig4cloud.captcha.base.Captcha"
             )
             
             resources.autodetect()

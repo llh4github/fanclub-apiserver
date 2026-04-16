@@ -8,5 +8,6 @@ UserAccount {
     role
     anchor {
         biliId
+        roomId
     }
 }
