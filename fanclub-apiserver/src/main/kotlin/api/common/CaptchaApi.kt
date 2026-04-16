@@ -25,6 +25,6 @@ class CaptchaApi(
     @GetMapping("/generate")
     fun generateCaptcha() =
         JsonWrapper.ok(
-            captchaService.generateCaptcha()
+            captchaService.generateCaptcha(len = 4)
         )
 }

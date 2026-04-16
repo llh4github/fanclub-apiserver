@@ -45,7 +45,8 @@ class CryptoService(
         private const val GCM_TAG_LENGTH = 128
         private const val RSA_ALGORITHM = "RSA"
         private const val RSA_KEY_SIZE = 2048
-        private const val RSA_TRANSFORMATION = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding"
+        // 使用与前端Web Crypto API兼容的RSA算法
+        private const val RSA_TRANSFORMATION = "RSA/ECB/OAEPWithSHA-1AndMGF1Padding"
 
         private const val SESSION_KEY_PREFIX = CacheKeyPrefix.CRYPTO_KEY + "session:"
         private const val RSA_PUBLIC_KEY_PREFIX = CacheKeyPrefix.CRYPTO_KEY + "rsa:public:"
@@ -226,6 +227,7 @@ class CryptoService(
 
         return try {
             val cipher = Cipher.getInstance(RSA_TRANSFORMATION)
+            // 使用默认的 OAEP 参数，与前端 Web Crypto API 保持一致
             cipher.init(Cipher.DECRYPT_MODE, privateKey)
 
             val encryptedAesKey = Base64.decode(encryptedAesKeyBase64)
