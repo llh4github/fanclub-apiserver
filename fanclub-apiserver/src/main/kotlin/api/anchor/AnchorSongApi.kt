@@ -7,6 +7,7 @@ package llh.fanclubvup.apiserver.api.anchor
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import llh.fanclubvup.apiserver.consts.Liko
 import llh.fanclubvup.apiserver.dto.DeleteIds
 import llh.fanclubvup.apiserver.dto.JsonWrapper
 import llh.fanclubvup.apiserver.dto.PageResponse
@@ -31,17 +32,33 @@ class AnchorSongApi(
     fun getById(@RequestParam("id") id: Long) =
         JsonWrapper.ok(service.getById(id))
 
-    @PublicAccessUrl
     @PostMapping("/page")
     @Operation(summary = "分页查询")
     fun pageQuery(
         @RequestBody queryParam: AnchorSongQuerySpec
     ): JsonWrapper<PageResponse<AnchorSongPageView>> {
         val query = if (SecurityContextUtil.isAnchor()) {
-            queryParam.copy(bid = SecurityContextUtil.bidOrThrow())
+            // 让全局过滤器设定bid条件，避免生成重复条件
+            queryParam.copy(bid = null)
         } else {
             queryParam
         }
+        return JsonWrapper.ok(
+            service.pageQuery(
+                AnchorSongPageView::class,
+                query,
+                query.pageParam,
+            )
+        )
+    }
+
+    @PublicAccessUrl
+    @PostMapping("/page/liko")
+    @Operation(summary = "liko专用分页查询", description = "公开访问")
+    fun pageQueryLiko(
+        @RequestBody queryParam: AnchorSongQuerySpec
+    ): JsonWrapper<PageResponse<AnchorSongPageView>> {
+        val query = queryParam.copy(bid = Liko.BID)
         return JsonWrapper.ok(
             service.pageQuery(
                 AnchorSongPageView::class,

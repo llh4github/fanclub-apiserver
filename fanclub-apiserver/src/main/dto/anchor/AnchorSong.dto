@@ -3,7 +3,7 @@ export llh.fanclubvup.apiserver.entity.anchor.AnchorSong
 
 @io.swagger.v3.oas.annotations.media.Schema(title = "数据分页查询请求体")
 specification AnchorSongQuerySpec {
-    bid!
+    bid
     like(name)
     pageParam: llh.fanclubvup.apiserver.dto.PageQueryRequest
 }
