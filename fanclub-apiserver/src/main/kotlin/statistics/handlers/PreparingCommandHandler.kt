@@ -6,6 +6,8 @@
 package llh.fanclubvup.apiserver.statistics.handlers
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import llh.fanclubvup.apiserver.components.FanclubSupportHttp
+import llh.fanclubvup.apiserver.dto.StopLiveReq
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordEndLiveInput
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
 import llh.fanclubvup.bilibili.dm.DanmuCommandHandler
@@ -21,16 +23,22 @@ import kotlin.reflect.KClass
 @Component
 class PreparingCommandHandler(
     private val anchorLiveRecordService: AnchorLiveRecordService,
+    private val fanclubSupportHttp: FanclubSupportHttp,
 ) : DanmuCommandHandler<PreparingCommand>, BaseMsgCommandHandler() {
     private val logger = KotlinLogging.logger {}
 
     override fun handle(cmd: PreparingCommand, roomId: Long) {
         logger.info { "直播间 $roomId 进入准备状态（下播）, sendTime: ${cmd.sendTime}" }
-        
+
         val endTime = cmd.sendTime
         if (endTime == null) {
             logger.error { "直播准备中命令关键参数缺乏:\n$cmd" }
             return
+        }
+        executors.execute {
+            fanclubSupportHttp.stopLive(
+                StopLiveReq(roomId)
+            )
         }
 
         val endLiveDateTime = LocalDateTimeUtil.toLocalDateTimeEpochMilli(endTime)

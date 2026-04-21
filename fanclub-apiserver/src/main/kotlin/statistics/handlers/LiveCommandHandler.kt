@@ -6,7 +6,9 @@
 package llh.fanclubvup.apiserver.statistics.handlers
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import llh.fanclubvup.apiserver.components.FanclubSupportHttp
 import llh.fanclubvup.apiserver.consts.enums.LiveRecordStatus
+import llh.fanclubvup.apiserver.dto.StartLiveReq
 import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordAddInput
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
 import llh.fanclubvup.bilibili.dm.DanmuCommandHandler
@@ -24,6 +26,7 @@ import kotlin.reflect.KClass
 @Component
 class LiveCommandHandler(
     private val anchorLiveRecordService: AnchorLiveRecordService,
+    private val fanclubSupportHttp: FanclubSupportHttp,
 ) : DanmuCommandHandler<LiveCommand>, BaseMsgCommandHandler() {
     private val logger = KotlinLogging.logger {}
 
@@ -34,6 +37,9 @@ class LiveCommandHandler(
         if (liveKey == null) {
             logger.error { "直播开始命令关键参数缺乏:\n$cmd" }
             return
+        }
+        executors.execute {
+            fanclubSupportHttp.startLive(StartLiveReq(roomId, liveKey))
         }
 
         val liveDateTime =
