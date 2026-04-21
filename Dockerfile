@@ -27,7 +27,7 @@ RUN --mount=type=cache,target=/home/gradle/.gradle/caches \
     gradle :fanclub-apiserver:bootJar -x test --no-daemon --parallel
 
 # 提取 JAR 分层
-RUN java -Djarmode=tools -jar fanclub-apiserver/build/libs/*.jar extract --layers --destination extracted
+RUN java -Djarmode=tools -jar fanclub-apiserver/build/libs/fanclub-apiserver.jar extract --layers --destination extracted
 
 # 运行阶段
 FROM bellsoft/liberica-openjre-debian:25-cds
@@ -54,7 +54,8 @@ RUN mkdir "logs"
 COPY --from=builder /app/extracted/dependencies/ ./
 COPY --from=builder /app/extracted/spring-boot-loader/ ./
 COPY --from=builder /app/extracted/snapshot-dependencies/ ./
-COPY --from=builder /app/extracted/application/ ./
+COPY --from=builder /app/extracted/application/fanclub-apiserver.jar ./application.jar
+COPY --from=builder /app/extracted/application/lib/ ./lib/
 
 # 执行 AOT 缓存训练
 RUN java -XX:AOTCacheOutput=app.aot -Dspring.context.exit=onRefresh -jar application.jar

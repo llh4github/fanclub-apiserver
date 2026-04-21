@@ -14,14 +14,13 @@ import llh.fanclubvup.apiserver.entity.anchor.followerNum
 import llh.fanclubvup.apiserver.service.BaseDatabaseServiceImpl
 import llh.fanclubvup.apiserver.service.anchor.AnchorFollowerNumService
 import llh.fanclubvup.common.BID
+import llh.fanclubvup.ksp.annon.CacheNameGen
+import llh.fanclubvup.ksp.generated.AnchorFollowerNumServiceCacheHelper
 import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.babyfish.jimmer.sql.kt.ast.expression.desc
 import org.babyfish.jimmer.sql.kt.ast.expression.eq
 import org.babyfish.jimmer.sql.kt.ast.expression.lt
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
-import tools.jackson.core.type.TypeReference
-import java.time.Duration
 import java.time.LocalDate
 
 @Service
@@ -30,22 +29,29 @@ class AnchorFollowerNumServiceImpl(
 ) : AnchorFollowerNumService,
     BaseDatabaseServiceImpl<AnchorFollowerNum>(AnchorFollowerNum::class, sqlClient) {
 
-    @Cacheable(cacheNames = ["AnchorFollowerNumService:queryNum"], key = "#spec.biliId +':'+ #spec.cntDate")
+    @CacheNameGen
     override fun queryNum(spec: AnchorFollowerDateNumQuerySpec): Int {
-        return createQuery {
-            where(spec)
-            select(table.followerNum)
-        }.fetchFirstOrNull() ?: 0
+        val prefix = AnchorFollowerNumServiceCacheHelper.QUERY_NUM_CACHE_PREFIX
+        return cacheData(
+            "$prefix:${spec.bid}:${spec.cntDate}",
+            AnchorFollowerNumServiceCacheHelper.QueryNumTypeRef,
+        ) {
+            createQuery {
+                where(spec)
+                select(table.followerNum)
+            }.fetchFirstOrNull() ?: 0
+        } ?: 0
     }
 
+    @CacheNameGen
     override fun queryHistoryNum(
         biliId: BID,
         cntDate: LocalDate
     ): List<AnchorFollowerDateNum> {
+        val prefix = AnchorFollowerNumServiceCacheHelper.QUERY_HISTORY_NUM_CACHE_PREFIX
         return cacheData(
-            "AnchorFollowerNumService:queryHistoryNum:$biliId:$cntDate",
-            object : TypeReference<List<AnchorFollowerDateNum>>() {},
-            Duration.ofHours(24)
+            "$prefix:$biliId:$cntDate",
+            AnchorFollowerNumServiceCacheHelper.QueryHistoryNumTypeRef,
         ) {
             createQuery {
                 orderBy(table.cntDate.desc())

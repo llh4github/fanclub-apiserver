@@ -5,6 +5,7 @@
 
 package llh.fanclubvup.apiserver.dto
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(title = "分页结果类")
@@ -31,11 +32,13 @@ interface PageQueryParamTrait {
 }
 
 @Schema(title = "默认分页参数类")
-open class PageQueryRequest : PageQueryParamTrait {
-
+data class PageQueryRequest(
+    @JsonProperty("pageIndex")
     @get:Schema(title = "页码", example = "1")
-    override val pageIndex: Int = 1
+    override val pageIndex: Int = 1,
 
+    @JsonProperty("pageSize")
     @Schema(title = "页大小", example = "10")
-    override val pageSize: Int = 10
-}
+    override val pageSize: Int = 10,
+) : PageQueryParamTrait
+
