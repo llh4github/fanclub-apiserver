@@ -16,17 +16,8 @@ if [ -n "$NAMESPACE" ]; then
     NAMESPACE="${NAMESPACE}/"
 fi
 
-# 设置构建类型，默认为 native（可选值：native, jar）
-BUILD_TYPE="${BUILD_TYPE:-native}"
-
-# 根据构建类型选择 Dockerfile
-if [ "$BUILD_TYPE" = "jar" ]; then
-    DOCKERFILE="Dockerfile-jar"
-    echo "📦 使用 JAR 模式构建镜像"
-else
-    DOCKERFILE="Dockerfile"
-    echo "⚡ 使用 Native Image 模式构建镜像"
-fi
+# 固定使用 JAR 模式构建镜像
+DOCKERFILE="Dockerfile"
 
 echo "build docker images with version: $VERSION"
 echo "build type: $BUILD_TYPE"
@@ -39,6 +30,3 @@ docker build --build-arg BUILD_TIME="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
     --build-arg GIT_COMMIT_TIME="$(git show -s --format=%ci HEAD)" \
     -f "$DOCKERFILE" \
     -t ${NAMESPACE}fanclub-apiserver:$VERSION -t ${NAMESPACE}fanclub-apiserver:latest .
-
-echo "build docker images done."
-docker image prune -f || true

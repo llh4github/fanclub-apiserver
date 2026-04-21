@@ -1,5 +1,5 @@
 # 构建阶段
-FROM gradle:9.4.1-jdk25-graal-noble AS builder
+FROM gradle:9.4.1-jdk25-ubi10 AS builder
 WORKDIR /app
 COPY .. .
 
@@ -24,25 +24,14 @@ RUN mkdir -p ${RESOURCES_DIR} && \
 
 # 分阶段构建依赖缓存
 RUN --mount=type=cache,target=/home/gradle/.gradle/caches \
-    gradle :fanclub-apiserver:nativeCompile -x test --no-daemon --parallel
+    gradle :fanclub-apiserver:bootJar -x test --no-daemon --parallel
+
+# 提取 JAR 分层
+RUN java -Djarmode=tools -jar fanclub-apiserver/build/libs/*.jar extract --layers --destination extracted
 
 # 运行阶段
-FROM redhat/ubi9-minimal:9.7
-WORKDIR /app
-
-# 安装 AWT 所需依赖（使用 microdnf 包管理器）
-RUN microdnf update -y && \
-    microdnf install -y \
-    fontconfig \
-    freetype \
-    libX11 \
-    libXext \
-    libXrender \
-    libXi \
-    libXtst \
-    mesa-libGL \
-    dejavu-sans-fonts \
-    && microdnf clean all
+FROM bellsoft/liberica-openjre-debian:25-cds
+WORKDIR /application
 
 ARG APP_VERSION
 ARG GIT_COMMIT_ID
@@ -52,16 +41,34 @@ LABEL maintainer="lilinhong_coding@foxmail.com" \
       git_commit_id=${GIT_COMMIT_ID} \
       version=${APP_VERSION} \
       description="A api server."
+
 # 设置禁用 Flyway 的环境变量
 ENV SPRING_FLYWAY_ENABLED=false
 ENV SPRING_DOCKER_COMPOSE_ENABLED=false
 ENV SPRING_APPLICATION_VERSION=${APP_VERSION}
+
 # 创建日志目录
 RUN mkdir "logs"
 
-# 从构建阶段复制所有模块的构建产物
-COPY --from=builder /app/fanclub-apiserver/build/native/nativeCompile/fanclub-apiserver  api-server
+# 复制提取的分层内容
+COPY --from=builder /app/extracted/dependencies/ ./
+COPY --from=builder /app/extracted/spring-boot-loader/ ./
+COPY --from=builder /app/extracted/snapshot-dependencies/ ./
+COPY --from=builder /app/extracted/application/ ./
+
+# 执行 AOT 缓存训练
+RUN java -XX:AOTCacheOutput=app.aot -Dspring.context.exit=onRefresh -jar application.jar
+
+# 健康检查：使用 Spring Boot Actuator 健康端点
+# interval: 检查间隔 30秒
+# timeout: 超时时间 10秒
+# start-period: 启动等待时间 60秒（应用启动需要时间）
+# retries: 连续失败次数达到3次则认为不健康
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/actuator/health || exit 1
 
 # 暴露应用端口
 EXPOSE 8080
-ENTRYPOINT ["./api-server", "--server.port=8080"]
+
+# 启动应用（启用 AOT 缓存）
+ENTRYPOINT ["java", "-XX:AOTCache=app.aot", "-jar", "application.jar", "--server.port=8080"]
