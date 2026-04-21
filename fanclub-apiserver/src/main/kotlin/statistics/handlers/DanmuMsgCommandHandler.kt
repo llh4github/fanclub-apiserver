@@ -6,9 +6,7 @@
 package llh.fanclubvup.apiserver.statistics.handlers
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import llh.fanclubvup.apiserver.components.FanclubSupportHttp
 import llh.fanclubvup.apiserver.consts.StatisticsCacheKey
-import llh.fanclubvup.apiserver.dto.DanmuReq
 import llh.fanclubvup.apiserver.dto.viwer.DanmuWsMsg
 import llh.fanclubvup.apiserver.websocket.DanmuWebsocketHandler
 import llh.fanclubvup.bilibili.dm.DanmuCommandHandler
@@ -25,7 +23,6 @@ import kotlin.reflect.KClass
 @Component
 class DanmuMsgCommandHandler(
     private val danmuWebsocketHandler: DanmuWebsocketHandler,
-    private val fanclubSupportHttp: FanclubSupportHttp,
 ) : DanmuCommandHandler<DanmuMsgCommand>, BaseMsgCommandHandler() {
     private val logger = KotlinLogging.logger {}
 
@@ -48,9 +45,9 @@ class DanmuMsgCommandHandler(
                 return
             }
             // 辅助统计系统
-            executors.execute {
-                fanclubSupportHttp.danmu(DanmuReq(sender.suid, roomId, content))
-            }
+//            executors.execute {
+//                fanclubSupportHttp.danmu(DanmuReq(sender.suid, roomId, content))
+//            }
             // 网页同步一些弹幕
             executors.execute {
                 // 屏蔽低等级的弹幕
