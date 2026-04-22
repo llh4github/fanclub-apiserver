@@ -42,13 +42,13 @@ class SuperChatCommandHandler(
                         bid = bid,
                         sendTime = LocalDateTimeUtil.toLocalDateTimeEpochMilli(sendTime)
                     )
-                    val rs = viewerScBvRecordService.save(input)
+                    val rs = viewerScBvRecordService.upsert(input, ViewerScBvRecordService.defaultUniqueKeys)
 
                     // 清除BV计数缓存
                     val key = ViewerScBvRecordServiceCacheHelper.BV_COUNT_CACHE_PREFIX + ":${roomId}:${bv}"
                     redisTemplate.delete(key)
 
-                    logger.info { "保存SC发送记录结果：${rs?.id}" }
+                    logger.info { "保存SC发送记录结果：${rs}" }
                 } else {
                     logger.error { "醒目留言关键参数缺乏，无法保存SC发送记录\n$cmd" }
                 }

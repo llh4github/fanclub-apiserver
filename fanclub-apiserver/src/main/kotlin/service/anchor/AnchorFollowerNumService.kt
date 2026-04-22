@@ -15,7 +15,7 @@ import kotlin.reflect.KProperty1
 
 interface AnchorFollowerNumService : BaseDatabaseService<AnchorFollowerNum> {
 
-    object UniqueKeys {
+    companion object {
         val defaultUniqueKeys: List<KProperty1<AnchorFollowerNum, *>> =
             listOf(AnchorFollowerNum::bid, AnchorFollowerNum::cntDate)
     }

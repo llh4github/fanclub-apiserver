@@ -65,7 +65,7 @@ class AnchorFollowerNumSchedule(
                     }
                     val data = response.data!!
                     val input = AnchorFollowerNumInput(uId, data.follower, now)
-                    service.upsert(input, AnchorFollowerNumService.UniqueKeys.defaultUniqueKeys)
+                    service.upsert(input, AnchorFollowerNumService.defaultUniqueKeys)
                     // 更新缓存
                     // see AnchorFollowerNumServiceImpl.queryNum
                     val key = CacheKeyPrefix.SERVICE_CACHE_KEY + "AnchorFollowerNumService:queryNum:" +
