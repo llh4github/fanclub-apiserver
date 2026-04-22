@@ -11,6 +11,7 @@ import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordAddInput
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
 import llh.fanclubvup.bilibili.dm.DanmuCommandHandler
 import llh.fanclubvup.bilibili.dm.cmd.LiveCommand
+import llh.fanclubvup.common.consts.CacheKeyPrefix
 import llh.fanclubvup.common.utils.LocalDateTimeUtil
 import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.springframework.stereotype.Component
@@ -44,6 +45,7 @@ class LiveCommandHandler(
             else LocalDateTime.now()
         val input = AnchorLiveRecordAddInput(roomId, liveKey, liveDateTime, LiveRecordStatus.LIVING)
         anchorLiveRecordService.save(input, SaveMode.UPSERT)
+        redisTemplate.delete(CacheKeyPrefix.SERVICE_CACHE_KEY + "AnchorLiveRecordService:fetchLiveStatus:$roomId")
         logger.info { "保存开播记录" }
     }
 
