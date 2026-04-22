@@ -13,7 +13,6 @@ import llh.fanclubvup.apiserver.service.sys.ScraperFeatureService
 import llh.fanclubvup.bilibili.http.BiliHttpClient
 import llh.fanclubvup.common.BID
 import llh.fanclubvup.common.consts.CacheKeyPrefix
-import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -66,7 +65,7 @@ class AnchorFollowerNumSchedule(
                     }
                     val data = response.data!!
                     val input = AnchorFollowerNumInput(uId, data.follower, now)
-                    service.save(input, saveMode = SaveMode.UPSERT)
+                    service.upsert(input, AnchorFollowerNumService.UniqueKeys.defaultUniqueKeys)
                     // 更新缓存
                     // see AnchorFollowerNumServiceImpl.queryNum
                     val key = CacheKeyPrefix.SERVICE_CACHE_KEY + "AnchorFollowerNumService:queryNum:" +

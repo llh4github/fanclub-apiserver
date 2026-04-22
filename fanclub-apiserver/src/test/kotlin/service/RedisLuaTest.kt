@@ -26,10 +26,6 @@ class RedisLuaTest {
     private lateinit var deleteByPattern: DefaultRedisScript<Long>
 
     @Test
-    fun test() {
-    }
-
-    @Test
     fun test_deleteByPattern() {
         val size = 10
         val key = "test-delete:324"

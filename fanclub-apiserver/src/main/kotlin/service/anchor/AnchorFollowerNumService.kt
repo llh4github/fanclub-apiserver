@@ -11,8 +11,15 @@ import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorFollowerDateNumQuerySpec
 import llh.fanclubvup.apiserver.service.BaseDatabaseService
 import llh.fanclubvup.common.BID
 import java.time.LocalDate
+import kotlin.reflect.KProperty1
 
 interface AnchorFollowerNumService : BaseDatabaseService<AnchorFollowerNum> {
+
+    object UniqueKeys {
+        val defaultUniqueKeys: List<KProperty1<AnchorFollowerNum, *>> =
+            listOf(AnchorFollowerNum::bid, AnchorFollowerNum::cntDate)
+    }
+
     /**
      * 查询指定时间段内粉丝数
      */

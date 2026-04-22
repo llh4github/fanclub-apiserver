@@ -11,6 +11,7 @@ import llh.fanclubvup.apiserver.dto.PageQueryRequest
 import llh.fanclubvup.apiserver.dto.PageResponse
 import llh.fanclubvup.apiserver.entity.BaseEntity
 import llh.fanclubvup.apiserver.exception.DbOperateException
+import org.babyfish.jimmer.Input
 import org.babyfish.jimmer.View
 import org.babyfish.jimmer.sql.ast.mutation.AssociatedSaveMode
 import org.babyfish.jimmer.sql.ast.mutation.SaveMode
@@ -33,6 +34,7 @@ import org.springframework.transaction.support.TransactionTemplate
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty1
 
 abstract class BaseDatabaseServiceImpl<E : BaseEntity>(
     private val entityType: KClass<E>,
@@ -178,6 +180,13 @@ abstract class BaseDatabaseServiceImpl<E : BaseEntity>(
         }
     }
 
+    override fun upsert(entity: Input<E>, keyProps: List<KProperty1<E, *>>): Boolean {
+        return sqlClient.save(entity, SaveMode.UPSERT) {
+            if (keyProps.isNotEmpty()) {
+                setKeyProps(*keyProps.toTypedArray())
+            }
+        }.isRowAffected
+    }
 
     override fun updateById(
         entity: E,

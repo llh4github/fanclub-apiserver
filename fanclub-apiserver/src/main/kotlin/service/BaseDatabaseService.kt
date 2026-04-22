@@ -13,6 +13,7 @@ import org.babyfish.jimmer.View
 import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.babyfish.jimmer.sql.kt.ast.query.specification.KSpecification
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty1
 
 interface BaseDatabaseService<E : BaseEntity> {
     fun getById(id: Long): E?
@@ -87,6 +88,8 @@ interface BaseDatabaseService<E : BaseEntity> {
         existBySpec: KSpecification<E>? = null,
         duplicateTip: String = "数据已存在",
     ): E?
+
+    fun upsert(entity: Input<E>, keyProps: List<KProperty1<E, *>> = emptyList()): Boolean
 
     /**
      * 保存数据
