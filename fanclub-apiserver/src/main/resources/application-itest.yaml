@@ -1,7 +1,7 @@
-# Docker Compose 环境配置
+# 集成测试配置
 spring:
   application:
-    name: fanclub-vup-docker
+    name: fanclub-vup-itest
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:fanclub_dev}
     username: ${DB_USERNAME:postgres}
@@ -18,7 +18,7 @@ spring:
   docker:
     compose:
       file: compose.yaml
-      enabled: true
+      enabled: false
       lifecycle-management: ${DOCKER_LIFECYCLE:start_only}
   ai:
     openai:
@@ -64,5 +64,3 @@ fanclub:
     dyn:
       scheduler:
         liko: https://www.bilibili.com/opus/1159880489834643463
-    scraper:
-      current-bid: 1111
