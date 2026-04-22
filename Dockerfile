@@ -31,7 +31,7 @@ RUN java -Djarmode=tools -jar fanclub-apiserver/build/libs/fanclub-apiserver.jar
 
 # 运行阶段
 FROM bellsoft/liberica-openjre-debian:25-cds
-WORKDIR /application
+WORKDIR /app
 
 ARG APP_VERSION
 ARG GIT_COMMIT_ID
