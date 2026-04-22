@@ -23,7 +23,7 @@ echo "build docker images with version: $VERSION"
 echo "build type: $BUILD_TYPE"
 echo "dockerfile: $DOCKERFILE"
 
-docker build --build-arg BUILD_TIME="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+docker build --pull=false  --build-arg BUILD_TIME="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
     --build-arg GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)" \
     --build-arg APP_VERSION="$VERSION" \
     --build-arg GIT_COMMIT_ID="$(git rev-parse --short HEAD)" \

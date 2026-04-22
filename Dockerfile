@@ -30,7 +30,7 @@ RUN --mount=type=cache,target=/home/gradle/.gradle/caches \
 RUN java -Djarmode=tools -jar fanclub-apiserver/build/libs/fanclub-apiserver.jar extract --layers --destination extracted
 
 # 运行阶段
-FROM bellsoft/liberica-openjre-debian:25-cds
+FROM bellsoft/liberica-openjre-debian:25-cds AS runtime
 WORKDIR /app
 
 ARG APP_VERSION
