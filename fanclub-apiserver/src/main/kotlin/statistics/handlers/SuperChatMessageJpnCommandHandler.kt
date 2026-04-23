@@ -13,6 +13,7 @@ import llh.fanclubvup.bilibili.dm.cmd.SuperChatMessageJpnCommand
 import llh.fanclubvup.bilibili.utils.BvUtil
 import llh.fanclubvup.common.utils.LocalDateTimeUtil
 import llh.fanclubvup.ksp.generated.ViewerScBvRecordServiceCacheHelper
+import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.springframework.stereotype.Component
 import kotlin.reflect.KClass
 
@@ -44,7 +45,8 @@ class SuperChatMessageJpnCommandHandler(
                         bid = bid,
                         sendTime = LocalDateTimeUtil.toLocalDateTime(sendTime)
                     )
-                    val rs = viewerScBvRecordService.save(input)
+                    // 普通SC 跟 日语SC  的 id 应该是相同的
+                    val rs = viewerScBvRecordService.save(input, SaveMode.INSERT_IF_ABSENT)
 
                     // 清除BV计数缓存
                     val key = ViewerScBvRecordServiceCacheHelper.BV_COUNT_CACHE_PREFIX + ":${roomId}:${bv}"
