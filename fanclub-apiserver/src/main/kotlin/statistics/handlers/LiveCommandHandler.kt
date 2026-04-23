@@ -44,7 +44,8 @@ class LiveCommandHandler(
             if (liveTime != null) LocalDateTimeUtil.toLocalDateTime(liveTime)
             else LocalDateTime.now()
         val input = AnchorLiveRecordAddInput(roomId, liveKey, liveDateTime, LiveRecordStatus.LIVING)
-        anchorLiveRecordService.save(input, SaveMode.UPSERT)
+        // 可能换区之类的操作，会再发一次此命令，所以只用 INSERT_IF_ABSENT 即可
+        anchorLiveRecordService.save(input, SaveMode.INSERT_IF_ABSENT)
         redisTemplate.delete(CacheKeyPrefix.SERVICE_CACHE_KEY + "AnchorLiveRecordService:fetchLiveStatus:$roomId")
         logger.info { "保存开播记录" }
     }
