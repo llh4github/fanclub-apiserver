@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2026 llh
+ * Contact: lilinhong_coding@foxmail.com
+ */
+
 package llh.fanclubvup.apiserver.api.sys
 
 import io.swagger.v3.oas.annotations.Operation
@@ -32,7 +37,7 @@ class UserApi(
         ) {
             throw AppRuntimeException("无权修改其他人的密码")
         }
-        val password = cryptoService.decryptWithSessionKey(req.password, req.cryptoSid)
+        val password = cryptoService.decryptWithSessionKey(req.cryptoSid, req.password)
             ?: return JsonWrapper.fail("9999", "密码不合法")
         val reqDecrypt = req.copy(password = password)
         return JsonWrapper.ok(

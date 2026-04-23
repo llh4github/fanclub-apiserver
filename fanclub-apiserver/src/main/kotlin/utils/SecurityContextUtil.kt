@@ -71,7 +71,7 @@ object SecurityContextUtil {
         try {
             authenticationToken()
             return true
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
             return false
         }
     }

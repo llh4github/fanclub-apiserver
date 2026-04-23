@@ -26,12 +26,17 @@ class PreparingCommandHandler(
 
     override fun handle(cmd: PreparingCommand, roomId: Long) {
         logger.info { "直播间 $roomId 进入准备状态（下播）, sendTime: ${cmd.sendTime}" }
-        
+
         val endTime = cmd.sendTime
         if (endTime == null) {
             logger.error { "直播准备中命令关键参数缺乏:\n$cmd" }
             return
         }
+//        executors.execute {
+//            fanclubSupportHttp.stopLive(
+//                StopLiveReq(roomId)
+//            )
+//        }
 
         val endLiveDateTime = LocalDateTimeUtil.toLocalDateTimeEpochMilli(endTime)
         val input = AnchorLiveRecordEndLiveInput(roomId, endLiveDateTime)

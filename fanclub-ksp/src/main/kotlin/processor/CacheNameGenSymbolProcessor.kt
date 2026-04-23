@@ -172,15 +172,20 @@ class CacheNameGenSymbolProcessor(
                             val genericParamMatch = Regex("<(.*?)>").find(method.returnType)
                             if (genericParamMatch != null) {
                                 val genericParam = genericParamMatch.groupValues[1]
-                                // 处理常见类型的导入
-                                if (genericParam.contains("AnchorLiveRecordLiveStatus")) {
-                                    imports.add("import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordLiveStatus")
-                                }
-                                if (genericParam.contains("AnchorLiveScheduleItemView")) {
-                                    imports.add("import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveScheduleItemView")
-                                }
-                                if (genericParam.contains("AnchorLiveTimeRecord")) {
-                                    imports.add("import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveTimeRecord")
+                                        // 动态处理类型导入
+                                // 提取泛型参数中的类型名
+                                val typeNames = genericParam.split(",").map { it.trim() }
+                                typeNames.forEach { typeName ->
+                                    // 跳过基本类型
+                                    val basicTypes = listOf("String", "Int", "Long", "Double", "Float", "Boolean", "Unit")
+                                    if (!basicTypes.contains(typeName) && !typeName.startsWith("kotlin.")) {
+                                        // 尝试为常见的DTO类型添加导入
+                                        if (typeName.contains("Anchor")) {
+                                            imports.add("import llh.fanclubvup.apiserver.entity.anchor.dto.$typeName")
+                                        } else if (typeName.contains("Bili")) {
+                                            imports.add("import llh.fanclubvup.bilibili.props.$typeName")
+                                        }
+                                    }
                                 }
                             }
                         }

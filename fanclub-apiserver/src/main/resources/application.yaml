@@ -51,6 +51,8 @@ springdoc:
   swagger-ui:
     enabled: ${FANCLUB_SWAGGER_ENABLED:false}
 fanclub:
+  support:
+    base-url: ${FANCLUB_SUPPORT_BASE_URL}
   web:
     domain: http://localhost
   bili:

@@ -11,6 +11,7 @@ import llh.fanclubvup.apiserver.entity.anchor.dto.AnchorLiveRecordAddInput
 import llh.fanclubvup.apiserver.service.anchor.AnchorLiveRecordService
 import llh.fanclubvup.bilibili.dm.DanmuCommandHandler
 import llh.fanclubvup.bilibili.dm.cmd.LiveCommand
+import llh.fanclubvup.common.consts.CacheKeyPrefix
 import llh.fanclubvup.common.utils.LocalDateTimeUtil
 import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.springframework.stereotype.Component
@@ -35,12 +36,17 @@ class LiveCommandHandler(
             logger.error { "直播开始命令关键参数缺乏:\n$cmd" }
             return
         }
+//        executors.execute {
+//            fanclubSupportHttp.startLive(StartLiveReq(roomId, liveKey))
+//        }
 
         val liveDateTime =
             if (liveTime != null) LocalDateTimeUtil.toLocalDateTime(liveTime)
             else LocalDateTime.now()
         val input = AnchorLiveRecordAddInput(roomId, liveKey, liveDateTime, LiveRecordStatus.LIVING)
-        anchorLiveRecordService.save(input, SaveMode.UPSERT)
+        // 可能换区之类的操作，会再发一次此命令，所以只用 INSERT_IF_ABSENT 即可
+        anchorLiveRecordService.save(input, SaveMode.INSERT_IF_ABSENT)
+        redisTemplate.delete(CacheKeyPrefix.SERVICE_CACHE_KEY + "AnchorLiveRecordService:fetchLiveStatus:$roomId")
         logger.info { "保存开播记录" }
     }
 

@@ -44,6 +44,10 @@ class DanmuMsgCommandHandler(
                 logger.warn { "发送者无效, 忽略\n$cmd" }
                 return
             }
+            // 辅助统计系统
+//            executors.execute {
+//                fanclubSupportHttp.danmu(DanmuReq(sender.suid, roomId, content))
+//            }
             // 网页同步一些弹幕
             executors.execute {
                 // 屏蔽低等级的弹幕

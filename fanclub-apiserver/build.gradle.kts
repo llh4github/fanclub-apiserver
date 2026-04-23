@@ -11,20 +11,19 @@ plugins {
     kotlin("plugin.spring")
     id("org.springframework.boot")
     id("io.spring.dependency-management")
-    id("org.graalvm.buildtools.native")
     alias(libs.plugins.gradle.git.properties)
     alias(libs.plugins.ksp)
 }
 
 description = "fanclub-apiserver"
 
-configurations {
-    all {
-        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
-        exclude(group = "ch.qos.logback", module = "logback-classic")
-        exclude(group = "org.apache.logging.log4j", module = "log4j-to-slf4j")
-    }
-}
+//configurations {
+//    all {
+//        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+//        exclude(group = "ch.qos.logback", module = "logback-classic")
+//        exclude(group = "org.apache.logging.log4j", module = "log4j-to-slf4j")
+//    }
+//}
 
 dependencies {
     ksp(libs.jimmer.ksp)
@@ -68,6 +67,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    testImplementation("org.testcontainers:testcontainers:1.20.0")
+    testImplementation("org.testcontainers:postgresql:1.20.0")
+    testImplementation("org.testcontainers:junit-jupiter:1.20.0")
     runtimeOnly("org.springframework.boot:spring-boot-docker-compose")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
@@ -79,50 +81,6 @@ dependencyManagement {
 // 配置 KSP (如果有)
 ksp {
     arg("springAot", "true")
-}
-
-graalvmNative {
-    binaries {
-        named("main") {
-            // AWT/Swing 支持配置
-            buildArgs.add("--initialize-at-build-time=java.awt.Toolkit,java.awt.GraphicsEnvironment")
-            buildArgs.add("--allow-incomplete-classpath")
-
-            // 网络和安全性
-            buildArgs.add("--enable-url-protocols=http,https")
-            buildArgs.add("--enable-all-security-services")
-
-            // 详细日志和调试
-            buildArgs.addAll(
-                "--report-unsupported-elements-at-runtime",
-                "-H:+ReportExceptionStackTraces",
-                "-H:+AddAllCharsets"
-            )
-
-            // AWT 相关类初始化配置
-            buildArgs.addAll(
-                "--initialize-at-run-time=java.awt.image.ColorModel",
-                "--initialize-at-run-time=java.awt.image.BufferedImage",
-                "--initialize-at-run-time=sun.java2d.Disposer",
-                "--initialize-at-run-time=sun.awt.X11GraphicsEnvironment",
-                "--initialize-at-run-time=java.awt.Font",
-                "--initialize-at-run-time=java.awt.Graphics2D",
-                "--initialize-at-run-time=java.awt.RenderingHints",
-                "--initialize-at-run-time=java.awt.geom.AffineTransform",
-                "--initialize-at-run-time=java.awt.image.DataBufferInt",
-                "--initialize-at-run-time=java.awt.image.Raster",
-                "--initialize-at-run-time=java.awt.image.WritableRaster"
-            )
-
-            // 验证码库相关配置
-            buildArgs.addAll(
-                "--initialize-at-run-time=com.pig4cloud.captcha.SpecCaptcha",
-                "--initialize-at-run-time=com.pig4cloud.captcha.base.Captcha"
-            )
-            
-            resources.autodetect()
-        }
-    }
 }
 
 sourceSets.main {

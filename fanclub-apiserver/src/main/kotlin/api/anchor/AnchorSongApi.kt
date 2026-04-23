@@ -108,6 +108,7 @@ class AnchorSongApi(
             val bid = SecurityContextUtil.bidOrThrow()
             val saveInput = input.copy(bid = bid)
             service.save(saveInput, existBySpec = AnchorSongUniqueSpec(bid, input.name))
+            return JsonWrapper.ok()
         }
         if (SecurityContextUtil.isAdmin()) {
             service.save(input, existBySpec = AnchorSongUniqueSpec(input.bid, input.name))

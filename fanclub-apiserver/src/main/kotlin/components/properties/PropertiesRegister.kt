@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Configuration
 @EnableConfigurationProperties(
     JwtProperty::class,
     WebConfigProperty::class,
+    FanclubSupportProperty::class,
 )
 class PropertiesRegister {
 }
