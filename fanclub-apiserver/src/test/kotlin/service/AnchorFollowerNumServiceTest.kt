@@ -25,11 +25,11 @@ class AnchorFollowerNumServiceTest : BaseITestContainers() {
     fun test_upsertFollowerNum() {
         service.upsert(
             AnchorFollowerNumInput(114514, 114514, LocalDate.now()),
-            AnchorFollowerNumService.UniqueKeys.defaultUniqueKeys
+            AnchorFollowerNumService.defaultUniqueKeys
         )
         service.upsert(
             AnchorFollowerNumInput(114514, 114516, LocalDate.now()),
-            AnchorFollowerNumService.UniqueKeys.defaultUniqueKeys
+            AnchorFollowerNumService.defaultUniqueKeys
         )
         assertEquals(
             114516,
