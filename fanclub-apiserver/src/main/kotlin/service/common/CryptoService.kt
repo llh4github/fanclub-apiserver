@@ -271,7 +271,10 @@ class CryptoService(
      */
     fun getSessionKey(sessionId: String): SecretKey? {
         val base64Key = redisTemplate.opsForValue()
-            .get("${SESSION_KEY_PREFIX}$sessionId") ?: return null
+            .get("${SESSION_KEY_PREFIX}$sessionId") ?: run{
+                logger.warn { "未从redis从找到 $sessionId 的 AES 密钥" }
+                return null
+        }
         return aesKeyFromBase64(base64Key)
     }
 
@@ -340,7 +343,10 @@ class CryptoService(
      * @return 明文或 null
      */
     fun decryptWithSessionKey(sessionId: String, encryptedDataBase64: String): String? {
-        val key = getSessionKey(sessionId) ?: return null
+        val key = getSessionKey(sessionId) ?: run{
+            logger.warn { "未找到会话 $sessionId 的 AES 密钥" }
+            return null
+        }
         return decryptToString(encryptedDataBase64, key)
     }
 }
