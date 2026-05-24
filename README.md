@@ -73,8 +73,8 @@ fanclub-apiserver/
 ### 1. 环境要求
 
 - Go 1.26.2+
-- PostgreSQL 14+
-- Redis 6+
+- PostgreSQL 17+
+- Redis 7+
 
 ### 2. 克隆项目
 
@@ -89,19 +89,19 @@ cd fanclub-apiserver
 go mod tidy
 ```
 
-### 6. 安装 Swag 工具
+### 4. 安装 Swag 工具
 
 ```bash
 go install github.com/swaggo/swag/cmd/swag@latest
 ```
 
-### 7. 生成 Swagger 文档
+### 5. 生成 Swagger 文档
 
 ```bash
 swag fmt && swag init
 ```
 
-### 8. 启动服务
+### 6. 启动服务
 
 使用 VSCode 调试功能启动，参考 `.vscode/launch.json` 配置。
 
@@ -198,6 +198,30 @@ docker run -d -p 8080:8080 \
   fanclub-apiserver:latest
 ```
 
+## VSCode 配置
+
+项目提供了 VSCode 调试配置，简化开发流程。
+
+### launch.json - 调试配置
+
+| 配置名称             | 说明                                   |
+| -------------------- | -------------------------------------- |
+| Run with Swag Init   | 启动前自动执行 `swag fmt && swag init` |
+| Run with Go Generate | 启动前执行预处理任务                   |
+
+### tasks.json - 任务配置
+
+| 任务名称         | 命令                                                   | 说明                      |
+| ---------------- | ------------------------------------------------------ | ------------------------- |
+| swag-fmt-init    | `swag fmt && swag init`                                | 格式化并生成 Swagger 文档 |
+| gorm-gen         | `gorm gen -i ./database/model -o ./database/generated` | 生成 GORM 类型安全代码    |
+| pre-launch-tasks | 依赖 swag-fmt-init                                     | 预处理任务                |
+
+### 使用方法
+
+1. 按 `F5` 或点击调试配置名称启动
+2. 修改 `database/model` 后，运行 `gorm-gen` 任务重新生成代码
+
 ## 开发规范
 
 ### 代码规范
@@ -271,4 +295,4 @@ A: 在 `consts/captcha.go` 中添加新的常量值
 
 ## License
 
-MIT License
+Apache License 2.0
