@@ -193,8 +193,10 @@ func RegisterFunctions(ctx context.Context) error {
 		}
 
 		contentStr := string(scriptContent)
+		contentStr = strings.ReplaceAll(contentStr, "\r\n", "\n")
+		contentStr = strings.ReplaceAll(contentStr, "\r", "\n")
 		contentStr = strings.TrimPrefix(contentStr, "#!lua name=fanclub_apiserver\n")
-		contentStr = strings.TrimSpace(contentStr)
+		contentStr = strings.TrimRight(contentStr, " \t\n")
 		combinedScript.WriteString(contentStr)
 		combinedScript.WriteString("\n\n")
 	}
