@@ -1,154 +1,298 @@
-# Fanclub VUP - B 站虚拟主播数据监控系统
+# Fanclub API
 
-一个基于 Kotlin + Spring Boot 4 的 B站虚拟主播数据监控系统，支持实时弹幕统计、直播状态追踪、观众数据分析等功能。
+## 项目介绍
 
-## 📁 项目结构
+Fanclub API 是一个基于 Fiber 框架开发的 RESTful API 服务，支持用户认证、验证码系统、B站数据采集、树洞功能等模块。
+
+## 📚 技术栈
+
+- **Go 1.26.2** - 开发语言
+- **Fiber v3** - Web 框架
+- **GORM v2** - ORM 数据库访问（使用代码生成）
+- **PostgreSQL** - 主数据库
+- **Redis** - 缓存和会话管理
+- **Sonyflake** - 分布式 ID 生成器
+- **Swagger** - API 文档自动生成
+- **Zap** - 高性能日志库
+- **Viper** - 配置管理
+- **JWT** - 身份认证
+
+## 项目结构
 
 ```
-fanclub-vup/
-├── fanclub-apiserver/        # 主应用服务
-│   ├── src/main/kotlin/
-│   │   ├── api/             # REST API 接口层
-│   │   ├── components/      # Spring 组件配置
-│   │   ├── consts/          # 常量定义
-│   │   ├── dto/             # 数据传输对象
-│   │   ├── entity/          # 数据库实体
-│   │   ├── service/         # 业务逻辑层
-│   │   ├── statistics/      # 数据统计模块
-│   │   └── websocket/       # WebSocket 处理器
-│   └── src/main/resources/
-│       ├── lua/             # Redis Lua 脚本
-│       └── db/pgsql/        # 数据库迁移脚本 (PostgreSQL)
-│
-├── fanclub-bilisdk/         # B 站 SDK 模块
-│   ├── cache/               # 缓存管理
-│   ├── dm/                  # 弹幕处理
-│   ├── http/                # HTTP 客户端
-│   └── scraper/             # 数据采集器
-│
-├── fanclub-common/          # 公共模块
-│   ├── utils/               # 工具类
-│   └── exceptions/          # 自定义异常
-│
-├── docker/                  # Docker 相关配置
-├── compose.yaml            # Docker Compose 配置
-└── build.gradle.kts        # Gradle 构建配置
+fanclub-apiserver/
+├── api/                    # REST API 控制器层
+│   ├── rest/              # API 处理器
+│   └── wrapper/            # 响应包装器
+├── bilibili/              # B站数据采集模块
+│   ├── client.go          # B站 API 客户端
+│   ├── ws.go             # WebSocket 连接管理
+│   ├── handler_*.go      # 事件处理器
+│   └── task_*.go        # 定时任务
+├── cache/                 # Redis 缓存层
+│   ├── base.go          # 缓存基础功能
+│   └── luas/            # Lua 脚本
+├── consts/                # 常量定义
+│   ├── captcha.go       # 验证码场景常量
+│   ├── audit_status.go  # 审核状态常量
+│   └── role.go          # 角色常量
+├── database/             # 数据库层
+│   ├── model/           # 数据模型（修改后需运行代码生成）
+│   ├── generated/       # GORM 生成的代码
+│   └── query_helper.go  # 查询辅助函数
+├── dto/                  # 数据传输对象
+│   ├── req/             # 请求参数结构体
+│   └── resp/           # 响应数据结构体
+├── errs/                 # 错误处理
+│   ├── code.go         # 错误码定义
+│   └── wrap.go         # 错误包装
+├── g/                    # 全局工具和配置
+│   ├── config.go       # 配置加载
+│   ├── db.go           # 数据库连接
+│   ├── redis.go        # Redis 连接
+│   ├── jwt.go          # JWT 工具
+│   └── logger.go       # 日志工具
+├── middleware/           # 中间件
+│   ├── jwt_handler.go  # JWT 认证中间件
+│   └── error_handler.go # 错误处理中间件
+├── resources/            # 资源文件
+│   └── V0.9__base_tables.sql # 数据库 Schema
+├── scheduler/            # 定时任务调度器
+├── services/             # 业务逻辑层
+├── utils/                # 工具函数
+│   ├── crypto.go       # 加密解密工具
+│   ├── markdown.go     # Markdown 处理
+│   └── bcrypt.go       # 密码加密
+├── docs/                 # Swagger 文档（自动生成）
+├── main.go               # 入口文件
+└── config.toml           # 配置文件
 ```
 
-## 🛠️ 技术栈与版本
+## 🚀 安装与运行
 
-### 核心框架
+### 1. 环境要求
 
-- **JDK**: 25 (GraalVM)
-- **Kotlin**: 2.3.10
-- **Spring Boot**: 4.0.3
-- **GraalVM Native Image**: 0.11.4
+- Go 1.26.2+
+- PostgreSQL 17+
+- Redis 7+
 
-### 主要依赖库
-
-- **ORM**: [Jimmer](https://babyfish-ct.github.io/jimmer-doc/zh/docs/overview/welcome/)(Kotlin 优先的 ORM 框架)
-- **数据库驱动**: PostgreSQL Driver
-- **缓存**: Redis 7.4.0 + Spring Data Redis
-- **本地缓存**: Ehcache
-- **JSON 处理**: Jackson (tools.jackson.module)
-- **日志框架**: Log4j2 (spring-boot-starter-log4j2)
-- **API 文档**: SpringDoc OpenAPI 3.0.2 + Swagger UI
-- **ID 生成**: Yitter.IdGenerator 1.0.6
-
-### 构建工具
-
-- **Gradle**: 9.4.1
-- **KSP**: 2.3.5 (Kotlin Symbol Processing)
-
-## 🗄️ 外部服务依赖
-
-### 必需服务
-
-1. **PostgreSQL 17**
-    - 端口：5432
-    - 数据库：fanclub_dev
-    - 字符集：UTF8
-
-2. **Redis Stack 7.4.0**
-    - 端口：6379
-    - 功能：
-        - 缓存热点数据
-        - 弹幕计数统计
-        - JWT Token 管理
-        - 布隆过滤器 (需要 RedisBloom 模块)
-
-### 可选服务
-
-- **Docker Compose**: 用于本地开发环境快速启动依赖服务
-
-## 🚀 本地启动指南
-
-### 前置要求
-
-1. **JDK 25** (推荐使用 GraalVM 或 Oracle JDK)
-2. **Docker & Docker Compose** (推荐)
-3. **Git** (用于版本控制和 Git 信息生成)
-
-### 方式一：使用 Docker  (推荐)
-
-#### 1. 项目导入 IDEA
-
-使用 `FanclubSever-local-docker` 启动项目，这将自动:
-
-- 启动 PostgreSQL 数据库
-- 启动 Redis Stack
-- 创建数据库结构
-
-#### 2. 访问应用
-
-- **应用地址**: http://localhost:8080
-- **Swagger UI**: http://localhost:8080/swagger-ui.html
-- **Actuator 端点**: http://localhost:8080/actuator
-
-### 方式二：完全手动配置
-
-如果不想使用 Docker，需要手动安装和配置。
-
-1. 配置数据库和缓存服务
-2. 修改配置文件
-3. 启动应用
-
-## 🔧 开发与调试
-
-### IDE 配置
-
-- **推荐 IDE**: IntelliJ IDEA
-- **必要插件**:
-    - Kotlin
-    - Spring Boot
-    - Gradle
-
-**项目使用KSP，代码编译一次后才是“完整”的。**
-
-### 构建 Native Image (可选)
+### 2. 克隆项目
 
 ```bash
-# 需要安装 GraalVM
-./gradlew :fanclub-apiserver:nativeCompile -x test
-
-# 生成的可执行文件位于:
-# fanclub-apiserver/build/native/nativeCompile/
+git clone <repository-url>
+cd fanclub-apiserver
 ```
 
-或者使用已有脚本构建 Docker 镜像
+### 3. 安装依赖
 
 ```bash
-image-build.sh
+go mod tidy
 ```
 
-## 📝 注意事项
+### 4. 安装 Swag 工具
 
-1. **Redis 配置**: Redis 7.x 必须安装 RedisBloom 模块
-2. **数据库字符集**: PostgreSQL 默认使用 UTF8 编码，无需额外配置
-3. **Flyway 迁移**: 生产环境建议设置 `spring.flyway.enabled=false`
-4. **性能优化**: 生产环境建议关闭 SQL 显示
-5. **KSP 插件**: 代码需编译一次后才是"完整"的
+```bash
+go install github.com/swaggo/swag/cmd/swag@latest
+```
+
+### 5. 生成 Swagger 文档
+
+```bash
+swag fmt && swag init
+```
+
+### 6. 启动服务
+
+使用 VSCode 调试功能启动，参考 `.vscode/launch.json` 配置。
+
+或命令行启动：
+
+```bash
+go run main.go
+```
+
+## API 文档
+
+启动服务后访问 Swagger UI：
+
+```
+http://localhost:8080/swagger
+```
+
+## ORM 使用（GORM）
+
+### 代码生成
+
+修改 `database/model` 目录下的文件后，需要运行代码生成：
+
+```bash
+gorm gen -i ./database/model -o ./database/generated
+```
+
+### 类型安全查询
+
+```go
+// 使用 GORM Typed API
+q := typed.G[model.SysUser](g.DB)
+q.
+    Select(
+        generated.BaseModel.ID,
+        generated.SysUser.Username,
+        generated.SysUser.Password,
+    ).
+    Where(generated.SysUser.Username.Eq(username)).
+    Scan(appCtx.C, &user)
+```
+
+### 分页查询
+
+```go
+result, err := database.Page[model.TreeholeSubmission](
+    appCtx.C,
+    page,
+    pageSize,
+    generated.TreeholeSubmission.TopicID.Eq(topicID),
+)
+```
+
+## 验证码系统
+
+### 支持的验证码类型
+
+- **点选验证码**：用户点击指定位置
+- **滑动验证码**：用户滑动拼图到正确位置
+
+### 验证码场景
+
+- `login` - 登录场景
+- `submission` - 投稿场景
+
+### API 端点
+
+```
+GET  /api/captcha/click          # 生成点选验证码
+POST /api/captcha/click/verify   # 验证点选验证码
+GET  /api/captcha/slide/generate # 生成滑动验证码
+POST /api/captcha/slide/verify  # 验证滑动验证码
+```
+
+## 🐳 Docker 部署
+
+### 构建镜像
+
+```bash
+./image-build.sh
+```
+
+### 启动服务
+
+```bash
+docker-compose -f compose.yaml up -d
+```
+
+或使用预构建镜像：
+
+```bash
+docker run -d -p 8080:8080 \
+  -v $(pwd)/config-docker.toml:/app/config.toml \
+  fanclub-apiserver:latest
+```
+
+## ⚙️ VSCode 配置
+
+项目提供了 VSCode 调试配置，简化开发流程。
+
+### launch.json - 调试配置
+
+| 配置名称             | 说明                                   |
+| -------------------- | -------------------------------------- |
+| Run with Swag Init   | 启动前自动执行 `swag fmt && swag init` |
+| Run with Go Generate | 启动前执行预处理任务                   |
+
+### tasks.json - 任务配置
+
+| 任务名称         | 命令                                                   | 说明                      |
+| ---------------- | ------------------------------------------------------ | ------------------------- |
+| swag-fmt-init    | `swag fmt && swag init`                                | 格式化并生成 Swagger 文档 |
+| gorm-gen         | `gorm gen -i ./database/model -o ./database/generated` | 生成 GORM 类型安全代码    |
+| pre-launch-tasks | 依赖 swag-fmt-init                                     | 预处理任务                |
+
+### 使用方法
+
+1. 按 `F5` 或点击调试配置名称启动
+2. 修改 `database/model` 后，运行 `gorm-gen` 任务重新生成代码
+
+## 开发规范
+
+### 代码规范
+
+- 使用 Go 1.26.2 语法
+- 函数和方法必须有简明的注释
+- 结构体字段使用 snake_case 的 JSON 标签
+- 使用 `g.Error()` 等方法记录日志
+
+### API 规范
+
+- 请求参数放在 `dto/req` 包
+- 响应数据放在 `dto/resp` 包
+- 使用 Swagger 注解生成文档
+- 返回统一的 JSON 响应格式
+
+### 数据库规范
+
+- 使用 GORM 代码生成
+- 修改 model 后运行代码生成
+- SQL 文件放在 `resources` 目录
+- 使用雪花算法生成 ID
+
+## 🔧 配置说明
+
+主要配置项（`config.toml`）：
+
+```toml
+[server]
+host = "0.0.0.0"
+port = "8080"
+
+[database]
+host = "localhost"
+port = 5432
+user = "postgres"
+password = "your-password"
+dbname = "fanclub"
+
+[redis]
+host = "localhost"
+port = 6379
+password = ""
+db = 0
+
+[bilibili]
+cookies = []  # B站 Cookies 列表
+```
+
+## 常见问题
+
+### Q: 修改 Model 后编译报错？
+
+A: 需要运行代码生成命令：
+
+```bash
+gorm gen -i ./database/model -o ./database/generated
+```
+
+### Q: Swagger 文档不更新？
+
+A: 重新生成文档：
+
+```bash
+swag fmt && swag init
+```
+
+### Q: 如何添加新的验证码场景？
+
+A: 在 `consts/captcha.go` 中添加新的常量值
 
 ## 📄 License
 
-[Apache License](./LICENSE)
+Apache License 2.0

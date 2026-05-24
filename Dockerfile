@@ -1,75 +1,71 @@
-# 构建阶段
-FROM gradle:9.4.1-jdk25-ubi10 AS builder
-WORKDIR /app
-COPY .. .
+# 第一阶段：编译
+FROM golang:1.26.2-alpine AS builder
 
-ENV SPRING_DOCKER_COMPOSE_ENABLED=false
-# 定义构建参数
-ARG APP_VERSION
-ARG BUILD_TIME
-ARG GIT_BRANCH
-ARG GIT_COMMIT_ID
-ARG GIT_COMMIT_TIME
-
-# 设置资源目录变量以避免重复
-ENV RESOURCES_DIR=fanclub-apiserver/src/main/resources
-
-# 生成 git.properties 文件
-RUN mkdir -p ${RESOURCES_DIR} && \
-    echo "build.time=${BUILD_TIME}" > ${RESOURCES_DIR}/git.properties && \
-    echo "app.version=${APP_VERSION}" >> ${RESOURCES_DIR}/git.properties && \
-    echo "git.branch=${GIT_BRANCH}" >> ${RESOURCES_DIR}/git.properties && \
-    echo "git.commit.id.abbrev=${GIT_COMMIT_ID}" >> ${RESOURCES_DIR}/git.properties && \
-    echo "git.commit.time=${GIT_COMMIT_TIME}" >> ${RESOURCES_DIR}/git.properties
-
-# 分阶段构建依赖缓存
-RUN --mount=type=cache,target=/home/gradle/.gradle/caches \
-    gradle :fanclub-apiserver:bootJar -x test --no-daemon --parallel
-
-# 提取 JAR 分层
-RUN java -Djarmode=tools -jar fanclub-apiserver/build/libs/fanclub-apiserver.jar extract --layers --destination extracted
-
-# 运行阶段
-FROM bellsoft/liberica-openjre-debian:25-cds AS runtime
 WORKDIR /app
 
-ARG APP_VERSION
-ARG GIT_COMMIT_ID
+# 配置GOPROXY加速依赖下载
+ENV GOPROXY=https://goproxy.cn,direct
 
-LABEL maintainer="lilinhong_coding@foxmail.com" \
-      license="Apache-2.0" \
-      git_commit_id=${GIT_COMMIT_ID} \
-      version=${APP_VERSION} \
-      description="A api server."
+# 复制go.mod和go.sum文件
+COPY go.mod go.sum ./
 
-# 设置禁用 Flyway 的环境变量
-ENV SPRING_FLYWAY_ENABLED=false
-ENV SPRING_DOCKER_COMPOSE_ENABLED=false
-ENV SPRING_APPLICATION_VERSION=${APP_VERSION}
+# 下载依赖
+RUN go mod download
 
-# 创建日志目录
-RUN mkdir "logs"
+# 复制所有源代码
+COPY . .
 
-# 复制提取的分层内容
-COPY --from=builder /app/extracted/dependencies/ ./
-COPY --from=builder /app/extracted/spring-boot-loader/ ./
-COPY --from=builder /app/extracted/snapshot-dependencies/ ./
-COPY --from=builder /app/extracted/application/fanclub-apiserver.jar ./application.jar
-COPY --from=builder /app/extracted/application/lib/ ./lib/
+# 编译
+ARG VERSION=dev
+ARG GIT_BRANCH=unknown
+ARG GIT_COMMIT=unknown
+ARG BUILD_TIME=unknown
 
-# 执行 AOT 缓存训练
-RUN java -XX:AOTCacheOutput=app.aot -Dspring.context.exit=onRefresh -jar application.jar
+RUN CGO_ENABLED=0 GOOS=linux go build \
+  -a -installsuffix cgo \
+  -ldflags "-X 'fanclub-apiserver/g.Version=$VERSION' -X 'fanclub-apiserver/g.Branch=$GIT_BRANCH' -X 'fanclub-apiserver/g.GitCommit=$GIT_COMMIT' -X 'fanclub-apiserver/g.BuildTime=$BUILD_TIME'" \
+  -o app .
 
-# 健康检查：使用 Spring Boot Actuator 健康端点
-# interval: 检查间隔 30秒
-# timeout: 超时时间 10秒
-# start-period: 启动等待时间 60秒（应用启动需要时间）
-# retries: 连续失败次数达到3次则认为不健康
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8080/actuator/health || exit 1
+# 第二阶段：运行
+FROM alpine:3.22.4 AS runtime
 
-# 暴露应用端口
+# 重新定义构建参数，以便在运行镜像阶段使用
+ARG VERSION=dev
+ARG GIT_BRANCH=unknown
+ARG GIT_COMMIT=unknown
+ARG BUILD_TIME=unknown
+
+# 添加编译信息标签
+LABEL version=$VERSION
+LABEL git.branch=$GIT_BRANCH
+LABEL git.commit=$GIT_COMMIT
+LABEL build.time=$BUILD_TIME
+
+WORKDIR /app
+
+# 安装时区数据（解决 unknown time zone 问题）
+RUN apk add --no-cache tzdata wget
+
+# 创建logs目录
+RUN mkdir -p logs
+
+# 复制编译后的可执行文件
+COPY --from=builder /app/app .
+
+# 日志目录挂载点
+VOLUME ["/app/logs"]
+
+# 配置文件挂载点
+VOLUME ["/app/config.toml"]
+
+# 暴露端口
 EXPOSE 8080
 
-# 启动应用（启用 AOT 缓存）
-ENTRYPOINT ["java", "-XX:AOTCache=app.aot", "-jar", "application.jar", "--server.port=8080"]
+# 运行应用（使用环境变量设定端口）
+ENV SERVER_PORT=8080
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD wget -qO- http://localhost:${SERVER_PORT}/livez || exit 1
+
+CMD ["./app"]

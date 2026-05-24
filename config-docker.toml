@@ -1,0 +1,42 @@
+[server]
+port = 8080
+host = "127.0.0.1"
+swaggerEnabled = true
+requestIDEnabled = true
+responseTimeEnabled = true
+env = "dev"
+domain = ""
+
+[database]
+driver = "postgres"
+path = "host=localhost user=postgres password=123456 dbname=fanclub-go port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+autoMigrate = false
+debug = true
+
+[logs]
+level = "debug"
+
+[redis]
+host = "localhost"
+port = "6379"
+password = ""
+db = 0
+
+[jwt]
+secretKey = "X0pIOx5gRnA2jQIklIgzwbqIhnjA7TsS7g8"
+accessTokenExpiration = 12 # 2小时
+refreshTokenExpiration = 240 # 4小时
+issuer = "fanclub-api"
+
+[oss]
+endpoint = "localhost:7070"
+accessKeyID = ""
+accessKeySecret = ""
+bucket = "likofan"
+region = "z2"
+useSSL = false
+
+[ark]
+apiKey = ""
+baseURL = "https://ark.cn-beijing.volces.com/api/v3"
+modelName = "doubao-seed-1-8-251228"

@@ -1,64 +1,33 @@
-# AI提示词
-.trae
-.prompt
-prompt/
+# 编译产物
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+app
 
-# Gradle相关
-.gradle/
-build/
+# 依赖目录
+vendor/
 
-# IDE相关
+# IDE配置文件
 .idea/
-*.iml
-*.iws
-*.ipr
 .vscode/
 *.swp
 *.swo
 
-# 操作系统相关
-.DS_Store
-Thumbs.db
-
 # 日志文件
-logs/
 *.log
 
-# 临时文件
-tmp/
-temp/
-*.tmp
-
-# Git相关
-.git/
-.gitignore
-
-# 文档文件
-*.md
-README*
-LICENSE*
-
-# 测试相关
-out/
-target/
-
-# 环境配置（敏感信息）
+# 环境变量文件
 .env
-*.env.*
-application-*.yaml
-application-*.yml
-config/
 
 # 数据库文件
 *.db
-*.sqlite
-data/
 
-# 缓存文件
-.cache/
-node_modules/
+# 版本控制文件
+.git/
+.gitignore
 
-# Docker相关
-docker-compose.yml
-.docker/
-docker/
+# Docker相关文件
+Dockerfile
+.dockerignore

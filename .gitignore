@@ -1,51 +1,31 @@
-logs/
-*.log
-*-dev.*
+.trae/
+.lingma/
+.codebuddy/
 *-local.*
-*-test.*
-logs/*.log
-HELP.md
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
+*-prod.*
+# 编译产物
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+app
+docs/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
+# 依赖目录
+vendor/
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### VS Code ###
+# IDE配置文件
+.idea/
 .vscode/
+*.swp
+*.swo
 
-### Kotlin ###
-.kotlin
+# 日志文件
+*.log
 
-### Environment Files ###
+# 环境变量文件
 .env
-.env.local
-.env.*.local
+
+# 数据库文件
+*.db

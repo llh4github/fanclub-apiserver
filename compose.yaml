@@ -1,7 +1,7 @@
 services:
   redis-stack:
     image: redis/redis-stack-server:7.4.0-v8
-    container_name: fanclub_redis
+    container_name: fanclub-apiserver-redis
     ports:
       - "6379:6379"          # Redis 协议端口
     environment:
@@ -16,13 +16,13 @@ services:
     networks:
       - fanclub-network
 
-  mariadb:
+  postgres:
     image: postgres:17-alpine
-    container_name: fanclub-pgsql
+    container_name: fanclub-apiserver-postgres
     environment:
       - TZ=Asia/Shanghai
       - POSTGRES_PASSWORD=123456
-      - POSTGRES_DB=fanclub_dev
+      - POSTGRES_DB=fanclub-go
       - POSTGRES_INITDB_ARGS=--encoding=UTF8
     ports:
       - "5432:5432"
@@ -34,6 +34,28 @@ services:
       start_period: 40s
     networks:
       - fanclub-network
+
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: fanclub-apiserver-rustfs
+    ports:
+      - "7070:7070"          # S3 API 端口
+      - "7071:7071"          # Web UI 端口
+    environment:
+      - TZ=Asia/Shanghai
+      - RUSTFS_DATA_DIR=/data
+      - RUSTFS_REGION=local
+      - RUSTFS_BUCKETS=fanclub
+      - AWS_ACCESS_KEY_ID=admin
+      - AWS_SECRET_ACCESS_KEY=123456
+    volumes:
+      - rustfs-data:/data
+    networks:
+      - fanclub-network
+
+volumes:
+  rustfs-data:
+    driver: local
 
 networks:
   fanclub-network:
