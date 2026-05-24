@@ -1,0 +1,62 @@
+services:
+  redis-stack:
+    image: redis/redis-stack-server:7.4.0-v8
+    container_name: fanclub-apiserver-redis
+    ports:
+      - "6379:6379"          # Redis 协议端口
+    environment:
+      - TZ=Asia/Shanghai
+#      - REDIS_ARGS=--requirepass 123456  # 设置 Redis 访问密码
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - fanclub-network
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: fanclub-apiserver-postgres
+    environment:
+      - TZ=Asia/Shanghai
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=fanclub-go
+      - POSTGRES_INITDB_ARGS=--encoding=UTF8
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - fanclub-network
+
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: fanclub-apiserver-rustfs
+    ports:
+      - "7070:7070"          # S3 API 端口
+      - "7071:7071"          # Web UI 端口
+    environment:
+      - TZ=Asia/Shanghai
+      - RUSTFS_DATA_DIR=/data
+      - RUSTFS_REGION=local
+      - RUSTFS_BUCKETS=fanclub
+      - AWS_ACCESS_KEY_ID=admin
+      - AWS_SECRET_ACCESS_KEY=123456
+    volumes:
+      - rustfs-data:/data
+    networks:
+      - fanclub-network
+
+volumes:
+  rustfs-data:
+    driver: local
+
+networks:
+  fanclub-network:
+    driver: bridge

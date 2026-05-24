@@ -1,0 +1,33 @@
+# 编译产物
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+app
+
+# 依赖目录
+vendor/
+
+# IDE配置文件
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 日志文件
+*.log
+
+# 环境变量文件
+.env
+
+# 数据库文件
+*.db
+
+# 版本控制文件
+.git/
+.gitignore
+
+# Docker相关文件
+Dockerfile
+.dockerignore

@@ -1,0 +1,34 @@
+[server]
+port = 8080
+host = "0.0.0.0"
+swaggerEnabled = false
+requestIDEnabled = false
+responseTimeEnabled = false
+env = "dev"
+domain = ""
+
+[database]
+driver = "postgres"
+path = "host=localhost user=postgres password=postgres dbname=fanclub port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+
+[redis]
+host = "localhost"
+port = "6379"
+password = ""
+db = 0
+
+[logs]
+level = "info"
+
+[ark]
+apiKey = ""
+baseURL = "https://ark.cn-beijing.volces.com/api/v3"
+modelName = "doubao-seed-1-8-251228"
+
+[oss]
+endpoint = "localhost:7070"
+accessKeyID = "admin"
+accessKeySecret = "123456"
+bucket = "fanclub"
+region = "local"
+useSSL = false
