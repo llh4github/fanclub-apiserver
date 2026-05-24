@@ -4,7 +4,7 @@
 
 Fanclub API 是一个基于 Fiber 框架开发的 RESTful API 服务，支持用户认证、验证码系统、B站数据采集、树洞功能等模块。
 
-## 技术栈
+## 📚 技术栈
 
 - **Go 1.26.2** - 开发语言
 - **Fiber v3** - Web 框架
@@ -68,7 +68,7 @@ fanclub-apiserver/
 └── config.toml           # 配置文件
 ```
 
-## 安装与运行
+## 🚀 安装与运行
 
 ### 1. 环境要求
 
@@ -176,7 +176,7 @@ GET  /api/captcha/slide/generate # 生成滑动验证码
 POST /api/captcha/slide/verify  # 验证滑动验证码
 ```
 
-## Docker 部署
+## 🐳 Docker 部署
 
 ### 构建镜像
 
@@ -198,7 +198,7 @@ docker run -d -p 8080:8080 \
   fanclub-apiserver:latest
 ```
 
-## VSCode 配置
+## ⚙️ VSCode 配置
 
 项目提供了 VSCode 调试配置，简化开发流程。
 
@@ -245,7 +245,7 @@ docker run -d -p 8080:8080 \
 - SQL 文件放在 `resources` 目录
 - 使用雪花算法生成 ID
 
-## 配置说明
+## 🔧 配置说明
 
 主要配置项（`config.toml`）：
 
@@ -293,6 +293,6 @@ swag fmt && swag init
 
 A: 在 `consts/captcha.go` 中添加新的常量值
 
-## License
+## 📄 License
 
 Apache License 2.0
