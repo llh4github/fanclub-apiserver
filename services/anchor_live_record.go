@@ -10,6 +10,7 @@ import (
 	"fanclub-apiserver/database/model"
 	"fanclub-apiserver/dto/resp"
 	"fanclub-apiserver/g"
+	"fanclub-apiserver/utils"
 
 	"gorm.io/cli/gorm/typed"
 	"gorm.io/gorm"
@@ -79,12 +80,7 @@ func (s *anchorLiveRecordService) GetLatestByRoomID(appCtx *g.AppCtx, roomID int
 //   - error: 错误信息
 func (s *anchorLiveRecordService) GetCurrentWeekByRoomID(appCtx *g.AppCtx, roomID int64) ([]*resp.WeekLiveRecord, error) {
 	now := time.Now()
-	weekday := now.Weekday()
-	startOfWeek := now.AddDate(0, 0, -int(weekday)+1)
-	startOfWeek = time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 0, 0, 0, 0, startOfWeek.Location())
-
-	endOfWeek := startOfWeek.AddDate(0, 0, 6)
-	endOfWeek = time.Date(endOfWeek.Year(), endOfWeek.Month(), endOfWeek.Day(), 23, 59, 59, 999999999, endOfWeek.Location())
+	startOfWeek, endOfWeek := utils.WeekRange(now)
 
 	cacheKey := fmt.Sprintf("%s%d:week:%s", cache.AnchorLiveRecord, roomID, startOfWeek.Format("2006-01-02"))
 	ttl := 10 * time.Minute

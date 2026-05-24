@@ -11,6 +11,7 @@ import (
 	"fanclub-apiserver/dto/resp"
 	"fanclub-apiserver/errs"
 	"fanclub-apiserver/g"
+	"fanclub-apiserver/utils"
 
 	"go.uber.org/zap"
 	"gorm.io/cli/gorm/typed"
@@ -37,13 +38,7 @@ func (s *anchorLiveScheduleService) GetWeeklySchedule(appCtx *g.AppCtx, bid int6
 
 	return cache.CacheData(ttl, appCtx.C, cacheKey, func() ([]*resp.AnchorLiveSchedule, error) {
 		now := time.Now()
-		weekday := now.Weekday()
-
-		startOfWeek := now.AddDate(0, 0, -int(weekday))
-		startOfWeek = time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 0, 0, 0, 0, startOfWeek.Location())
-
-		endOfWeek := startOfWeek.AddDate(0, 0, 6)
-		endOfWeek = time.Date(endOfWeek.Year(), endOfWeek.Month(), endOfWeek.Day(), 23, 59, 59, 999999999, endOfWeek.Location())
+		startOfWeek, endOfWeek := utils.WeekRange(now)
 
 		var results []*resp.AnchorLiveSchedule
 		q := typed.G[model.AnchorLiveSchedule](g.DB).
