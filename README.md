@@ -68,52 +68,45 @@ fanclub-apiserver/
 └── config.toml           # 配置文件
 ```
 
-
 ## 安装与运行
 
 ### 1. 环境要求
+
 - Go 1.26.2+
 - PostgreSQL 14+
 - Redis 6+
 
 ### 2. 克隆项目
+
 ```bash
 git clone <repository-url>
 cd fanclub-apiserver
 ```
 
 ### 3. 安装依赖
+
 ```bash
 go mod tidy
 ```
 
-### 4. 配置数据库
-复制配置文件并修改：
-```bash
-cp config.example.toml config.toml
-# 编辑 config.toml 设置数据库连接信息
-```
-
-### 5. 初始化数据库
-执行 SQL 脚本：
-```bash
-psql -U postgres -d fanclub -f resources/V0.9__base_tables.sql
-```
-
 ### 6. 安装 Swag 工具
+
 ```bash
 go install github.com/swaggo/swag/cmd/swag@latest
 ```
 
 ### 7. 生成 Swagger 文档
+
 ```bash
 swag fmt && swag init
 ```
 
 ### 8. 启动服务
+
 使用 VSCode 调试功能启动，参考 `.vscode/launch.json` 配置。
 
 或命令行启动：
+
 ```bash
 go run main.go
 ```
@@ -121,6 +114,7 @@ go run main.go
 ## API 文档
 
 启动服务后访问 Swagger UI：
+
 ```
 http://localhost:8080/swagger
 ```
@@ -128,12 +122,15 @@ http://localhost:8080/swagger
 ## ORM 使用（GORM）
 
 ### 代码生成
+
 修改 `database/model` 目录下的文件后，需要运行代码生成：
+
 ```bash
 gorm gen -i ./database/model -o ./database/generated
 ```
 
 ### 类型安全查询
+
 ```go
 // 使用 GORM Typed API
 q := typed.G[model.SysUser](g.DB)
@@ -148,6 +145,7 @@ q.
 ```
 
 ### 分页查询
+
 ```go
 result, err := database.Page[model.TreeholeSubmission](
     appCtx.C,
@@ -160,14 +158,17 @@ result, err := database.Page[model.TreeholeSubmission](
 ## 验证码系统
 
 ### 支持的验证码类型
+
 - **点选验证码**：用户点击指定位置
 - **滑动验证码**：用户滑动拼图到正确位置
 
 ### 验证码场景
+
 - `login` - 登录场景
 - `submission` - 投稿场景
 
 ### API 端点
+
 ```
 GET  /api/captcha/click          # 生成点选验证码
 POST /api/captcha/click/verify   # 验证点选验证码
@@ -178,16 +179,19 @@ POST /api/captcha/slide/verify  # 验证滑动验证码
 ## Docker 部署
 
 ### 构建镜像
+
 ```bash
 ./image-build.sh
 ```
 
 ### 启动服务
+
 ```bash
 docker-compose -f compose.yaml up -d
 ```
 
 或使用预构建镜像：
+
 ```bash
 docker run -d -p 8080:8080 \
   -v $(pwd)/config-docker.toml:/app/config.toml \
@@ -197,18 +201,21 @@ docker run -d -p 8080:8080 \
 ## 开发规范
 
 ### 代码规范
+
 - 使用 Go 1.26.2 语法
 - 函数和方法必须有简明的注释
 - 结构体字段使用 snake_case 的 JSON 标签
 - 使用 `g.Error()` 等方法记录日志
 
 ### API 规范
+
 - 请求参数放在 `dto/req` 包
 - 响应数据放在 `dto/resp` 包
 - 使用 Swagger 注解生成文档
 - 返回统一的 JSON 响应格式
 
 ### 数据库规范
+
 - 使用 GORM 代码生成
 - 修改 model 后运行代码生成
 - SQL 文件放在 `resources` 目录
@@ -217,6 +224,7 @@ docker run -d -p 8080:8080 \
 ## 配置说明
 
 主要配置项（`config.toml`）：
+
 ```toml
 [server]
 host = "0.0.0.0"
@@ -242,18 +250,23 @@ cookies = []  # B站 Cookies 列表
 ## 常见问题
 
 ### Q: 修改 Model 后编译报错？
+
 A: 需要运行代码生成命令：
+
 ```bash
 gorm gen -i ./database/model -o ./database/generated
 ```
 
 ### Q: Swagger 文档不更新？
+
 A: 重新生成文档：
+
 ```bash
 swag fmt && swag init
 ```
 
 ### Q: 如何添加新的验证码场景？
+
 A: 在 `consts/captcha.go` 中添加新的常量值
 
 ## License
