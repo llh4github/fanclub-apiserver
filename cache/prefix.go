@@ -15,4 +15,5 @@ const (
 	AnchorLiveRecord          KeyPrefix = ServiceLayer + "anchor:live_record:"
 	TreeholeTopic             KeyPrefix = ServiceLayer + "treehole:topic:"
 	TreeholeSubmissionSummary KeyPrefix = ServiceLayer + "treehole:submission:summary:"
+	ViewerScBv                KeyPrefix = ServiceLayer + "viewer:sc_bv:"
 )
