@@ -36,7 +36,7 @@ type anchorSong struct {
 //	@Accept			json
 //	@Produce		json
 //	@Param			song	body		req.CreateAnchorSong	true	"主播歌曲"
-//	@Success		200		{object}	wrapper.JsonResp[model.AnchorSong]
+//	@Success		200		{object}	wrapper.JsonResp[string]
 //	@Router			/anchor/song/add [post]
 func (c *anchorSong) Create(ctx fiber.Ctx) error {
 	var r req.CreateAnchorSong
@@ -62,7 +62,7 @@ func (c *anchorSong) Create(ctx fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.JSON(wrapper.Success(song))
+	return ctx.JSON(wrapper.Success(""))
 }
 
 // GetByBidAndName 根据B站ID和歌曲名称获取主播歌曲
