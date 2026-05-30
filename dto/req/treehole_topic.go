@@ -7,7 +7,7 @@ type CreateTreeholeTopic struct {
 	// 主播B站UID
 	Bid int64 `json:"bid,string" example:"12345678" validate:"required,min=1"`
 	// 树洞主题标题
-	Title string `json:"title" example:"520特别投稿" validate:"required,min=1,max=125"`
+	Title string `json:"title" example:"520特别投稿" validate:"required,min=1,max=100"`
 	// 树洞主题描述
 	Description string `json:"description" example:"520特别投稿活动" validate:"omitempty,max=300"`
 	// 投稿开放时间窗口

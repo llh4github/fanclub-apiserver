@@ -342,14 +342,41 @@ func (s *treeholeTopicService) PageAdmin(appCtx *g.AppCtx, bid int64, title stri
 		conds = append(conds, generated.TreeholeTopic.IsActive.Eq(*isActive))
 	}
 
-	result, err := database.Page[model.TreeholeTopic](appCtx.C, page, pageSize, conds...)
+	q := typed.G[model.TreeholeTopic](g.DB, conds...)
+
+	// 统计总数
+	total, err := q.Count(appCtx.C, "id")
 	if err != nil {
 		return nil, errs.WrapError(err, "分页查询话题失败", string(errs.DataNotFound))
 	}
 
+	if total == 0 {
+		return &resp.PageResult[*resp.TopicPageItem]{
+			TotalRowCount: 0,
+			TotalPage:     0,
+			Records:       []*resp.TopicPageItem{},
+		}, nil
+	}
+
+	totalPage := (total + int64(pageSize) - 1) / int64(pageSize)
+	offset := (page - 1) * pageSize
+
+	// 查询并排序：启用状态降序，修改时间降序
+	var records []model.TreeholeTopic
+	if err := q.
+		Order(clause.OrderBy{Columns: []clause.OrderByColumn{
+			{Column: clause.Column{Name: "is_active"}, Desc: true},
+			{Column: clause.Column{Name: "updated_time"}, Desc: true},
+		}}).
+		Offset(offset).
+		Limit(pageSize).
+		Scan(appCtx.C, &records); err != nil {
+		return nil, errs.WrapError(err, "分页查询话题失败", string(errs.DataNotFound))
+	}
+
 	// 提取话题IDs
-	topicIDs := make([]int64, 0, len(result.Records))
-	for _, t := range result.Records {
+	topicIDs := make([]int64, 0, len(records))
+	for _, t := range records {
 		topicIDs = append(topicIDs, t.ID)
 	}
 
@@ -360,8 +387,8 @@ func (s *treeholeTopicService) PageAdmin(appCtx *g.AppCtx, bid int64, title stri
 	}
 
 	// 填充统计数据到结果
-	pageItems := make([]*resp.TopicPageItem, 0, len(result.Records))
-	for _, topic := range result.Records {
+	pageItems := make([]*resp.TopicPageItem, 0, len(records))
+	for _, topic := range records {
 		stats := statsMap[topic.ID]
 		pageItems = append(pageItems, &resp.TopicPageItem{
 			ID:                    topic.ID,
@@ -379,8 +406,8 @@ func (s *treeholeTopicService) PageAdmin(appCtx *g.AppCtx, bid int64, title stri
 	}
 
 	return &resp.PageResult[*resp.TopicPageItem]{
-		TotalRowCount: result.TotalRowCount,
-		TotalPage:     result.TotalPage,
+		TotalRowCount: int(total),
+		TotalPage:     int(totalPage),
 		Records:       pageItems,
 	}, nil
 }

@@ -9,6 +9,7 @@ import (
 	"fanclub-apiserver/g"
 	"fanclub-apiserver/middleware"
 	"fanclub-apiserver/storage"
+	"path"
 	"time"
 
 	"github.com/gofiber/fiber/v3"
@@ -46,7 +47,7 @@ func (o *oss) GenerateImageUploadCredential(ctx fiber.Ctx) error {
 	if err != nil {
 		return errs.WrapError(err, "生成ID失败", string(errs.UnkonwError))
 	}
-	key := "treehole/" + time.Now().Format("2006/01/") + shortID + "-" + r.Filename
+	key := "treehole/" + time.Now().Format("2006/01/") + shortID + path.Ext(r.Filename)
 	uploadToken, err := storage.GenerateUploadToken(context.Background(), storage.PresignedPutObjectInput{
 		Key:         key,
 		ContentType: "image/*",
