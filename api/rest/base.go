@@ -59,4 +59,7 @@ func RigsterRouter(router fiber.Router) {
 	// OSS 对象存储公开接口：20次/分钟/IP
 	registerOSS(router)
 	registerOssCallback(router)
+
+	// Cookie 管理接口
+	registerCookie(router)
 }

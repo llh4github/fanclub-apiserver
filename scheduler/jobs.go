@@ -101,6 +101,21 @@ func deactivateExpiredTopics() {
 	}
 }
 
+// refreshCookies 刷新需要刷新的 Cookie
+func refreshCookies() {
+	result, err := services.CookieRefresh.RefreshAll(context.Background())
+	if err != nil {
+		g.Error("刷新Cookie任务失败", zap.Error(err))
+		return
+	}
+	if result.Total > 0 {
+		g.Info("定时刷新Cookie完成",
+			zap.Int("total", result.Total),
+			zap.Int("success", result.SuccessCount),
+			zap.Int("failed", result.FailedCount))
+	}
+}
+
 // registerJob 注册定时任务并打印任务 ID
 func registerJob(s gocron.Scheduler, def gocron.JobDefinition, task gocron.Task, opts ...gocron.JobOption) error {
 	j, err := s.NewJob(def, task, opts...)
