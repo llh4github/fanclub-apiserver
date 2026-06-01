@@ -1,4 +1,6 @@
+.gitignore
 .claude/
+.pi*
 .trae/
 .lingma/
 .codebuddy/
