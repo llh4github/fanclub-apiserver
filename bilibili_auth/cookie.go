@@ -1,4 +1,4 @@
-package auth
+package bilibili_auth
 
 import (
 	"crypto/rand"

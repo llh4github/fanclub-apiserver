@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"fanclub-apiserver/auth"
+	"fanclub-apiserver/bilibili_auth"
 	"fanclub-apiserver/database/generated"
 	"fanclub-apiserver/database/model"
 	"fanclub-apiserver/dto/req"
@@ -155,14 +155,14 @@ type cookieRefreshService struct {
 var CookieRefresh = new(cookieRefreshService)
 
 // ShouldRefresh 检查是否需要刷新 Cookie
-func (s *cookieRefreshService) ShouldRefresh(cookies *auth.Cookies) (bool, int64, error) {
-	refresher := auth.NewCookieRefresher(cookies)
+func (s *cookieRefreshService) ShouldRefresh(cookies *bilibili_auth.Cookies) (bool, int64, error) {
+	refresher := bilibili_auth.NewCookieRefresher(cookies)
 	return refresher.ShouldRefresh()
 }
 
 // Refresh 刷新 Cookie
-func (s *cookieRefreshService) Refresh(cookies *auth.Cookies) (*auth.RefreshResult, error) {
-	refresher := auth.NewCookieRefresher(cookies)
+func (s *cookieRefreshService) Refresh(cookies *bilibili_auth.Cookies) (*bilibili_auth.RefreshResult, error) {
+	refresher := bilibili_auth.NewCookieRefresher(cookies)
 	return refresher.Refresh(), nil
 }
 
@@ -223,7 +223,7 @@ func (s *cookieRefreshService) RefreshByID(ctx context.Context, cookieID int64) 
 	}
 
 	// 直接刷新 RefreshToken Cookie
-	cookies := &auth.Cookies{
+	cookies := &bilibili_auth.Cookies{
 		SESSDATA:     getCookieValue(cookie, "SESSDATA"),
 		BiliJct:      getCookieValue(cookie, "bili_jct"),
 		DedeUserID:   getCookieValue(cookie, "DedeUserID"),
@@ -301,8 +301,8 @@ func (s *cookieRefreshService) RefreshAll(ctx context.Context) (*resp.CookieBatc
 }
 
 // buildCookiesFromDBRecord 从数据库记录构建 Cookies 对象
-func buildCookiesFromDBRecord(sessdataCookie, refreshTokenCookie *model.SysScraperCookie) *auth.Cookies {
-	return &auth.Cookies{
+func buildCookiesFromDBRecord(sessdataCookie, refreshTokenCookie *model.SysScraperCookie) *bilibili_auth.Cookies {
+	return &bilibili_auth.Cookies{
 		SESSDATA:     sessdataCookie.Value,
 		BiliJct:      getCookieValue(sessdataCookie, "bili_jct"),
 		DedeUserID:   getCookieValue(sessdataCookie, "DedeUserID"),
@@ -319,7 +319,7 @@ func getCookieValue(cookie *model.SysScraperCookie, name string) string {
 }
 
 // updateCookiesFromResult 根据刷新结果更新数据库中的 Cookie
-func (s *cookieRefreshService) updateCookiesFromResult(ctx context.Context, uid int64, newCookies *auth.Cookies, newRefreshToken string) error {
+func (s *cookieRefreshService) updateCookiesFromResult(ctx context.Context, uid int64, newCookies *bilibili_auth.Cookies, newRefreshToken string) error {
 	if newCookies != nil {
 		if newCookies.SESSDATA != "" {
 			if err := g.DB.WithContext(ctx).Model(&model.SysScraperCookie{}).
