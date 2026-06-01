@@ -170,6 +170,10 @@ func (s *cookieRefreshService) Refresh(cookies *bilibili_auth.Cookies) (*bilibil
 func (s *cookieRefreshService) RefreshByID(ctx context.Context, cookieID int64) (*resp.CookieRefreshResp, error) {
 	cookie, err := Cookie.GetByID(ctx, cookieID)
 	if err != nil {
+		g.Error("刷新Cookie失败：获取Cookie记录失败",
+			zap.Int64("cookieID", cookieID),
+			zap.Error(err),
+		)
 		return &resp.CookieRefreshResp{
 			ID:      cookieID,
 			Success: false,
@@ -190,6 +194,11 @@ func (s *cookieRefreshService) RefreshByID(ctx context.Context, cookieID int64) 
 		if err := g.DB.WithContext(ctx).
 			Where("uid = ? AND name = ?", cookie.UID, "RefreshToken").
 			First(&refreshTokenCookie).Error; err != nil {
+			g.Error("刷新Cookie失败：未找到 RefreshToken Cookie",
+				zap.Int64("cookieID", cookieID),
+				zap.Int64("uid", cookie.UID),
+				zap.Error(err),
+			)
 			return &resp.CookieRefreshResp{
 				ID:      cookieID,
 				Success: false,
@@ -201,6 +210,12 @@ func (s *cookieRefreshService) RefreshByID(ctx context.Context, cookieID int64) 
 		cookies := buildCookiesFromDBRecord(cookie, &refreshTokenCookie)
 		result, err := s.Refresh(cookies)
 		if err != nil || result.Error != nil {
+			g.Error("刷新Cookie失败：调用B站刷新接口失败",
+				zap.Int64("cookieID", cookieID),
+				zap.Int64("uid", cookie.UID),
+				zap.Error(err),
+				zap.NamedError("resultError", result.Error),
+			)
 			return &resp.CookieRefreshResp{
 				ID:      cookieID,
 				Success: false,
@@ -210,6 +225,11 @@ func (s *cookieRefreshService) RefreshByID(ctx context.Context, cookieID int64) 
 
 		// 更新 Cookie 值
 		if err := s.updateCookiesFromResult(ctx, cookie.UID, result.NewCookies, result.NewRefreshToken); err != nil {
+			g.Error("刷新Cookie失败：更新数据库Cookie失败",
+				zap.Int64("cookieID", cookieID),
+				zap.Int64("uid", cookie.UID),
+				zap.Error(err),
+			)
 			return &resp.CookieRefreshResp{
 				ID:      cookieID,
 				Success: false,
@@ -238,6 +258,13 @@ func (s *cookieRefreshService) RefreshByID(ctx context.Context, cookieID int64) 
 
 	result, err := s.Refresh(cookies)
 	if err != nil || result.Error != nil {
+		g.Error("刷新Cookie失败：调用B站刷新接口失败",
+			zap.Int64("cookieID", cookieID),
+			zap.Int64("uid", cookie.UID),
+			zap.String("cookieName", cookie.Name),
+			zap.Error(err),
+			zap.NamedError("resultError", result.Error),
+		)
 		return &resp.CookieRefreshResp{
 			ID:      cookieID,
 			Success: false,
@@ -247,6 +274,12 @@ func (s *cookieRefreshService) RefreshByID(ctx context.Context, cookieID int64) 
 
 	// 更新 Cookie 值
 	if err := s.updateCookiesFromResult(ctx, cookie.UID, result.NewCookies, result.NewRefreshToken); err != nil {
+		g.Error("刷新Cookie失败：更新数据库Cookie失败",
+			zap.Int64("cookieID", cookieID),
+			zap.Int64("uid", cookie.UID),
+			zap.String("cookieName", cookie.Name),
+			zap.Error(err),
+		)
 		return &resp.CookieRefreshResp{
 			ID:      cookieID,
 			Success: false,
@@ -275,6 +308,7 @@ func (s *cookieRefreshService) RefreshAll(ctx context.Context) (*resp.CookieBatc
 	if err := g.DB.WithContext(ctx).
 		Where("need_refresh = ?", true).
 		Find(&cookies).Error; err != nil {
+		g.Error("批量刷新Cookie失败：查询待刷新记录失败", zap.Error(err))
 		return nil, err
 	}
 
