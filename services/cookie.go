@@ -96,12 +96,12 @@ func (s *cookieService) Create(ctx context.Context, req *req.CookieCreateReq) (*
 	}
 
 	cookie := &model.SysScraperCookie{
-		Name:       req.Name,
-		Value:      req.Value,
-		Domain:     req.Domain,
-		ExpiresAt:  req.ExpiresAt,
-		UID:        req.UID,
-		CookieType: cookieType,
+		Name:        req.Name,
+		Value:       req.Value,
+		Domain:      req.Domain,
+		ExpiresAt:   req.ExpiresAt,
+		UID:         req.UID,
+		CookieType:  cookieType,
 		NeedRefresh: true,
 	}
 
@@ -114,9 +114,9 @@ func (s *cookieService) Create(ctx context.Context, req *req.CookieCreateReq) (*
 // Update 更新 Cookie
 func (s *cookieService) Update(ctx context.Context, id int64, req *req.CookieUpdateReq) error {
 	updates := map[string]interface{}{
-		"name":        req.Name,
-		"value":       req.Value,
-		"domain":      req.Domain,
+		"name":         req.Name,
+		"value":        req.Value,
+		"domain":       req.Domain,
 		"need_refresh": req.NeedRefresh,
 	}
 	if req.ExpiresAt != nil {
@@ -284,8 +284,8 @@ func (s *cookieRefreshService) RefreshAll(ctx context.Context) (*resp.CookieBatc
 	}
 
 	resp := &resp.CookieBatchRefreshResp{
-		Total:    len(cookies),
-		Results:  make([]resp.CookieRefreshResp, 0, len(cookies)),
+		Total:   len(cookies),
+		Results: make([]resp.CookieRefreshResp, 0, len(cookies)),
 	}
 
 	for _, cookie := range cookies {

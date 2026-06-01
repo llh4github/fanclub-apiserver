@@ -102,13 +102,13 @@ func (c *cookie) Create(ctx fiber.Ctx) error {
 		zap.Int64("uid", cookie.UID))
 
 	return ctx.JSON(wrapper.Success(resp.CookieInfo{
-		ID:         cookie.ID,
-		Name:       cookie.Name,
-		Value:      maskCookieValue(cookie.Name, cookie.Value),
-		Domain:     cookie.Domain,
-		ExpiresAt:  cookie.ExpiresAt,
-		UID:        cookie.UID,
-		CookieType: string(cookie.CookieType),
+		ID:          cookie.ID,
+		Name:        cookie.Name,
+		Value:       maskCookieValue(cookie.Name, cookie.Value),
+		Domain:      cookie.Domain,
+		ExpiresAt:   cookie.ExpiresAt,
+		UID:         cookie.UID,
+		CookieType:  string(cookie.CookieType),
 		NeedRefresh: cookie.NeedRefresh,
 	}))
 }
