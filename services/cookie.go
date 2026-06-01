@@ -26,11 +26,6 @@ var Cookie = new(cookieService)
 func (s *cookieService) List(ctx context.Context, req *req.CookieListReq) ([]resp.CookieInfo, int64, error) {
 	query := g.DB.WithContext(ctx).Model(&model.SysScraperCookie{})
 
-	// 按类型筛选
-	if req.CookieType != "" {
-		query = query.Where("cookie_type = ?", req.CookieType)
-	}
-
 	// 按是否需要刷新筛选
 	if req.NeedRefresh != nil {
 		query = query.Where("need_refresh = ?", *req.NeedRefresh)
@@ -68,7 +63,6 @@ func (s *cookieService) List(ctx context.Context, req *req.CookieListReq) ([]res
 			Domain:          c.Domain,
 			ExpiresAt:       c.ExpiresAt,
 			UID:             c.UID,
-			CookieType:      string(c.CookieType),
 			NeedRefresh:     c.NeedRefresh,
 			LastRefreshTime: c.LastRefreshTime,
 			CreatedAt:       c.CreatedTime.UnixMilli(),
@@ -90,18 +84,12 @@ func (s *cookieService) GetByID(ctx context.Context, id int64) (*model.SysScrape
 
 // Create 创建 Cookie
 func (s *cookieService) Create(ctx context.Context, req *req.CookieCreateReq) (*model.SysScraperCookie, error) {
-	cookieType := model.CookieTypeScraper
-	if req.CookieType != "" {
-		cookieType = model.CookieType(req.CookieType)
-	}
-
 	cookie := &model.SysScraperCookie{
 		Name:        req.Name,
 		Value:       req.Value,
 		Domain:      req.Domain,
 		ExpiresAt:   req.ExpiresAt,
 		UID:         req.UID,
-		CookieType:  cookieType,
 		NeedRefresh: true,
 	}
 
@@ -121,9 +109,6 @@ func (s *cookieService) Update(ctx context.Context, id int64, req *req.CookieUpd
 	}
 	if req.ExpiresAt != nil {
 		updates["expires_at"] = *req.ExpiresAt
-	}
-	if req.CookieType != "" {
-		updates["cookie_type"] = req.CookieType
 	}
 
 	return g.DB.WithContext(ctx).Model(&model.SysScraperCookie{}).
@@ -335,7 +320,6 @@ func getCookieValue(cookie *model.SysScraperCookie, name string) string {
 
 // updateCookiesFromResult 根据刷新结果更新数据库中的 Cookie
 func (s *cookieRefreshService) updateCookiesFromResult(ctx context.Context, uid int64, newCookies *auth.Cookies, newRefreshToken string) error {
-	updates := map[string]interface{}{}
 	if newCookies != nil {
 		if newCookies.SESSDATA != "" {
 			if err := g.DB.WithContext(ctx).Model(&model.SysScraperCookie{}).
@@ -343,9 +327,6 @@ func (s *cookieRefreshService) updateCookiesFromResult(ctx context.Context, uid 
 				Update("value", newCookies.SESSDATA).Error; err != nil {
 				return err
 			}
-		}
-		if newCookies.BiliJct != "" {
-			updates["bili_jct"] = newCookies.BiliJct
 		}
 	}
 	if newRefreshToken != "" {
@@ -356,12 +337,4 @@ func (s *cookieRefreshService) updateCookiesFromResult(ctx context.Context, uid 
 		}
 	}
 	return nil
-}
-
-// maskSessdata 对 SESSDATA 进行脱敏
-func maskSessdata(sessdata string) string {
-	if len(sessdata) <= 8 {
-		return sessdata
-	}
-	return sessdata[:8] + "..." + sessdata[len(sessdata)-8:]
 }

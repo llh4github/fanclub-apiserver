@@ -1,15 +1,5 @@
 package model
 
-// CookieType Cookie 类型
-type CookieType string
-
-const (
-	// CookieTypeScraper 爬虫 Cookie
-	CookieTypeScraper CookieType = "scraper"
-	// CookieTypeUser 普通用户 Cookie
-	CookieTypeUser CookieType = "user"
-)
-
 // SysScraperCookie 爬虫 Cookie 配置表
 type SysScraperCookie struct {
 	BaseModel
@@ -23,8 +13,6 @@ type SysScraperCookie struct {
 	ExpiresAt *int64 `json:"expires_at" gorm:"check:expires_at >= 0"`
 	// cookie值所属用户
 	UID int64 `json:"uid,string" gorm:"not null;uniqueIndex:uk_uid_name_domain"`
-	// Cookie 类型: scraper(爬虫) 或 user(普通用户)
-	CookieType CookieType `json:"cookie_type" gorm:"type:varchar(20);default:'scraper';not null"`
 	// 是否需要刷新
 	NeedRefresh bool `json:"need_refresh" gorm:"default:false;not null"`
 	// 上次刷新时间

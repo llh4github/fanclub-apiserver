@@ -14,8 +14,6 @@ type CookieInfo struct {
 	ExpiresAt *int64 `json:"expires_at,string"`
 	// cookie值所属用户UID
 	UID int64 `json:"uid,string"`
-	// Cookie 类型: scraper(爬虫) 或 user(普通用户)
-	CookieType string `json:"cookie_type"`
 	// 是否需要刷新
 	NeedRefresh bool `json:"need_refresh"`
 	// 上次刷新时间

@@ -3,8 +3,6 @@
 package generated
 
 import (
-	"fanclub-apiserver/database/model"
-
 	"gorm.io/cli/gorm/field"
 )
 
@@ -14,7 +12,6 @@ var SysScraperCookie = struct {
 	Domain          field.String
 	ExpiresAt       field.Number[int64]
 	UID             field.Number[int64]
-	CookieType      field.Struct[model.CookieType]
 	NeedRefresh     field.Bool
 	LastRefreshTime field.Number[int64]
 }{
@@ -23,7 +20,6 @@ var SysScraperCookie = struct {
 	Domain:          field.String{}.WithColumn("domain"),
 	ExpiresAt:       field.Number[int64]{}.WithColumn("expires_at"),
 	UID:             field.Number[int64]{}.WithColumn("uid"),
-	CookieType:      field.Struct[model.CookieType]{}.WithName("CookieType"),
 	NeedRefresh:     field.Bool{}.WithColumn("need_refresh"),
 	LastRefreshTime: field.Number[int64]{}.WithColumn("last_refresh_time"),
 }

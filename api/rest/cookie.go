@@ -108,7 +108,6 @@ func (c *cookie) Create(ctx fiber.Ctx) error {
 		Domain:      cookie.Domain,
 		ExpiresAt:   cookie.ExpiresAt,
 		UID:         cookie.UID,
-		CookieType:  string(cookie.CookieType),
 		NeedRefresh: cookie.NeedRefresh,
 	}))
 }
@@ -144,7 +143,6 @@ func (c *cookie) GetByID(ctx fiber.Ctx) error {
 		Domain:          cookie.Domain,
 		ExpiresAt:       cookie.ExpiresAt,
 		UID:             cookie.UID,
-		CookieType:      string(cookie.CookieType),
 		NeedRefresh:     cookie.NeedRefresh,
 		LastRefreshTime: cookie.LastRefreshTime,
 		CreatedAt:       cookie.CreatedTime.UnixMilli(),
