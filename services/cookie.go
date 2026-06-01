@@ -180,6 +180,12 @@ func (s *cookieRefreshService) RefreshByID(ctx context.Context, cookieID int64) 
 	// 如果没有 RefreshToken，无法刷新
 	if cookie.Name != "RefreshToken" {
 		// 需要找到对应的 RefreshToken Cookie
+		// 这里为什么不多带一个 Select：是由于上游 GetByID 只返回了 1 条记录，
+		// 但 B站刷新接口同时需要 SESSDATA、bili_jct、DedeUserID、RefreshToken 四个值，
+		// 其中 RefreshToken 与 SESSDATA 在数据库里是同 UID 下不同 Name 的两条记录。
+		// 因此必须再按 uid + name 联查一次 RefreshToken 记录。
+		// （优化方向：未来可考虑将同一个 UID 的 4 个 Cookie 打包为一条复合记录，
+		// 或者在 GetByID 接口里同时返回同 UID 的关联 Cookie，避免这里的额外查询。）
 		var refreshTokenCookie model.SysScraperCookie
 		if err := g.DB.WithContext(ctx).
 			Where("uid = ? AND name = ?", cookie.UID, "RefreshToken").
@@ -260,7 +266,11 @@ func (s *cookieRefreshService) RefreshByID(ctx context.Context, cookieID int64) 
 
 // RefreshAll 刷新所有需要刷新的 Cookie
 func (s *cookieRefreshService) RefreshAll(ctx context.Context) (*resp.CookieBatchRefreshResp, error) {
-	// 查找所有需要刷新的 Cookie
+	// 第一步：批量拉取所有 need_refresh=true 的 Cookie 记录作为待处理列表
+	// 这里只在循环外做一次范围查询，循环内的查询都是基于单条 ID 的精确查询，
+	// 是为了复用 RefreshByID 的逻辑（保证单条刷新接口与批量刷新行为一致）。
+	// 属于有意设计而非疏漏：定时任务每 8 小时执行一次，Cookie 总量通常较小（<100），
+	// 性能不是瓶颈；同时逐条处理可以隔离单条失败的影响。
 	var cookies []model.SysScraperCookie
 	if err := g.DB.WithContext(ctx).
 		Where("need_refresh = ?", true).
@@ -273,6 +283,16 @@ func (s *cookieRefreshService) RefreshAll(ctx context.Context) (*resp.CookieBatc
 		Results: make([]resp.CookieRefreshResp, 0, len(cookies)),
 	}
 
+	// 第二步：逐条调用 RefreshByID
+	// 循环内会触发数据库查询（GetByID + 可能的 RefreshToken 查询 + UPDATE），
+	// 是典型的"for 内查询"。因为定时调度场景下：
+	//   1. Cookie 数量可控，单次失败不会拖垮整体任务；
+	//   2. 每次都按 ID 重新查库，避免使用过期的内存数据，保证数据一致性；
+	//   3. 错误隔离：某条 Cookie 刷新失败不会中断后续处理。
+	// 如果未来 Cookie 规模变大（> 1000）出现性能问题，可考虑改为：
+	//   a) 一次性预加载所有 RefreshToken 记录，构建 uid → *SysScraperCookie 的 map；
+	//   b) 在循环内只查 SESSDATA/BiliJct/DedeUserID 等非 RefreshToken 记录；
+	//   c) 批量 UPDATE 代替逐条 UPDATE。
 	for _, cookie := range cookies {
 		result, err := s.RefreshByID(ctx, cookie.ID)
 		if err != nil {
