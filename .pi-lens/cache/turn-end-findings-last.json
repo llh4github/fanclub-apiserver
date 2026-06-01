@@ -1,6 +1,0 @@
-{
-  "signature": "scheduler/base.go::Unresolved from this turn — scheduler/base.go:\n🔴 STOP — 1 issue(s) must be fixed:\n  L59: undefined: refreshCookies\n    💡 Fix: LSP quick fixes: Create variable refreshCookies",
-  "sessionId": "lens-mpv69pww-896f9d91",
-  "projectSeqStart": 16,
-  "projectSeqEnd": 17
-}
