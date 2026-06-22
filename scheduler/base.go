@@ -53,6 +53,15 @@ func Init() error {
 		return err
 	}
 
+	// 每8小时刷新需要刷新的 Cookie
+	if err := registerJob(s,
+		gocron.DurationJob(8*time.Hour),
+		gocron.NewTask(refreshCookies),
+		gocron.WithStartAt(gocron.WithStartImmediately()),
+	); err != nil {
+		return err
+	}
+
 	s.Start()
 	return nil
 }

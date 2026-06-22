@@ -7,15 +7,19 @@ import (
 )
 
 var SysScraperCookie = struct {
-	Name      field.String
-	Value     field.String
-	Domain    field.String
-	ExpiresAt field.Number[int64]
-	UID       field.Number[int64]
+	Name            field.String
+	Value           field.String
+	Domain          field.String
+	ExpiresAt       field.Number[int64]
+	UID             field.Number[int64]
+	NeedRefresh     field.Bool
+	LastRefreshTime field.Number[int64]
 }{
-	Name:      field.String{}.WithColumn("name"),
-	Value:     field.String{}.WithColumn("value"),
-	Domain:    field.String{}.WithColumn("domain"),
-	ExpiresAt: field.Number[int64]{}.WithColumn("expires_at"),
-	UID:       field.Number[int64]{}.WithColumn("uid"),
+	Name:            field.String{}.WithColumn("name"),
+	Value:           field.String{}.WithColumn("value"),
+	Domain:          field.String{}.WithColumn("domain"),
+	ExpiresAt:       field.Number[int64]{}.WithColumn("expires_at"),
+	UID:             field.Number[int64]{}.WithColumn("uid"),
+	NeedRefresh:     field.Bool{}.WithColumn("need_refresh"),
+	LastRefreshTime: field.Number[int64]{}.WithColumn("last_refresh_time"),
 }

@@ -1,0 +1,69 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 读取版本号
+        id: version
+        run: |
+          if [ -f VERSION ]; then
+            VERSION=$(cat VERSION)
+          else
+            VERSION="0.0.0"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "当前版本: $VERSION"
+
+      - name: 设置 Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 登录阿里云镜像仓库
+        if: env.NAMESPACE != ''
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.ALIYUN_REGISTRY_USERNAME }}
+          password: ${{ secrets.ALIYUN_REGISTRY_PASSWORD }}
+
+      - name: 编译并推送镜像
+        run: |
+          GIT_COMMIT="${{ github.sha }}"
+          GIT_BRANCH="${{ github.ref_name }}"
+          BUILD_TIME="$(date +'%Y-%m-%d %H:%M:%S')"
+          VERSION="${{ steps.version.outputs.version }}"
+
+          IMAGE_TAG="${NAMESPACE}fanclub-apiserver:${VERSION}"
+          IMAGE_LATEST="${NAMESPACE}fanclub-apiserver:latest"
+
+          docker build \
+            --build-arg VERSION="$VERSION" \
+            --build-arg GIT_BRANCH="$GIT_BRANCH" \
+            --build-arg GIT_COMMIT="$GIT_COMMIT" \
+            --build-arg BUILD_TIME="$BUILD_TIME" \
+            -t "$IMAGE_TAG" \
+            -t "$IMAGE_LATEST" \
+            .
+
+          if [ "$PUSH" = "true" ]; then
+            echo "开始推送镜像..."
+            docker push "$IMAGE_LATEST"
+            docker push "$IMAGE_TAG"
+            echo "镜像推送完成"
+          else
+            echo "未配置推送，跳过 push 步骤"
+          fi
+        env:
+          NAMESPACE: ${{ vars.IMAGE_NAMESPACE }}
+          PUSH: ${{ vars.IMAGE_PUSH }}
+          REGISTRY: ${{ vars.IMAGE_REGISTRY }}
+
