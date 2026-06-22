@@ -1,6 +1,6 @@
 .gitignore
 .claude/
-.pi*
+.pi*/
 .trae/
 .lingma/
 .codebuddy/
