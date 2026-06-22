@@ -15,6 +15,9 @@ RUN go mod download
 # 复制所有源代码
 COPY . .
 
+# 生成 swagger 文档（确保 docs 包在构建时存在）
+RUN go install github.com/swaggo/swag/cmd/swag@latest && swag init
+
 # 编译
 ARG VERSION=dev
 ARG GIT_BRANCH=unknown
